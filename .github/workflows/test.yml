@@ -44,38 +44,29 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check deployment credentials
-        id: credentials
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo '::warning::Deployment not configured. Add VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID repository secrets.'
-            echo '### Deployment skipped: Vercel secrets are missing' >> "$GITHUB_STEP_SUMMARY"
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
+            echo '::error::Deployment not configured. Add VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID repository secrets.'
+            echo '### Deployment failed: Vercel secrets are missing' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
       - uses: actions/checkout@v4
-        if: steps.credentials.outputs.ready == 'true'
       - uses: actions/setup-node@v4
-        if: steps.credentials.outputs.ready == 'true'
         with:
           node-version: 22
       - uses: actions/download-artifact@v4
-        if: steps.credentials.outputs.ready == 'true'
         with:
           name: tested-game
           path: dist/
       - name: Prepare tested static output
-        if: steps.credentials.outputs.ready == 'true'
         run: node scripts/prepare-vercel.mjs
       - name: Install pinned deployment CLI
-        if: steps.credentials.outputs.ready == 'true'
         run: npm install --global vercel@59.11.7
       - name: Deploy production
-        if: steps.credentials.outputs.ready == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
