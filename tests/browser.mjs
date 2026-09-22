@@ -23,7 +23,8 @@ try {
     await page.locator('[data-level="0"]').click();
     await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.waitForTimeout(600);
-    await page.screenshot({path:`artifacts/${name}-game-mobile.png`});
+    await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
+    assert.equal(await page.locator('.customer').evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
     assert.equal(await overflow(),false,'mobile gameplay must fit');
     // Real pointer drag at overlapping hands must select the short hand in lesson one.
     const b=await page.locator('#clock').boundingBox();
@@ -128,7 +129,8 @@ try {
     assert.equal(await page.locator('.customer .resident-new').count(),1,'second customer is a generated forest resident');
     assert.match(await page.locator('.resident-new').evaluate(el=>getComputedStyle(el).backgroundImage),/residents-waiting/,'waiting resident uses its sleepy expression');
     await page.clock.runFor(700);
-    await page.screenshot({path:`artifacts/${name}-waiting-queue.png`});
+    await page.screenshot({path:`artifacts/${name}-waiting-queue.png`,animations:'disabled'});
+    assert.equal(await page.locator('.customer').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).opacity==='1')),true,'all waiting residents remain visible');
     await page.locator('#elements').click();
     assert.equal(await page.locator('.element-legend>div').count(),12);
     await page.clock.fastForward(120000);assert.equal(await page.locator('.customer').count(),2,'element guide pauses arrivals');
