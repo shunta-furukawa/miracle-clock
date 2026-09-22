@@ -118,7 +118,7 @@ try {
       await page.setViewportSize(size);
       // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
       const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'+(size.width===393?'.game{--safe-bottom:34px}.game-top{padding-top:59px}':'')});
-      for(const advice of ['seal-button','hint']) {
+      for(const advice of ['hint']) {
       await page.locator(`#${advice}`).click();
       const boxes=await page.evaluate(()=>{
         const selectors=['#clock','#order','#period-toggle','.hand-controls','#seal-button','.clock-tools','.queue-area','.clock-housing','#feedback'];
@@ -244,6 +244,28 @@ try {
     assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','pause and flight time are excluded');
     await beginner.locator('#result-map').click();assert.equal(await beginner.locator('[data-stage="1"]').isEnabled(),true);assert.equal(await beginner.locator('[data-stage="2"]').isDisabled(),true);
     assert.match(await beginner.locator('[data-stage="0"]').innerText(),/★★★/);await beginner.screenshot({path:`artifacts/${name}-campaign-stars.png`});await beginner.close();
+    // Lives: failure never unlocks a stage, retry assistance is per attempt.
+    const life=await browser.newPage({viewport:{width:375,height:667},reducedMotion:'reduce'});
+    life.on('pageerror',e=>errors.push(e.message));
+    await life.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.records.v2'))localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]}));});
+    await life.clock.install();await life.goto('http://127.0.0.1:4173');await life.locator('#start').click();await life.locator('[data-slot="0"]').click();await life.locator('[data-stage="0"]').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();
+    assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
+    await life.clock.runFor(120000);assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
+    for(let n=0;n<3;n++)await life.locator('#seal-button').click();
+    await life.locator('#retry-assisted').waitFor();
+    assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[]);
+    await life.screenshot({path:`artifacts/${name}-lives-failure.png`});
+    await life.locator('#result-main').click();assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
+    for(let n=0;n<3;n++)await life.locator('#seal-button').click();
+    await life.setViewportSize({width:568,height:320});await life.locator('#retry-assisted').click();
+    assert.match(await life.locator('#lives').innerText(),/6 \/ 6.*おてつだい/);
+    for(let n=0;n<5;n++)await life.locator('#seal-button').click();
+    assert.match(await life.locator('#lives').innerText(),/1 \/ 6/);
+    await life.screenshot({path:`artifacts/${name}-lives-assisted-landscape.png`});
+    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await life.locator('#plus').click();await life.locator('#seal-button').click();await life.clock.runFor(1000);}
+    assert.equal(await life.locator('.star-result').getAttribute('data-stars'),'1');
+    await life.locator('#result-main').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
+    assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
     // Central special stage is endless and saves every completed delivery.
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('#endless').click();await skipDialogue();await page.locator('#open-shop').click();

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {clockAngles,angleDelta,dragMinutes,freeMinutes,settleDelta,matchesTime,normalizeTime,timeText} from '../src/time.js';
-import {levels,makeOrder,createSession,tickSession,completeOrder,stages,endlessLevel,stageUnlocked,endlessUnlocked,rateRun,betterRecord,starGoal,arrivalInterval,prepareDial} from '../src/levels.js';
+import {levels,makeOrder,createSession,tickSession,completeOrder,stages,endlessLevel,stageUnlocked,endlessUnlocked,rateRun,betterRecord,starGoal,arrivalInterval,prepareDial,recordMistake} from '../src/levels.js';
 
 test('half past has the short hand halfway between hour markers',()=>{assert.deepEqual(clockAngles(150),{hour:75,minute:180});});
 test('minute hand full turn advances the hour; reversing crosses midnight',()=>{assert.equal(dragMinutes(150,360,'minute',5),210);assert.equal(dragMinutes(0,-30,'minute',5),1435);assert.equal(dragMinutes(720,30,'hour',60),780);});
@@ -51,3 +51,7 @@ test('central endless covers all 24 customers and all six question families with
 test('mixed endless orders keep button adjustments reachable when minute steps change',()=>{let dial=382;for(let i=0;i<144;i++){const order=makeOrder(endlessLevel,i);dial=prepareDial(order,dial);assert.equal(dial%order.step,0);assert.equal(Math.abs((order.target-dial)%order.step),0);if(order.duration)assert.equal(dial,order.base);dial=order.target;}});
 
 test('every finite stage opens with the complete batch, without a full-queue failure',()=>{for(const level of stages){const s=createSession(level);assert.equal(s.queue.length,level.count);assert.equal(new Set(s.queue.map(o=>o.orderId)).size,level.count);tickSession(s,5000);assert.equal(s.status,'playing');assert.equal(s.queue.length,level.count);completeOrder(s);assert.equal(s.queue.length,level.count-1);assert.equal(s.activeTime,5000);}});
+
+test('normal lives decrease only on mistakes and stop processing at zero',()=>{const s=createSession(stages[0]);tickSession(s,10000);assert.equal(s.lives,3);for(let i=0;i<2;i++)recordMistake(s);assert.equal(s.status,'playing');assert.equal(s.lives,1);recordMistake(s);assert.equal(s.status,'over');recordMistake(s);completeOrder(s);assert.equal(s.mistakes,3);assert.equal(s.delivered,0);assert.equal(s.lives,0);});
+test('assisted retry allows six lives but a new stage defaults to three',()=>{const s=createSession(stages[0],6);for(let i=0;i<5;i++)recordMistake(s);assert.equal(s.status,'playing');assert.equal(s.lives,1);for(let i=0;i<3;i++)completeOrder(s);assert.equal(s.status,'cleared');assert.equal(rateRun(stages[0],s).stars,1);assert.equal(createSession(stages[1]).lives,3);assert.equal(createSession(stages[0],12).lives,3);});
+test('endless mistakes do not replace the existing queue-based ending',()=>{const s=createSession(endlessLevel,6);for(let i=0;i<20;i++)recordMistake(s);assert.equal(s.lives,null);assert.equal(s.status,'playing');tickSession(s,144);assert.equal(s.status,'over');});

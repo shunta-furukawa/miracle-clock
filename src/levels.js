@@ -52,7 +52,7 @@ export function makeOrder(level,index){
 }
 export const prepareDial=(order,current=720)=>order.duration?order.base:normalizeTime(Math.round(current/order.step)*order.step);
 export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):0;
-export function createSession(level){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count};}
+export function createSession(level,lives=3){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count,maxLives:level.endless?null:lives===6?6:3,lives:level.endless?null:lives===6?6:3};}
 export function tickSession(s,seconds){
  if(s.status!=='playing'||!Number.isFinite(seconds)||seconds<0)return;
  s.activeTime+=seconds;for(const order of s.queue)order.waited+=seconds;
@@ -66,3 +66,5 @@ export function rateRun(stage,session){const goal=starGoal(stage),time=Math.roun
 export function betterRecord(a,b){if(!a)return b;if(a.stars!==b.stars)return a.stars>b.stars?a:b;if(a.mistakes!==b.mistakes)return a.mistakes<b.mistakes?a:b;return a.time<=b.time?a:b;}
 export const starText=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 export const totalStars=r=>Object.values(r?.stars||{}).reduce((n,s)=>n+s.stars,0);
+
+export function recordMistake(s){if(s.status!=='playing')return;s.mistakes++;if(!s.level.endless){s.lives=Math.max(0,s.lives-1);if(s.lives===0)s.status='over';}}
