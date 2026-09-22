@@ -30,8 +30,13 @@ try {
     await page.locator('#open-shop').click();
     await page.waitForTimeout(600);
     await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
-    assert.equal(await page.locator('.customer').evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
+    assert.equal(await page.locator('.customer').first().evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
     assert.equal(await overflow(),false,'mobile gameplay must fit');
+    assert.equal(await page.locator('.customer').count(),3,'all customers are present at opening');
+    await page.locator('[data-select=minute]').click();
+    assert.equal(await page.locator('#minute-hand').getAttribute('class'),'selected-hand');
+    await page.locator('[data-select=hour]').click();
+    assert.equal(await page.locator('#hour-hand').getAttribute('class'),'selected-hand');
     // Real pointer drag at overlapping hands must select the short hand in lesson one.
     const b=await page.locator('#clock').boundingBox();
     const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*65/300;
@@ -152,17 +157,17 @@ try {
     await page.clock.install();
     await page.locator('[data-stage="2"]').click();await page.locator('#open-shop').click();
     await page.clock.fastForward(52000);await page.clock.fastForward(26000);
-    assert.equal(await page.locator('.customer').count(),2);
+    assert.equal(await page.locator('.customer').count(),5);
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
-    assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0']);
-    assert.equal(await page.locator('.customer .resident-new').count(),1,'second customer is a generated forest resident');
-    assert.match(await page.locator('.resident-new').evaluate(el=>getComputedStyle(el).backgroundImage),/residents-waiting/,'waiting resident uses its sleepy expression');
+    assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0','0','0','0']);
+    assert.equal(await page.locator('.customer .resident-new').count(),4,'the guide and four generated forest residents wait from opening');
+    assert.match(await page.locator('.resident-new').first().evaluate(el=>getComputedStyle(el).backgroundImage),/residents-waiting/,'waiting resident uses its sleepy expression');
     await page.clock.runFor(700);
     await page.screenshot({path:`artifacts/${name}-waiting-queue.png`,animations:'disabled'});
     assert.equal(await page.locator('.customer').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).opacity==='1')),true,'all waiting residents remain visible');
     await page.locator('#elements').click();
     assert.equal(await page.locator('.element-legend>div').count(),12);
-    await page.clock.fastForward(120000);assert.equal(await page.locator('.customer').count(),2,'element guide pauses arrivals');
+    await page.clock.fastForward(120000);assert.equal(await page.locator('.customer').count(),5,'element guide preserves the batch');
     await page.locator('#elements-close').click();
     await page.emulateMedia({reducedMotion:'reduce'});
     await setTime(7);await page.locator('#seal-button').click();

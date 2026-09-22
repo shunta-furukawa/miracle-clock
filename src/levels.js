@@ -51,8 +51,8 @@ export function makeOrder(level,index){
  return {...person,waited:0,origin:depotNames[level.id],orderId:index,characterId:person.id,target,base,duration,period,step,label,questionChapter:question.id,nextDay:!!duration&&base+duration>=1440};
 }
 export const prepareDial=(order,current=720)=>order.duration?order.base:normalizeTime(Math.round(current/order.step)*order.step);
-export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):s.level.interval;
-export function createSession(level){return {level,queue:[makeOrder(level,0)],generated:1,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:5};}
+export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):0;
+export function createSession(level){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count};}
 export function tickSession(s,seconds){
  if(s.status!=='playing'||!Number.isFinite(seconds)||seconds<0)return;
  s.activeTime+=seconds;for(const order of s.queue)order.waited+=seconds;

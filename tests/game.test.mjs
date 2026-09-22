@@ -10,8 +10,8 @@ test('drag wrap stays continuous at 12 o’clock in both directions',()=>{assert
 test('AM/PM is enforced only when the lesson asks for it',()=>{assert.equal(matchesTime(180,900,false),true);assert.equal(matchesTime(180,900,true),false);assert.equal(matchesTime(0,720,false),true);});
 test('all orders are on reachable minute increments, across all 36 stages',()=>{for(const level of stages)for(let i=0;i<level.count;i++){const order=makeOrder(level,i);assert.equal(order.target%order.step,0);assert.ok(order.characterId>=1&&order.characterId<=6);assert.equal(order.orderId,i);}});
 test('relative orders fix receipt time, cross noon and midnight correctly',()=>{const a=makeOrder(levels[5],2);assert.equal(a.base,1335);assert.equal(a.target,45);assert.equal(a.nextDay,true);assert.equal(timeText(a.target,'period'),'午前0時45分');const b=makeOrder(levels[5],1);assert.equal(b.target,780);});
-test('first stage teaches without queue pressure while still recording active time',()=>{const s=createSession(stages[0]);tickSession(s,10000);assert.equal(s.queue.length,1);assert.equal(s.status,'playing');for(let i=0;i<3;i++)completeOrder(s);assert.equal(s.status,'cleared');});
-test('a full queue ends at capacity, with no sixth customer added',()=>{const s=createSession(levels[3]);tickSession(s,levels[3].interval*4);assert.equal(s.queue.length,5);tickSession(s,levels[3].interval);assert.equal(s.status,'over');assert.equal(s.queue.length,5);});
+test('first stage teaches without queue pressure while still recording active time',()=>{const s=createSession(stages[0]);tickSession(s,10000);assert.equal(s.queue.length,3);assert.equal(s.status,'playing');for(let i=0;i<3;i++)completeOrder(s);assert.equal(s.status,'cleared');});
+test('a full queue ends at capacity, with no sixth customer added',()=>{const s=createSession(endlessLevel);tickSession(s,endlessLevel.interval*4);assert.equal(s.queue.length,5);tickSession(s,endlessLevel.interval);assert.equal(s.status,'over');assert.equal(s.queue.length,5);});
 test('delivery completes once, with no extra order beyond the level goal',()=>{for(const l of levels){const s=createSession(l);for(let i=0;i<l.count;i++)completeOrder(s);assert.equal(s.status,'cleared');assert.equal(s.generated,l.count);assert.equal(s.queue.length,0);}});
 test('5 minute lesson transitions to exact one minute values',()=>{assert.equal(makeOrder(levels[3],3).step,5);assert.equal(makeOrder(levels[3],4).step,1);assert.equal(makeOrder(levels[3],4).target,382);});
 test('24 hour labels and minute normalization cover midnight',()=>{assert.equal(timeText(0,'24'),'0時');assert.equal(timeText(1260,'24'),'21時');assert.equal(normalizeTime(-1),1439);});
@@ -30,7 +30,7 @@ test('each local depot serves its own guide and three resident variants',()=>{
 });
 test('waiting moods track the actual queue',async()=>{
  const {customerMood}=await import('../src/levels.js');
- const s=createSession(levels[0]);tickSession(s,35);
+ const s=createSession(endlessLevel);tickSession(s,36);
  assert.equal(s.queue.length,2);assert.equal(customerMood(s.queue[0]),'waiting');
  assert.equal(customerMood(s.queue[1]),'calm');tickSession(s,25);
  assert.equal(customerMood(s.queue[0]),'tired');
@@ -49,3 +49,5 @@ test('stars use both time and mistakes; best records never regress',()=>{const l
 test('central endless covers all 24 customers and all six question families without a finish',()=>{const s=createSession(endlessLevel),people=new Set(),types=new Set();for(let i=0;i<144;i++){const o=s.queue[0];people.add(o.name);types.add(o.questionChapter);assert.equal(o.origin,'空の中央配送所');assert.equal(o.target%o.step,0);completeOrder(s);}assert.equal(people.size,24);assert.equal(types.size,6);assert.equal(s.status,'playing');assert.equal(s.delivered,144);assert.ok(arrivalInterval(s)<36);tickSession(s,arrivalInterval(s)*4);assert.equal(s.status,'over');assert.equal(s.queue.length,5);});
 
 test('mixed endless orders keep button adjustments reachable when minute steps change',()=>{let dial=382;for(let i=0;i<144;i++){const order=makeOrder(endlessLevel,i);dial=prepareDial(order,dial);assert.equal(dial%order.step,0);assert.equal(Math.abs((order.target-dial)%order.step),0);if(order.duration)assert.equal(dial,order.base);dial=order.target;}});
+
+test('every finite stage opens with the complete batch, without a full-queue failure',()=>{for(const level of stages){const s=createSession(level);assert.equal(s.queue.length,level.count);assert.equal(new Set(s.queue.map(o=>o.orderId)).size,level.count);tickSession(s,5000);assert.equal(s.status,'playing');assert.equal(s.queue.length,level.count);completeOrder(s);assert.equal(s.queue.length,level.count-1);assert.equal(s.activeTime,5000);}});

@@ -239,3 +239,36 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 .seal-button:active{transform:translate(-50%,-47%);box-shadow:0 1px 0 #694522,inset 0 0 0 2px #ffdf91,inset 0 0 0 5px #a57938,inset 0 0 0 6px #f1ce80,inset 0 4px 8px #061e3d70}
 .seal-button:focus-visible{outline:3px solid #fff8d9;outline-offset:4px}
 .seal-button:disabled{opacity:1;cursor:wait;filter:saturate(.7)}
+
+/* Generated brass/enamel hands stay visible while the selected silhouette glows. */
+.hand-art{overflow:hidden;pointer-events:none;filter:drop-shadow(1px 2px 1px #39281288)}
+.selected-hand .hand-art{animation:hand-beacon 2.8s ease-in-out infinite}
+@keyframes hand-beacon{0%,100%{filter:drop-shadow(0 0 1px #fff5b0) drop-shadow(1px 2px 1px #39281288)}50%{filter:drop-shadow(0 0 4px #fff4a0) drop-shadow(0 0 2px #e9a738);opacity:.78}}
+.dragging .selected-hand .hand-art{animation:none;filter:drop-shadow(0 0 3px #fff4a0)}
+.hand-select span{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.selection-label{font-size:8px;line-height:1.2;letter-spacing:.05em;opacity:.75}
+.hand-select[aria-pressed=true]{outline:2px solid #fff0b7;outline-offset:1px}
+.hand-select[aria-pressed=true] .selection-label{opacity:1;color:#fff2ad}
+.hand-controls[data-selected=minute] .hand-select[aria-pressed=true]{background:linear-gradient(#a75a32,#713619)}
+.hand-controls .adjust{border-top:3px solid #317678}
+.hand-controls[data-selected=minute] .adjust{border-top-color:#b96a35}
+.batch-queue .customer{opacity:1!important}
+@media(orientation:portrait) and (max-width:600px){
+ .batch-queue .queue-track{gap:2px;align-items:flex-end}
+ .batch-queue .customer{width:calc((100% - (var(--queue-size) - 1)*2px)/var(--queue-size));flex:none}
+ .batch-queue .customer .portrait{width:100%;height:auto;aspect-ratio:1;max-width:48px;justify-self:center}
+ .batch-queue .customer:not(.active) .customer-bubble{display:none}
+ .batch-queue .customer-name{font-size:7px!important;padding:0;white-space:normal;line-height:1.2;min-height:17px}
+ .batch-queue .customer.active .customer-bubble{width:auto;position:absolute;bottom:100%;left:0;white-space:nowrap;z-index:2}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .batch-large .queue-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:2px;align-items:end}
+ .batch-large .customer{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:0;min-height:0;height:100%;max-height:none}
+ .batch-large .customer .portrait{width:min(100%,38px);height:auto;max-height:calc(100% - 12px);aspect-ratio:1}
+ .batch-large .customer-bubble{display:none}
+ .batch-large .customer-name{font-size:7px!important;padding:0;white-space:nowrap;max-width:100%;overflow:hidden;line-height:12px}
+ .batch-large .customer.active{background:#fff4c966;border-radius:5px;outline:1px solid #b38843}
+}
+@media(prefers-reduced-motion:reduce){.selected-hand .hand-art{animation:none;filter:drop-shadow(0 0 3px #f3bd50)}}
+
+@media(orientation:portrait) and (max-width:600px){.batch-queue .customer{max-width:64px}}
