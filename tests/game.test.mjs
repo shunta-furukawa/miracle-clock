@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {clockAngles,angleDelta,dragMinutes,matchesTime,normalizeTime,timeText} from '../src/time.js';
+import {clockAngles,angleDelta,dragMinutes,freeMinutes,settleDelta,matchesTime,normalizeTime,timeText} from '../src/time.js';
 import {levels,makeOrder,createSession,tickSession,completeOrder} from '../src/levels.js';
 
 test('half past has the short hand halfway between hour markers',()=>{assert.deepEqual(clockAngles(150),{hour:75,minute:180});});
 test('minute hand full turn advances the hour; reversing crosses midnight',()=>{assert.equal(dragMinutes(150,360,'minute',5),210);assert.equal(dragMinutes(0,-30,'minute',5),1435);assert.equal(dragMinutes(720,30,'hour',60),780);});
+test('hands follow the finger unsnapped, then settle the short way to the snapped time',()=>{assert.equal(freeMinutes(180,7,'hour'),194);assert.equal(freeMinutes(1435,60,'minute'),5);assert.equal(dragMinutes(180,7,'hour',60),180);assert.equal(settleDelta(194,180),-14);assert.equal(settleDelta(1437,0),3);assert.equal(settleDelta(2,1435),-7);});
 test('drag wrap stays continuous at 12 o’clock in both directions',()=>{assert.equal(angleDelta(355,5),10);assert.equal(angleDelta(5,355),-10);});
 test('AM/PM is enforced only when the lesson asks for it',()=>{assert.equal(matchesTime(180,900,false),true);assert.equal(matchesTime(180,900,true),false);assert.equal(matchesTime(0,720,false),true);});
 test('all orders are on reachable minute increments, including advanced practice',()=>{for(const level of levels)for(let i=0;i<level.count;i++){const order=makeOrder(level,i);assert.equal(order.target%order.step,0);assert.ok(order.characterId>=1&&order.characterId<=5);assert.equal(order.orderId,i);}});

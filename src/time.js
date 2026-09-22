@@ -6,9 +6,17 @@ export function clockAngles(minutes) {
 export function angleDelta(from, to) {
   return mod(to - from + 180, 360) - 180;
 }
+const draggedMinutes = (deltaDegrees, hand) => deltaDegrees * (hand === 'hour' ? 2 : 1 / 6);
 export function dragMinutes(start, deltaDegrees, hand, step) {
-  const minutes = deltaDegrees * (hand === 'hour' ? 2 : 1 / 6);
-  return normalizeTime(Math.round((start + minutes) / step) * step);
+  return normalizeTime(Math.round((start + draggedMinutes(deltaDegrees, hand)) / step) * step);
+}
+// Where the hands sit under the finger before snapping: fractional minutes.
+export function freeMinutes(start, deltaDegrees, hand) {
+  return mod(start + draggedMinutes(deltaDegrees, hand), 1440);
+}
+// Signed minutes from one dial position to another along the shorter way round.
+export function settleDelta(from, to) {
+  return mod(to - from + 720, 1440) - 720;
 }
 export function matchesTime(actual, target, periodRequired) {
   return mod(actual, periodRequired ? 1440 : 720) === mod(target, periodRequired ? 1440 : 720);

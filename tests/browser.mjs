@@ -23,10 +23,16 @@ try {
     // Real pointer drag at overlapping hands must select the short hand in lesson one.
     const b=await page.locator('#clock').boundingBox();
     const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*65/300;
+    const handAngle=()=>page.evaluate(()=>Number(document.querySelector('#hour-hand').getAttribute('transform').match(/rotate\(([^ ]+)/)[1]));
     await page.mouse.move(cx,cy-r);await page.mouse.down();
-    for(let i=1;i<=18;i++){const a=i*Math.PI/36;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));}
+    for(let i=1;i<=18;i++){const a=i*Math.PI/36;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));
+      // While the finger is down the hand follows it instead of jumping between hour marks.
+      if(i===5){const shown=await handAngle();assert.ok(Math.abs(shown-25)<3,`hand follows finger mid-drag, got ${shown}`);assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'1','snapped value is announced mid-drag');}
+    }
     await page.mouse.up();
     assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'3','dragging overlapping short hand reaches 3');
+    // On release the hand glides to the snapped mark rather than staying under the finger.
+    await page.waitForFunction(()=>document.querySelector('#hour-hand').getAttribute('transform')==='rotate(90 150 150)',null,{timeout:2000});
     await page.getByRole('button',{name:/この時刻に届ける/}).click();
     await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     async function setTime(hours,minutes=0,period){
