@@ -79,9 +79,14 @@ try {
       // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
       const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'});
       const boxes=await page.evaluate(()=>{
-        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area'];
+        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area','.clock-housing'];
         return selectors.map(selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {selector,x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};});
       });
+      // The brass housing and the dial inside it must stay circular, not oval.
+      for(const selector of ['.clock-housing','#clock']) {
+        const b=boxes.find(box=>box.selector===selector);
+        assert.ok(Math.abs(b.width-b.height)<=1,`${name} ${size.width}x${size.height}: ${selector} must be square, got ${b.width}x${b.height}`);
+      }
       assert.equal(await overflow(),false,`horizontal fit ${size.width}x${size.height}`);
       for(const b of boxes) assert.ok(b.x>=0&&b.y>=0&&b.right<=size.width+1&&b.bottom<=size.height+1,`${name} ${size.width}x${size.height}: ${JSON.stringify(b)} outside viewport`);
       if(size.width>size.height) {

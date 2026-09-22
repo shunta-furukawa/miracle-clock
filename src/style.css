@@ -76,3 +76,9 @@
 @media(orientation:landscape) and (max-height:600px) and (max-width:700px){
  .clock-tools{width:calc((100% - 8px)*.459)}
 }
+/* Keep the dial out of intrinsic grid sizing: percentage SVG height plus
+   housing padding must not enlarge the aspect-ratio square in Safari. */
+@media(orientation:landscape) and (max-height:600px){
+ .clock-housing{min-width:0;min-height:0}
+ .clock-housing #clock{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
+}
