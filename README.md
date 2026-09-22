@@ -44,7 +44,7 @@ npm run dev
 `http://localhost:4173` で開きます。`dist/` が静的配信用の出力です。
 公開URL: https://miracle-clock.vercel.app/
 
-初回は Vercel Drop to Deploy で、画像・CSS・JavaScriptを埋め込んだ静的HTMLを公開しました。現在はGitHubの自動デプロイ接続はありません。`node scripts/pack.mjs` で同じ配信用ファイルを再生成できます。
+初回は Vercel Drop to Deploy で、画像・CSS・JavaScriptを埋め込んだ静的HTMLを公開しました。`node scripts/pack.mjs` で同じ配信用ファイルを再生成できます。
 
 通常のGit連携用のビルド・出力設定も `vercel.json` に同梱しています。
 
@@ -59,3 +59,21 @@ npm run dev
 
 初回版には、時計操作、6章、配送演出、行列、練習、ヒント、進行保存、短い効果音を実装。
 BGM、PWA、ランキング、複数セーブ、読み上げは今回の範囲に含みません。
+
+
+## CIからの本番デプロイ
+
+`.github/workflows/test.yml` が単体テスト・ビルド・Chromium/WebKitのブラウザテストを実行します。
+`main` へのpushまたはActionsの **Run workflow**（main指定）で、全テスト成功後にテスト済みの `dist/` を既存Vercelプロジェクトへ公開します。PRはテストのみです。同一ブランチの実行を直列化し、進行中のデプロイを中断しません。
+
+最初に [Repository secrets](https://github.com/shunta-furukawa/miracle-clock/settings/secrets/actions) に次の3つを登録してください。
+
+| Secret | 値の取得元 |
+| --- | --- |
+| `VERCEL_TOKEN` | [Vercel Tokens](https://vercel.com/account/tokens) で対象チームに限定したトークンを作成。期限切れ前に更新 |
+| `VERCEL_ORG_ID` | [Team Settings](https://vercel.com/shunta-furukawas-projects/~/settings/general) の Team ID |
+| `VERCEL_PROJECT_ID` | [Project Settings](https://vercel.com/shunta-furukawas-projects/miracle-clock/settings/general) の Project ID |
+
+認証情報が未登録の間は、テストを実行し、デプロイは警告を出してスキップします。登録後は [Actions](https://github.com/shunta-furukawa/miracle-clock/actions/workflows/test.yml) の **Run workflow** で再実行できます。CIの初回本番デプロイは認証情報登録後の確認が必要です。
+
+静的出力は [Vercel Build Output API](https://vercel.com/docs/build-output-api) 形式へ変換し、バージョン固定のCLIで `--prebuilt --prod` を実行します。VercelのGit自動デプロイとの二重実行を避けるため、この構成ではGitHub Actionsを公開経路にします。
