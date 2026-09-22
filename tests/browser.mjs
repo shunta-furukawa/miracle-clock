@@ -6,9 +6,10 @@ await mkdir('artifacts',{recursive:true});
 const server=spawn(process.execPath,['scripts/serve.mjs'],{stdio:'inherit'});
 try {
   for(let i=0;i<50;i++){try{const r=await fetch('http://127.0.0.1:4173');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
-  for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
-    const browser=await engine.launch({headless:true});
+  for(const [name,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.TEST_BROWSER||process.env.TEST_BROWSER===name)) {
+    const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+    await page.clock.install();
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:4173');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
@@ -18,6 +19,7 @@ try {
     await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
     await page.locator('[data-level="0"]').click();
     await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await page.waitForTimeout(600);
     await page.screenshot({path:`artifacts/${name}-game-mobile.png`});
     assert.equal(await overflow(),false,'mobile gameplay must fit');
     // Real pointer drag at overlapping hands must select the short hand in lesson one.
@@ -33,7 +35,13 @@ try {
     assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'3','dragging overlapping short hand reaches 3');
     // On release the hand glides to the snapped mark rather than staying under the finger.
     await page.waitForFunction(()=>document.querySelector('#hour-hand').getAttribute('transform')==='rotate(90 150 150)',null,{timeout:2000});
-    await page.getByRole('button',{name:/この時刻に届ける/}).click();
+    await page.locator('#seal-button').click();
+    await page.waitForFunction(()=>document.body.classList.contains('stamping'));
+    await page.screenshot({path:`artifacts/${name}-stamp.png`});
+    await page.waitForFunction(()=>document.body.classList.contains('flying'));
+    await page.waitForTimeout(500);
+    await page.screenshot({path:`artifacts/${name}-flight.png`});
+    console.log(name,'flight renderer:',await page.locator('#flight-viewport').getAttribute('data-renderer')||'painted fallback');
     await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     async function setTime(hours,minutes=0,period){
       const currentMinute=Number(await page.locator('#minute-hand').getAttribute('aria-valuenow'));
@@ -51,24 +59,24 @@ try {
     const queue=await page.locator('#queue-count').innerText();
     assert.equal(await page.getByRole('dialog').isVisible(),true);
     assert.equal(await page.locator('#queue-count').innerText(),queue);
-    await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="4"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
     await setTime(9,30,1);await page.locator('#dispatch').click();
     await page.getByRole('status').filter({hasText:'午前'}).waitFor();
     assert.equal(await page.locator('#score').innerText(),'0 / 3 便','wrong period must not dispatch');
     await page.locator('[data-period="0"]').click();await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
-    await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="5"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.screenshot({path:`artifacts/${name}-relative-mobile.png`});
     await setTime(10,15,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     await setTime(1,0,1);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
     assert.equal(await page.locator('.tomorrow').innerText(),'翌日のお届け');
     await setTime(0,45,0);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'時計と、なかよくなれたね！'}).waitFor();
-    await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="0"]').click();await page.getByRole('button',{name:/お店をひらく/}).click();
     for(const [index,hour] of [3,5,9,12,2].entries()) {await setTime(hour);await page.locator('#dispatch').click();if(index<4)await page.locator('#score').filter({hasText:`${index+1} / 5`}).waitFor();}
     await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
-    await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
     await page.reload();await page.locator('#start').click();assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
     await page.locator('[data-level="2"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
@@ -77,7 +85,7 @@ try {
     // Reproduce iPhone Safari with browser bars visible, safe areas, rotation,
     // and the largest order (relative time plus AM/PM), not just horizontal overflow.
     await page.getByRole('button',{name:'一時停止'}).click();
-    await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="5"]').click();
     await page.getByRole('button',{name:/トトじいと練習/}).click();
     for(const size of [{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
@@ -105,7 +113,28 @@ try {
     await page.setViewportSize({width:844,height:300});
     await setTime(10,15,0);await page.locator('#dispatch').click();
     await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
+    await page.getByRole('button',{name:'一時停止'}).click();
+    await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
+    await page.setViewportSize({width:844,height:390});
+    await page.locator('[data-level="0"]').click();await page.getByRole('button',{name:/お店をひらく/}).click();
+    await page.clock.fastForward(36000);await page.clock.fastForward(26000);
+    assert.equal(await page.locator('.customer').count(),2);
+    assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
+    assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0']);
+    assert.equal(await page.locator('.customer .resident-new').count(),1,'second customer is a generated forest resident');
+    assert.match(await page.locator('.resident-new').evaluate(el=>getComputedStyle(el).backgroundImage),/residents-waiting/,'waiting resident uses its sleepy expression');
+    await page.clock.runFor(700);
+    await page.screenshot({path:`artifacts/${name}-waiting-queue.png`});
+    await page.locator('#elements').click();
+    assert.equal(await page.locator('.element-legend>div').count(),12);
+    await page.clock.fastForward(120000);assert.equal(await page.locator('.customer').count(),2,'element guide pauses arrivals');
+    await page.locator('#elements-close').click();
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await setTime(3);await page.locator('#seal-button').click();
+    await page.clock.runFor(1000);
+    await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
     assert.deepEqual(errors,[],'no runtime errors');
+    await page.waitForFunction(()=>[...document.images].every(img=>img.complete&&img.naturalWidth>0));
     const images=await page.locator('img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0));assert.equal(images,true,'all image elements loaded');
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);
   }

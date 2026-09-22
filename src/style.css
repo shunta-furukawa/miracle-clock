@@ -82,3 +82,104 @@
  .clock-housing{min-width:0;min-height:0}
  .clock-housing #clock{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
 }
+
+/* The same paper, enamel and Mincho headings as Miracle Mine. */
+:root{--storybook-font:'Hiragino Mincho ProN','Yu Mincho','YuMincho','Noto Serif JP',serif;--ink:#3b3424;--teal:#1b575a}
+.stage-heading strong,.level-details h2,.map-heading h1,.modal h2,.queue-counter b,.luka-note b,.delivery-log h2{font-family:var(--storybook-font);font-weight:700}
+.game{background-image:linear-gradient(#173c3530,#143e4238),var(--depot-image);background-position:center;background-size:cover;background-attachment:fixed}
+.game-top{background:linear-gradient(110deg,#fff8e9f5,#ecdbb8ed);border-bottom:2px solid #b69255}
+.map-heading h1{font-size:clamp(22px,3.4vw,32px)}
+.level-card:nth-child(n) .level-art{background-image:url('assets/depots/0.webp');background-size:cover;background-position:center}
+.level-card:nth-child(2) .level-art{background-image:url('assets/depots/1.webp')}.level-card:nth-child(3) .level-art{background-image:url('assets/depots/2.webp')}.level-card:nth-child(4) .level-art{background-image:url('assets/depots/3.webp')}.level-card:nth-child(5) .level-art{background-image:url('assets/depots/4.webp')}.level-card:nth-child(6) .level-art{background-image:url('assets/depots/5.webp')}
+.order-ticket{background:linear-gradient(115deg,#fffbea,#f2e1b9);border:2px solid #b28d50;border-radius:6px 13px 8px 11px;box-shadow:0 3px 0 #64452d55,0 6px 16px #18392c33}
+.ticket-route{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px;font-size:10px;margin-top:5px;border-top:1px dashed #b99e6d;padding-top:5px}.ticket-route b{color:#8b452b}
+.ticket-meta{color:#5d523b;font-weight:700}.request strong{font-family:var(--storybook-font);color:#264e4f}
+.queue-area{background:linear-gradient(#fff5dbd9,#e1c99ce6);border:2px solid #a8834b;border-radius:12px;box-shadow:0 5px 0 #563e2f70,0 9px 28px #142e3740;position:relative}
+.queue-track{height:120px;align-items:flex-end;gap:8px;padding-top:5px;position:relative}
+.customer{width:110px;transition:transform .3s;animation:queue-enter .5s ease-out;isolation:isolate}
+.customer .portrait{width:74px;height:78px;object-fit:contain;object-position:bottom;background-color:transparent;transform-origin:50% 95%;animation:resident-idle 5.7s ease-in-out infinite;animation-delay:var(--idle-delay)}
+.customer img.portrait{background:none;aspect-ratio:auto}
+.customer-bubble{background:#fff7e5ed!important;color:#536044!important;border:1px solid #b99b64;box-shadow:0 2px 5px #3c42261a;white-space:normal;font-size:10px;line-height:1.3;min-width:62px}
+.customer.active .customer-bubble{background:#236266!important;color:#fff4d9!important}
+.customer-name{font-size:10px;line-height:1.2;background:#fff2cacc;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.customer[data-mood=waiting] .portrait{animation:resident-shift 3.6s ease-in-out infinite;animation-delay:var(--idle-delay)}
+.customer[data-mood=tired] .portrait{animation:resident-sigh 4s ease-in-out infinite;animation-delay:var(--idle-delay);filter:saturate(.85)}
+.customer[data-mood=tired] .customer-bubble{color:#9b5733!important;background:#ffe5b6!important}
+.customer[data-mood=happy] .portrait{animation:resident-thanks .6s ease-in-out infinite}
+.waiting-dot{position:absolute;width:5px;height:5px;right:12%;top:43%;background:#dab975;border-radius:50%;opacity:0}
+.customer[data-mood=tired] .waiting-dot{animation:waiting-dot 2s infinite}
+.queue-counter{display:flex;justify-content:center;align-items:center;gap:10px;background:linear-gradient(#996b43,#5c402e);border-top:3px solid #ca9f60;color:#fff1ce;padding:5px;margin:5px -10px -2px;border-radius:3px;font-size:11px;letter-spacing:.1em;box-shadow:0 2px 0 #c59754}
+.queue-counter span{font-size:8px;letter-spacing:.18em}
+.clock-housing{background:transparent url('assets/magic-clock.webp') center/100% 100% no-repeat;border:0;border-radius:50%;padding:0;box-shadow:0 8px 18px #23362845;isolation:isolate;aspect-ratio:1;flex-shrink:0}
+.clock-housing #clock{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.clock-crown{display:none}.clock-face{fill:none}.dial-ring{stroke:#b28b4d;opacity:.6}
+.tick{stroke:#6f7663;stroke-width:.9}.tick.major{stroke:#4c645c;stroke-width:1.7}
+.hour-number{font-size:19px;fill:currentColor;font-family:Georgia,serif;font-weight:700;paint-order:stroke;stroke:#0002;stroke-width:.4}
+.gem-facet{stroke:#eed09a;stroke-width:.9}.gem-shine{fill:#fff;opacity:.2;pointer-events:none}
+.element-gem.resonating{filter:drop-shadow(0 0 3px #fff0a8)}.element-gem.resonating .gem-facet{stroke:#fffbe0;stroke-width:1.7}
+.minute-number{font-size:10px;fill:#905d36;paint-order:stroke;stroke:#fff8e8;stroke-width:2px}
+.hour-hand{stroke:#fff0b7;stroke-width:1.5;filter:drop-shadow(1px 2px 1px #39291255)}.minute-hand{stroke:#fff6ce;stroke-width:1.2;filter:drop-shadow(1px 2px 1px #39291244)}
+.dial-brand{fill:#967244;font-size:7px}.dial-caption{fill:#967244}
+.clock-status{background:#fff2dcd9;border:1px solid #cbb27c;border-radius:10px;width:max-content;max-width:110%;left:50%;right:auto;transform:translateX(-50%);padding:3px 8px;bottom:-25px;font-size:10px}
+.seal-button{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:17%;aspect-ratio:1;min-width:40px;min-height:40px;padding:0;border:2px solid #e9c67f;border-radius:50%;box-shadow:0 3px 0 #77502a,0 4px 8px #482a2860,inset 0 0 0 3px #4d817b;background:radial-gradient(circle at 35% 25%,#407e79,#163e42);color:#fff2ca;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-family:var(--storybook-font)}
+.seal-button span{font-size:clamp(9px,1.1vw,13px);font-weight:700}.seal-button small{font:8px sans-serif;opacity:.8}
+.seal-button:active{transform:translate(-50%,-46%);box-shadow:0 1px 0 #77502a}
+.seal-ripple{position:absolute;inset:30%;border:2px solid #ffe0a0;border-radius:50%;opacity:0;pointer-events:none;z-index:4}
+.stamping .seal-button{animation:seal-press .65s ease both}.stamping .seal-ripple{animation:seal-ripple .7s ease-out both}.stamping .element-gem{filter:drop-shadow(0 0 4px #ffedb4)}
+.parcel-seal{position:absolute;inset:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:3px double #a35435;border-radius:8px;background:#f9e9c9f5;transform:rotate(-7deg) scale(1.3);opacity:0;pointer-events:none;color:#9d492f;z-index:4;font-family:var(--storybook-font);text-align:center}
+.parcel-seal span{font-size:11px}.parcel-seal strong{font-size:24px}
+.stamping .parcel-seal{animation:parcel-imprint .7s .1s ease-out both}.loading-parcel .parcel-seal{animation:parcel-load .4s ease-in both}
+.dispatch{background:linear-gradient(125deg,#296c6b,#16484c);border:2px solid #dab369;box-shadow:0 4px 0 #60452e,inset 0 0 0 2px #8eb39b30;font-family:var(--storybook-font)}
+.dispatch .stamp-icon{margin-left:0;font-size:22px}.stamping .station-controls button{pointer-events:none}
+.element-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.element-legend>div{background:var(--gem);border:2px solid #c49c59;border-radius:7px;padding:6px 2px;box-shadow:inset 0 0 12px #ffffff33;display:grid;grid-template-columns:22px 1fr;align-items:center}.element-legend svg{width:24px;height:24px}.element-legend b{font:700 20px Georgia,serif}.element-legend span{grid-column:1/-1;font-size:10px;font-weight:700;line-height:1.6}
+.flight-layer{display:block;visibility:hidden;opacity:0;transition:opacity .2s;z-index:32;position:fixed;inset:0;pointer-events:none;background:#153c4030;backdrop-filter:blur(2px)}
+.flying .flight-layer{display:block;visibility:visible;opacity:1}.flight-window{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,92vw);height:min(350px,72dvh);overflow:hidden;border:3px solid #caa86c;border-radius:18px;background:linear-gradient(#bcdbe1,#f5efca);box-shadow:0 18px 90px #15373970}
+.hero-flight .flight-window{width:min(850px,94vw);height:min(460px,78dvh)}
+.flight-sky{position:absolute;inset:0;background:linear-gradient(#e5f1e380,#dbe5d980),url('assets/cockpit-sky.webp') center/cover;opacity:.75}
+#flight-viewport{position:absolute;inset:0}#flight-viewport canvas{display:block;width:100%;height:100%}
+.flight-caption{position:absolute;left:18px;top:14px;display:flex;flex-direction:column;gap:3px;color:#254949;text-shadow:0 1px 6px #fff9e9}.flight-caption small{font-size:10px;letter-spacing:.2em}.flight-caption strong{font-family:var(--storybook-font);font-size:23px}.flight-caption span{font-size:12px}.flight-postmark{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:var(--storybook-font);font-size:13px;color:#3c594f}
+.flight-fallback{position:absolute;left:15%;top:33%;width:60%;filter:drop-shadow(0 12px 8px #27453b44)}.flying .flight-fallback{animation:painted-takeoff 2s ease-in-out both}.has-3d .flight-fallback{display:none}
+@keyframes resident-idle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
+@keyframes resident-shift{0%,100%{transform:rotate(-3deg)}45%{transform:translateX(2px) rotate(3deg)}}
+@keyframes resident-sigh{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(3px) rotate(-5deg) scaleY(.96)}}
+@keyframes resident-thanks{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+@keyframes waiting-dot{0%,100%{opacity:0;transform:translateY(0)}50%{opacity:.8;transform:translateY(-8px)}}
+@keyframes queue-enter{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes seal-press{0%,100%{transform:translate(-50%,-50%)}35%{transform:translate(-50%,-43%) scale(.9);filter:brightness(1.8)}}
+@keyframes seal-ripple{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(2.7)}}
+@keyframes parcel-imprint{0%{opacity:0;transform:rotate(-7deg) scale(1.4)}45%,100%{opacity:1;transform:rotate(-7deg) scale(.95)}}
+@keyframes parcel-load{from{opacity:1;transform:scale(.95)}to{opacity:0;transform:translate(40px,-60px) scale(.25)}}
+@keyframes painted-takeoff{0%{transform:translate(-10%,15%) rotate(-4deg) scale(.9)}35%{transform:translate(0,-10%) rotate(-10deg)}100%{transform:translate(90%,-100%) rotate(-20deg) scale(.12);opacity:0}}
+@media(max-width:600px) and (orientation:portrait){
+ .game{background-attachment:scroll}.queue-area{margin:7px 12px 0;padding:6px 9px 4px}.queue-track{height:83px;gap:3px}.customer{width:calc((100% - 12px)/5);min-width:0}.customer .portrait{width:52px;height:54px}.customer-bubble{font-size:8px;min-width:0;width:100%;padding:2px}.customer-name{font-size:8px!important;padding:1px 3px}.queue-counter{margin:2px -5px 0;padding:3px;font-size:10px}.queue-counter span{font-size:7px}
+ .clock-housing{width:clamp(174px,calc(100dvh - 453px),310px);height:clamp(174px,calc(100dvh - 453px),310px);margin-top:10px;margin-bottom:6px}
+ .clock-status{bottom:-20px;font-size:8px;padding:2px 6px}.hand-controls{margin-top:18px}.hand-select,.adjust{min-height:40px;height:40px}.clock-tools{gap:12px}.clock-tools button{min-height:34px;font-size:10px}.dispatch{min-height:44px;margin-top:6px}.ticket-route{font-size:9px;margin-top:3px;padding-top:3px}.order-ticket{padding:7px 9px}.request strong{font-size:25px}.request{margin-top:3px}.period-toggle{margin-top:17px}.period-toggle:not([hidden])+.hand-controls{margin-top:5px}.period-toggle button{min-height:27px;padding:4px 14px}.mini-clock{width:25px;height:25px}.reference-time{margin-top:3px}.play-layout{margin-top:6px;padding:0 14px}.seal-button{min-width:36px;min-height:36px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .game{background-attachment:scroll;grid-template-columns:112px minmax(0,1fr)}
+ .queue-area{padding:6px 4px}.queue-track{height:auto;flex:1;min-height:0;flex-direction:column;align-items:stretch;gap:2px;padding-top:3px}.customer{width:100%;max-height:80px;grid-template-columns:47px minmax(0,1fr);flex:1}.customer .portrait{grid-column:1;grid-row:1/3;width:47px;height:53px;max-height:100%;align-self:end}.customer-bubble{min-width:0;font-size:8px;padding:2px}.customer-name{grid-column:2;font-size:8px!important;white-space:normal;padding:1px}.queue-counter{padding:4px 0;margin:4px -3px 0;flex-direction:column;gap:1px;font-size:9px}.queue-counter span{font-size:6px}.waiting-dot{display:none}
+ .clock-station{grid-template-columns:minmax(155px,1fr) minmax(230px,1fr);column-gap:12px;row-gap:5px}
+ .clock-housing{width:min(100%,calc(100dvh - 118px),360px);height:auto;margin-bottom:34px;padding:0}
+ .clock-housing #clock{inset:0;width:100%;height:100%}.clock-status{display:none}.clock-tools{width:calc((100% - 12px)/2);gap:6px;bottom:0}.clock-tools button{font-size:10px;min-height:32px}.seal-button{min-width:36px;min-height:36px}
+ .order-ticket{padding:6px 8px}.ticket-route{font-size:8px;margin-top:3px;padding-top:3px}.request strong{font-size:23px}.ticket-meta{font-size:9px}.hand-controls{margin:0}.dispatch{margin:0;min-height:42px}.station-controls{gap:5px}.period-toggle{margin:0}.period-toggle button{min-height:28px}.feedback{top:46px;max-width:78vw;font-size:10px}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px){
+ .game{grid-template-columns:78px minmax(0,1fr);gap:5px}.clock-station{grid-template-columns:minmax(120px,.8fr) minmax(207px,1fr);column-gap:7px}.customer{grid-template-columns:33px minmax(0,1fr)}.customer .portrait{width:33px;height:40px}.customer-bubble{font-size:7px}.customer-name{font-size:7px!important}.queue-heading{font-size:8px}.queue-counter span{display:none}.clock-tools{width:calc((100% - 7px)*.444)}.clock-tools button{font-size:9px;padding:3px 0}.hand-select{font-size:9px;padding:3px}.adjust{width:31px}.request strong{font-size:21px}.ticket-route{display:block;font-size:8px}.ticket-route span{display:none}.seal-button{min-width:32px;min-height:32px}.seal-button small{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){.customer .portrait,.customer,.waiting-dot,.seal-button,.seal-ripple,.parcel-seal{animation:none!important}.stamping .parcel-seal{opacity:1;transform:none}.loading-parcel .parcel-seal{opacity:0}.flying .flight-fallback{animation:none!important;transform:none;opacity:1}.flight-layer{transition:none;backdrop-filter:none}}
+@media(max-width:600px) and (orientation:portrait){
+ .dispatch{padding:7px 12px}.relative-order .clock-housing{width:clamp(150px,calc(100dvh - 527px),290px);height:clamp(150px,calc(100dvh - 527px),290px)}
+}
+/* Budget vertical space using Japanese line metrics, including Safari browser bars. */
+@media(orientation:landscape) and (max-height:340px){
+ .order-ticket{padding:5px 7px}.ticket-meta,.ticket-route{line-height:1.2}.request strong{line-height:1.15}.reference-time{line-height:1.2}.reference-time b{line-height:1.2}.mini-clock{width:23px;height:23px}.station-controls{gap:4px}.period-toggle button{min-height:24px;padding:2px 15px}.dispatch{padding:5px 12px;min-height:42px;line-height:1.2}.dispatch .stamp-icon{font-size:18px}
+}
+@media(max-width:600px) and (orientation:portrait) and (max-height:730px){
+ .queue-track{height:70px}.customer .portrait{height:44px;width:44px}.relative-order .clock-status{display:none}.relative-order .period-toggle{margin-top:4px}.request strong{line-height:1.25}.ticket-meta,.ticket-route{line-height:1.3}
+}
+.clock-tools{background:#fff4dded;border:1px solid #c5a76b;border-radius:16px;color:#3e4939}
+.flight-sky{background-image:linear-gradient(#e5f1e380,#dbe5d980),var(--depot-image)}
+@media(max-width:600px) and (orientation:portrait) and (max-height:730px){.relative-order .queue-counter{display:none}.relative-order .clock-housing{width:clamp(170px,calc(100dvh - 507px),290px);height:clamp(170px,calc(100dvh - 507px),290px)}}
+body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrait,body:has(.modal-backdrop) .waiting-dot{animation-play-state:paused}
+.customer .resident-new{background-image:var(--resident-image);background-size:contain;background-position:center bottom;background-repeat:no-repeat}
+.customer[data-mood=waiting] .resident-new,.customer[data-mood=tired] .resident-new{background-image:url('assets/residents-waiting.webp');background-size:300% 500%;background-position:var(--tired-position)}

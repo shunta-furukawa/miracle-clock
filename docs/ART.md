@@ -39,3 +39,21 @@ Use case: illustration-story. Create a production game background for Miracle Cl
 ### 配送機のプロンプト
 
 Use case: illustration-story. Production game sprite with REAL TRANSPARENT background, no white backdrop or ground. Reference image is aircraft design reference only: preserve Miracle Mine's finished teal enamel, brass and honey-brown wood steam propeller airplane in bottom right, blue circular magical crystal, brass boiler and tiny chimney. Create one complete small autonomous parcel delivery plane (no pilot, no person), with two brown paper parcels tied with twine securely on cargo rack behind cockpit. Plane pointing RIGHT, three-quarter side view, entire wings propeller and tail visible with 12% clear transparent padding on every edge. Soft warm painterly children's adventure anime illustration, detailed but readable at small size, matte metal. A small wisp of white steam is okay. Isolated object only, no writing, no typography, no numbers, no logo, no UI, no extra objects, no sheet, no variants.
+
+## 配送所と魔法時計（2026-09-22 / 0.2）
+
+Built-in ImageGenで作成。前作 `game-cast.webp` と `stones.webp` を参照。外部キャラクターなし。PNGの透過を維持してWebPに変換し、住民・背景のアトラスをゲーム用セルに分割。生成画像に学習用数字を焼き込まず、時計の数字と目盛りはコード側で正確に描く。
+
+- `src/assets/residents/{0..4}-{0..2}.webp`: 森の木の住民、港の貝の住民、結晶のモグラ、火のトカゲ、雲のキツネ、各3種類。320×360。元画像 `exec-149af08b-b7bd-4dab-a2b7-7207503f58e8.png`。地域の代表キャラクターは前作の素材を継続利用。
+- `src/assets/magic-clock.webp`: 正面向きの円形、真鍮・木・青緑エナメルの魔法時計。960×960。元画像 `exec-9da09554-81d4-4c6c-9ae4-3ba41694468e.png`。
+- `src/assets/depots/{0..5}.webp`: 森・港・結晶洞窟・工房・雲・中央の配送所。元画像 `exec-fc51d580-f6b7-400e-a1d9-26922b27fef1.png`。
+
+### Prompt set
+
+1. Production transparent sprite atlas, 3 columns × 5 rows; warm storybook watercolor/anime matching the original cast; fifteen distinct full-body parcel-holding residents with generous padding. Forest: sapling child, stout oak adult, flowering elder. Harbour: pink scallop child, turquoise spiral shell, pearl oyster elder. Crystal: amber mole, violet crystal mole, rose quartz elder. Fire: tiny ember salamander, stout volcanic lizard with apron, lava elder with goggles. Cloud: cream cloud fox child, blue wind fox with satchel, long-eared white fox elder. No labels or scenery; real transparency.
+2. Perfectly circular magical time-stamping clock viewed straight on; carved walnut, concentric antique brass rings, teal enamel, restrained gears; ivory parchment center and subtle compass engraving, twelve empty bezel sockets around rim. No numerals, ticks, hands or text. Outside silhouette transparent; soft painterly storybook finish, reference original Mine stone materials and palette.
+3. Six depot backgrounds in 3×2 atlas; watercolor steampunk, wooden parcel counter in foreground, launch pier with brass rails, open central UI space. Top row forest village, seashell harbour, crystal cavern; bottom row volcanic workshop, cloud observatory, central postal exchange. No people, aircraft, text, clock faces or logos.
+
+Three.js runtime is pinned and vendored (0.184.0, MIT, `src/vendor/THREE-LICENSE.txt`) so production does not depend on a public CDN. The plane and dock are code-native 3D meshes; the generated aircraft illustration remains the fallback for unsupported devices.
+
+- `src/assets/residents-waiting.webp`: 全15住民の待ちくたびれた表情差分。生成元 `exec-bdac8d7a-0e46-45c2-bf5d-15bcd407ac4c.png`。3×5、768×1440に整列。通常の住民アトラスを編集参照し、同じ人物・服・荷物・順序を保ち、半目、あくび、肩を下げた小さなため息だけを追加。怒りや苦痛を避けた子ども向けの穏やかな表現。25秒から表情と持ち替え、55秒からため息、受付完了時は通常の笑顔とお礼に切り替える。

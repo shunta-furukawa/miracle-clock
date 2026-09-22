@@ -15,3 +15,29 @@ test('a full queue ends at capacity, with no sixth customer added',()=>{const s=
 test('delivery completes once, with no extra order beyond the level goal',()=>{for(const l of levels){const s=createSession(l);for(let i=0;i<l.count;i++)completeOrder(s);assert.equal(s.status,'cleared');assert.equal(s.generated,l.count);assert.equal(s.queue.length,0);}});
 test('5 minute lesson transitions to exact one minute values',()=>{assert.equal(makeOrder(levels[3],3).step,5);assert.equal(makeOrder(levels[3],4).step,1);assert.equal(makeOrder(levels[3],4).target,382);});
 test('24 hour labels and minute normalization cover midnight',()=>{assert.equal(timeText(0,'24'),'0時');assert.equal(timeText(1260,'24'),'21時');assert.equal(normalizeTime(-1),1439);});
+
+test('each local depot serves its own guide and three resident variants',()=>{
+ for(const level of levels.slice(0,5)) {
+  const orders=Array.from({length:8},(_,i)=>makeOrder(level,i));
+  assert.equal(orders[0].variant,-1);
+  assert.deepEqual(new Set(orders.slice(1).map(o=>o.variant)),new Set([0,1,2]));
+  assert.equal(new Set(orders.map(o=>o.name)).size,4);
+  for(const o of orders){assert.equal(o.region,level.id);assert.notEqual(o.destination,level.place);assert.ok(o.origin.endsWith('配送所'));}
+ }
+ const central=Array.from({length:8},(_,i)=>makeOrder(levels[5],i));
+ assert.equal(new Set(central.map(o=>o.region)).size,5);
+ assert.equal(new Set(central.map(o=>o.origin)).size,1);
+});
+test('waiting moods track the actual queue and practice stays calm',async()=>{
+ const {customerMood}=await import('../src/levels.js');
+ const s=createSession(levels[0]);tickSession(s,35);
+ assert.equal(s.queue.length,2);assert.equal(customerMood(s.queue[0]),'waiting');
+ assert.equal(customerMood(s.queue[1]),'calm');tickSession(s,25);
+ assert.equal(customerMood(s.queue[0]),'tired');assert.equal(customerMood(s.queue[0],true),'calm');
+ completeOrder(s);assert.equal(s.queue[0].orderId,1);assert.equal(s.queue[0].waited,25);
+});
+test('clock preserves Mine elemental identities, with 12 using the zero theme',async()=>{
+ const {elements,elementalNumbers}=await import('../src/elements.js');
+ assert.deepEqual(elements.slice(0,10).map(e=>e.name),['原石','水鉱石','日光石','火鉱石','森鉱石','樹脂石','氷鉱石','月影石','星鉱石','蒸気結晶']);
+ assert.equal(elements.length,12);assert.match(elementalNumbers(),/12：原石/);assert.equal((elementalNumbers().match(/class="element-gem"/g)||[]).length,12);
+});
