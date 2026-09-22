@@ -50,6 +50,7 @@ export function makeOrder(level,index){
  if(question.format==='half'&&index%2===0)label=label.replace('30分','半');
  return {...person,waited:0,origin:depotNames[level.id],orderId:index,characterId:person.id,target,base,duration,period,step,label,questionChapter:question.id,nextDay:!!duration&&base+duration>=1440};
 }
+export const prepareDial=(order,current=720)=>order.duration?order.base:normalizeTime(Math.round(current/order.step)*order.step);
 export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):s.level.interval;
 export function createSession(level){return {level,queue:[makeOrder(level,0)],generated:1,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:5};}
 export function tickSession(s,seconds){

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {clockAngles,angleDelta,dragMinutes,freeMinutes,settleDelta,matchesTime,normalizeTime,timeText} from '../src/time.js';
-import {levels,makeOrder,createSession,tickSession,completeOrder,stages,endlessLevel,stageUnlocked,endlessUnlocked,rateRun,betterRecord,starGoal,arrivalInterval} from '../src/levels.js';
+import {levels,makeOrder,createSession,tickSession,completeOrder,stages,endlessLevel,stageUnlocked,endlessUnlocked,rateRun,betterRecord,starGoal,arrivalInterval,prepareDial} from '../src/levels.js';
 
 test('half past has the short hand halfway between hour markers',()=>{assert.deepEqual(clockAngles(150),{hour:75,minute:180});});
 test('minute hand full turn advances the hour; reversing crosses midnight',()=>{assert.equal(dragMinutes(150,360,'minute',5),210);assert.equal(dragMinutes(0,-30,'minute',5),1435);assert.equal(dragMinutes(720,30,'hour',60),780);});
@@ -47,3 +47,5 @@ test('six chapters have six progressive stages, all targets stay reachable',()=>
 test('one-star clears unlock the next stage, all chapters unlock central endless',()=>{const r={stages:[]};assert.ok(stageUnlocked(r,0));assert.equal(stageUnlocked(r,1),false);r.stages=[0];assert.ok(stageUnlocked(r,1));assert.equal(endlessUnlocked(r),false);r.stages=stages.map(s=>s.stageId);assert.ok(endlessUnlocked(r));});
 test('stars use both time and mistakes; best records never regress',()=>{const l=stages[0],g=starGoal(l);const a=rateRun(l,{activeTime:g.time,mistakes:0}),b=rateRun(l,{activeTime:g.time,mistakes:1}),c=rateRun(l,{activeTime:g.twoTime+1,mistakes:0});assert.equal(a.stars,3);assert.equal(b.stars,2);assert.equal(c.stars,1);assert.equal(rateRun(l,{activeTime:1,mistakes:3}).stars,1);assert.equal(betterRecord(a,b),a);assert.equal(betterRecord(b,a),a);assert.equal(betterRecord(a,{...a,time:a.time+1}),a);});
 test('central endless covers all 24 customers and all six question families without a finish',()=>{const s=createSession(endlessLevel),people=new Set(),types=new Set();for(let i=0;i<144;i++){const o=s.queue[0];people.add(o.name);types.add(o.questionChapter);assert.equal(o.origin,'空の中央配送所');assert.equal(o.target%o.step,0);completeOrder(s);}assert.equal(people.size,24);assert.equal(types.size,6);assert.equal(s.status,'playing');assert.equal(s.delivered,144);assert.ok(arrivalInterval(s)<36);tickSession(s,arrivalInterval(s)*4);assert.equal(s.status,'over');assert.equal(s.queue.length,5);});
+
+test('mixed endless orders keep button adjustments reachable when minute steps change',()=>{let dial=382;for(let i=0;i<144;i++){const order=makeOrder(endlessLevel,i);dial=prepareDial(order,dial);assert.equal(dial%order.step,0);assert.equal(Math.abs((order.target-dial)%order.step),0);if(order.duration)assert.equal(dial,order.base);dial=order.target;}});
