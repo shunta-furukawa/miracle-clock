@@ -62,6 +62,13 @@ try {
     await page.getByRole('button',{name:'一時停止'}).click();
     const queue=await page.locator('#queue-count').innerText();
     assert.equal(await page.getByRole('dialog').isVisible(),true);
+    for(const [width,height] of [[393,852],[852,393],[568,320]]){
+      await page.setViewportSize({width,height});
+      const fit=await page.locator('.modal').evaluate(el=>{const b=el.getBoundingClientRect();return b.x>=0&&b.y>=0&&b.right<=innerWidth&&b.bottom<=innerHeight&&el.scrollWidth<=el.clientWidth&&[...el.querySelectorAll('.dialog-actions button')].every(button=>{const r=button.getBoundingClientRect();return r.x>=b.x&&r.right<=b.right&&r.bottom<=b.bottom;});});
+      assert.equal(fit,true,`${name}: Mine-style pause actions fit ${width}x${height}`);
+      await page.screenshot({path:`artifacts/${name}-pause-${width}x${height}.png`});
+    }
+    await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#queue-count').innerText(),queue);
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="4"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();

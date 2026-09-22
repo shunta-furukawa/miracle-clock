@@ -1,0 +1,37 @@
+/* Shared visual rules ported from Miracle Mine: parchment, brass, type and actions. */
+:root{--ui-font:'Noto Sans JP',system-ui,-apple-system,sans-serif;--ink:#392918;--teal:#17525a;--gold:#bd9049;--paper:#fff2d0;font-family:var(--ui-font);color:var(--ink)}
+.primary,.secondary{font-family:var(--ui-font);font-weight:700;border:1px solid #a57939;border-radius:8px;box-shadow:0 3px 0 #715126,0 5px 15px #20120433;background:linear-gradient(#fff4d9,#eed5a6);color:#392918}
+.primary{background:linear-gradient(#27717a,#123e47);color:#fff4d8;border:2px solid #d1a358}
+.primary:hover{background:linear-gradient(#27717a,#123e47);filter:brightness(1.08)}
+.primary:active,.secondary:active{transform:translateY(2px);box-shadow:0 1px 0 #715126}
+button:focus-visible{outline:4px solid #fff;outline-offset:3px;box-shadow:0 0 0 7px #123d47}
+.modal,.level-card,.order-ticket,.queue-area,.luka-note,.delivery-log{background:linear-gradient(120deg,#fff3d9,#efdbb2);border:2px solid #b58a46;border-radius:12px;box-shadow:inset 0 0 0 3px #fff1ce,0 5px 0 #4e351daf,0 12px 30px #07181b40;color:#392918}
+.modal-backdrop{background:#071e29b3;backdrop-filter:blur(7px)}
+.modal{max-width:620px;text-align:left;padding:30px;max-height:calc(100dvh - 44px)}
+.modal>.eyebrow{color:#926b34;margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.16em}
+.modal h2{font-family:var(--ui-font);font-size:27px;line-height:1.5;font-weight:700;margin:0 0 20px}
+.modal p:not(.eyebrow){font-size:16px;line-height:1.7;margin:0 0 12px}
+.dialog-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:25px;padding-bottom:4px}
+.modal .dialog-actions>button{flex:1 1 145px;width:auto;margin:0;min-height:46px;padding:12px 16px;font-size:14px;line-height:1.4;gap:4px;text-align:center;justify-content:center}
+.modal .dialog-actions>.text-button{background:linear-gradient(#fff4d9,#eed5a6);border:1px solid #a57939;border-radius:8px;text-decoration:none;box-shadow:0 3px 0 #715126;font-weight:700}
+.modal .dialog-actions>.quit-button{background:#304f51;color:#fff4d8}
+.modal.pause-modal .dialog-actions>button{flex:1 1 0;min-width:0;white-space:nowrap;padding:11px 8px}
+.modal-close{color:#392918}
+.modal small{font-size:11px;font-weight:400}
+.stage-heading strong,.level-details h2,.map-heading h1,.queue-counter b,.luka-note b,.delivery-log h2{font-family:var(--ui-font);font-weight:700}
+.level-card{text-align:left;border-radius:12px}.level-details .eyebrow{color:#926b34}.level-details p{color:#635038}.level-go{color:#17525a}
+.game-top,.topbar{background:linear-gradient(120deg,#fff3d9,#efdbb2);border-bottom:2px solid #b58a46;color:#392918}
+.hand-select,.adjust{border:1px solid #a57939;border-radius:8px;background:linear-gradient(#fff4d9,#eed5a6);box-shadow:0 3px 0 #715126;color:#392918;font-family:var(--ui-font);font-weight:700}
+.hand-select[aria-pressed=true]{background:linear-gradient(#27717a,#123e47);color:#fff4d8;border:2px solid #d1a358}
+.clock-tools{border-radius:8px;background:linear-gradient(120deg,#fff3d9,#efdbb2);border-color:#b58a46}
+.clock-tools .text-button{font-family:var(--ui-font);font-weight:700;text-decoration:none;color:#392918}
+.feedback{border-radius:8px;background:linear-gradient(#27717a,#123e47);border-color:#d1a358;color:#fff4d8}
+.home-actions .primary{font-family:var(--storybook-font)}
+@media(max-width:600px){
+ .modal{max-width:560px;padding:22px}.modal h2{font-size:23px;margin-bottom:16px}.modal p:not(.eyebrow){font-size:14px}.dialog-actions{gap:10px;margin-top:18px}.modal .dialog-actions>button{padding:10px 12px;font-size:13px}
+ .modal-backdrop{padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left))}
+ .level-details h2{font-size:13px}.level-details .eyebrow{letter-spacing:.03em}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .modal{padding:20px;max-height:calc(100dvh - 24px)}.modal h2{font-size:22px;margin-bottom:12px}.modal p:not(.eyebrow){font-size:14px;margin-bottom:10px}.dialog-actions{margin-top:14px}.modal .dialog-actions>button{min-height:40px;padding:9px 12px}
+}
