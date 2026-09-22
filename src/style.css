@@ -183,3 +183,6 @@
 body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrait,body:has(.modal-backdrop) .waiting-dot{animation-play-state:paused}
 .customer .resident-new{background-image:var(--resident-image);background-size:contain;background-position:center bottom;background-repeat:no-repeat}
 .customer[data-mood=waiting] .resident-new,.customer[data-mood=tired] .resident-new{background-image:url('assets/residents-waiting.webp');background-size:300% 500%;background-position:var(--tired-position)}
+
+/* The enlarged imprint stays on its parcel, including Safari scroll sizing. */
+.order-ticket{overflow:hidden}

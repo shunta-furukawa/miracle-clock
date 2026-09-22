@@ -9,7 +9,6 @@ try {
   for(const [name,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.TEST_BROWSER||process.env.TEST_BROWSER===name)) {
     const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-    await page.clock.install();
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:4173');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
@@ -120,6 +119,7 @@ try {
     await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.setViewportSize({width:844,height:390});
+    await page.clock.install();
     await page.locator('[data-level="0"]').click();await page.getByRole('button',{name:/お店をひらく/}).click();
     await page.clock.fastForward(36000);await page.clock.fastForward(26000);
     assert.equal(await page.locator('.customer').count(),2);
