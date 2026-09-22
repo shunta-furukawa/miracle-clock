@@ -42,7 +42,11 @@ npm run dev
 ```
 
 `http://localhost:4173` で開きます。`dist/` が静的配信用の出力です。
-`vercel.json` にビルド・出力設定を同梱しています。公開デプロイはまだ行っていません。
+公開URL: https://miracle-clock.vercel.app/
+
+初回は Vercel Drop to Deploy で、画像・CSS・JavaScriptを埋め込んだ静的HTMLを公開しました。現在はGitHubの自動デプロイ接続はありません。`node scripts/pack.mjs` で同じ配信用ファイルを再生成できます。
+
+通常のGit連携用のビルド・出力設定も `vercel.json` に同梱しています。
 
 ブラウザテストは GitHub Actions が Chromium / WebKit で実行し、画面キャプチャを保存します。
 ローカルでは `npm install --no-save --package-lock=false playwright@1.58.2` と `npx playwright install chromium webkit` の後に `node tests/browser.mjs`。
