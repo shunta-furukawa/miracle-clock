@@ -57,3 +57,9 @@ Built-in ImageGenで作成。前作 `game-cast.webp` と `stones.webp` を参照
 Three.js runtime is pinned and vendored (0.184.0, MIT, `src/vendor/THREE-LICENSE.txt`) so production does not depend on a public CDN. The plane and dock are code-native 3D meshes; the generated aircraft illustration remains the fallback for unsupported devices.
 
 - `src/assets/residents-waiting.webp`: 全15住民の待ちくたびれた表情差分。生成元 `exec-bdac8d7a-0e46-45c2-bf5d-15bcd407ac4c.png`。3×5、768×1440に整列。通常の住民アトラスを編集参照し、同じ人物・服・荷物・順序を保ち、半目、あくび、肩を下げた小さなため息だけを追加。怒りや苦痛を避けた子ども向けの穏やかな表現。25秒から表情と持ち替え、55秒からため息、受付完了時は通常の笑顔とお礼に切り替える。
+
+## 2026-09-22: image-based clock minerals
+
+`src/assets/gems/1.webp` through `12.webp` replace the flat SVG mineral plates. Each transparent image includes its numeral, elemental emblem, faceted crystal and brass bezel. The legend uses the same files. Built-in image generation was used with Miracle Mine's `stones.webp` as the visual reference; the resulting 1086 × 1448 transparent 3-column / 4-row sheet was cropped into cells, alpha-trimmed and resized to 256 × 256 WebP without redrawing its contents.
+
+Prompt: Create exactly twelve isolated front-facing octagonal brass-mounted mineral tiles in a uniform 3-column / 4-row transparent sprite sheet. Match the reference's rich crystalline facets, internal glow, tiny gear clasps and broad readable serif numerals. Rows: 1 blue water/drop, 2 yellow sunlight/sun, 3 red fire/flame; 4 green forest/leaf, 5 amber resin/double chevron, 6 cyan ice/snowflake; 7 indigo moon/crescent, 8 magenta star, 9 lavender steam/three crystals; 10 celadon wind/curled wind lines, 11 copper orange lightning/bolt, 12 pearl white raw crystal/hollow circle. Paint the exact numeral and emblem into every tile; white raw crystal reads 12, never 0. Equal scale and transparent gutters; no poster, titles, captions, paper or connecting decorations.

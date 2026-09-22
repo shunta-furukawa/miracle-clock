@@ -92,17 +92,30 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('[data-level="5"]').click();
     await page.getByRole('button',{name:/トトじいと練習/}).click();
-    for(const size of [{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
+    await page.locator('#dispatch').click();
+    assert.ok((await page.locator('#feedback').innerText()).includes('まだ刻印'));
+    assert.equal(await page.locator('#clock image.gem-art').count(),12,'all hour stones are image assets');
+    for(const size of [{width:393,height:852},{width:852,height:393},{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
       await page.setViewportSize(size);
       // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
-      const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'});
+      const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'+(size.width===393?'.game{--safe-bottom:34px}.game-top{padding-top:59px}':'')});
+      for(const advice of ['dispatch','hint']) {
+      await page.locator(`#${advice}`).click();
       const boxes=await page.evaluate(()=>{
-        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area','.clock-housing'];
+        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area','.clock-housing','#feedback'];
         return selectors.map(selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {selector,x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};});
       });
+      const message=boxes.find(b=>b.selector==='#feedback');
+      for(const box of boxes.filter(b=>b!==message)){
+        const overlaps=message.x<box.right&&message.right>box.x&&message.y<box.bottom&&message.bottom>box.y;
+        assert.equal(overlaps,false,`${name} ${size.width}x${size.height}: feedback must not cover ${box.selector}`);
+      }
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight>innerHeight+1),false,'game must fit vertically with advice visible');
+      assert.ok((await page.locator('#feedback').innerText()).length>0);
       // The brass housing and the dial inside it must stay circular, not oval.
       for(const selector of ['.clock-housing','#clock']) {
         const b=boxes.find(box=>box.selector===selector);
+        assert.ok(b.width>=120,`${name}: dial must remain visible and usable`);
         assert.ok(Math.abs(b.width-b.height)<=1,`${name} ${size.width}x${size.height}: ${selector} must be square, got ${b.width}x${b.height}`);
       }
       assert.equal(await overflow(),false,`horizontal fit ${size.width}x${size.height}`);
@@ -111,7 +124,8 @@ try {
         const clock=boxes.find(b=>b.selector==='#clock'), order=boxes.find(b=>b.selector==='#order');
         assert.ok(clock.right<=order.x,'clock and order must not overlap');
       }
-      await page.screenshot({path:`artifacts/${name}-fit-${size.width}x${size.height}.png`});
+      await page.screenshot({path:`artifacts/${name}-fit-${size.width}x${size.height}-${advice}.png`,animations:'disabled'});
+      }
       await inset.evaluate(el=>el.remove());
     }
     await page.setViewportSize({width:844,height:300});
