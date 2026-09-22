@@ -33,6 +33,7 @@ try {
     assert.equal(await page.locator('.customer').first().evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
     assert.equal(await overflow(),false,'mobile gameplay must fit');
     assert.equal(await page.locator('.customer').count(),3,'all customers are present at opening');
+    for(const hand of ['hour','minute'])assert.equal(await page.locator(`#${hand}-hand .hand-art image`).getAttribute('clip-path'),`url(#${hand}-art-crop)`,'atlas clipping must be explicit before glow filters');
     await page.locator('[data-select=minute]').click();
     assert.equal(await page.locator('#minute-hand').getAttribute('class'),'selected-hand');
     await page.locator('[data-select=hour]').click();
