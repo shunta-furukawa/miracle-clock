@@ -26,6 +26,7 @@ try {
     await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
     await selectDiary();
     await enterLevel(0);
+    assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.locator('#open-shop').click();
     await page.waitForTimeout(600);
     await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
@@ -61,8 +62,8 @@ try {
       for(let n=0;n<(hours-currentHour+12)%12;n++)await page.locator('#plus').click();
       if(period!==undefined)await page.locator(`[data-period="${period}"]`).click();
     }
-    await setTime(6);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
-    await setTime(9);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
+    await setTime(6);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
+    await setTime(9);await page.locator('#seal-button').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
     assert.equal(await page.locator('.star-result').count(),1);await page.locator('#retry-stage').click();
     await page.getByRole('button',{name:'一時停止'}).click();
     const queue=await page.locator('#queue-count').innerText();
@@ -77,20 +78,20 @@ try {
     assert.equal(await page.locator('#queue-count').innerText(),queue);
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(4);await page.locator('#open-shop').click();
-    await setTime(3,30,1);await page.locator('#dispatch').click();
+    await setTime(3,30,1);await page.locator('#seal-button').click();
     await page.getByRole('status').filter({hasText:'午前'}).waitFor();
     assert.equal(await page.locator('#score').innerText(),'0 / 5 便','wrong period must not dispatch');
-    await page.locator('[data-period="0"]').click();await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
+    await page.locator('[data-period="0"]').click();await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(5);await page.locator('#open-shop').click();
     await page.screenshot({path:`artifacts/${name}-relative-mobile.png`});
-    await setTime(10,15,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 8'}).waitFor();
-    await setTime(1,0,1);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 8'}).waitFor();
+    await setTime(10,15,0);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'1 / 8'}).waitFor();
+    await setTime(1,0,1);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'2 / 8'}).waitFor();
     assert.equal(await page.locator('.tomorrow').innerText(),'翌日のお届け');
-    await setTime(0,45,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'3 / 8'}).waitFor();await page.getByRole('button',{name:'一時停止'}).click();
+    await setTime(0,45,0);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'3 / 8'}).waitFor();await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(0);await page.locator('#open-shop').click();
-    for(const [index,hour] of [3,6,9].entries()) {await setTime(hour);await page.locator('#dispatch').click();if(index<2)await page.locator('#score').filter({hasText:`${index+1} / 3`}).waitFor();}
+    for(const [index,hour] of [3,6,9].entries()) {await setTime(hour);await page.locator('#seal-button').click();if(index<2)await page.locator('#score').filter({hasText:`${index+1} / 3`}).waitFor();}
     await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     assert.equal(await page.locator('.chapter').first().locator('.stamp').innerText(),'配達ずみ');
@@ -104,19 +105,21 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(5);
     await page.locator('#open-shop').click();
-    await page.locator('#dispatch').click();
+    await page.locator('#seal-button').click();
     assert.ok((await page.locator('#feedback').innerText()).includes('まだ刻印'));
     assert.equal(await page.locator('#clock image.gem-art').count(),12,'all hour stones are image assets');
     for(const size of [{width:393,height:852},{width:852,height:393},{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
       await page.setViewportSize(size);
       // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
       const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'+(size.width===393?'.game{--safe-bottom:34px}.game-top{padding-top:59px}':'')});
-      for(const advice of ['dispatch','hint']) {
+      for(const advice of ['seal-button','hint']) {
       await page.locator(`#${advice}`).click();
       const boxes=await page.evaluate(()=>{
-        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area','.clock-housing','#feedback'];
+        const selectors=['#clock','#order','#period-toggle','.hand-controls','#seal-button','.clock-tools','.queue-area','.clock-housing','#feedback'];
         return selectors.map(selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {selector,x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};});
       });
+      const seal=boxes.find(b=>b.selector==='#seal-button');
+      assert.ok(seal.width>=44&&seal.height>=44,'central stamp must retain a 44px touch target');
       const message=boxes.find(b=>b.selector==='#feedback');
       for(const box of boxes.filter(b=>b!==message)){
         const overlaps=message.x<box.right&&message.right>box.x&&message.y<box.bottom&&message.bottom>box.y;
@@ -141,7 +144,7 @@ try {
       await inset.evaluate(el=>el.remove());
     }
     await page.setViewportSize({width:844,height:300});
-    await setTime(10,15,0);await page.locator('#dispatch').click();
+    await setTime(10,15,0);await page.locator('#seal-button').click();
     await page.locator('#score').filter({hasText:'1 / 8'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();

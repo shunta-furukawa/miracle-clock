@@ -14,4 +14,6 @@ export const elements = [
  {name:'雷鉱石',color:'#dc9656',ink:'#3d2945',mark:'M1 -7L-5 1H0L-1 7L6 -2H1Z',meaning:'刻印に命を灯す雷'}
 ];
 export function elementMark(index){return `<path d="${elements[index].mark}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;}
-export function elementalNumbers(){return Array.from({length:12},(_,n)=>{const hour=n+1,index=hour%12,e=elements[index],a=hour*Math.PI/6,x=150+119*Math.sin(a),y=150-119*Math.cos(a);return `<g class="element-gem" data-element="${index}" transform="translate(${x} ${y})" style="--gem:${e.color};color:${e.ink}"><title>${hour}：${e.name}</title><image class="gem-art" href="assets/gems/${hour}.webp" x="-20" y="-20" width="40" height="40"/></g>`;}).join('');}
+// Socket centres measured in the 960 × 960 housing artwork, not an ideal circle.
+const gemSockets = [[659,155],[807,299],[856,472],[806,641],[661,777],[480,833],[298,777],[151,641],[103,472],[152,299],[301,155],[480,103]];
+export function elementalNumbers(){return Array.from({length:12},(_,n)=>{const hour=n+1,index=hour%12,e=elements[index],[sx,sy]=gemSockets[n],x=sx*300/960,y=sy*300/960;return `<g class="element-gem" data-element="${index}" transform="translate(${x} ${y})" style="--gem:${e.color};color:${e.ink}"><title>${hour}：${e.name}</title><image class="gem-art" href="assets/gems/${hour}.webp" x="-18.5" y="-18.5" width="37" height="37"/></g>`;}).join('');}
