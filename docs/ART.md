@@ -69,3 +69,11 @@ Prompt: Create exactly twelve isolated front-facing octagonal brass-mounted mine
 `dialogue-cast-safe.webp` と `cast-expressions-safe.webp` は Miracle Mine の同名素材をそのまま共用。会話背景は各配送所の既存画像を使用する。
 
 プロローグの冒頭は Miracle Mine の `sky-world.webp` を共用。残る場面は Clock の既存配送所・郵便局・機体画像を使用し、時計はゲームと同じ文字盤を重ねて表示する。
+
+## 砂丘の温室・トビネズミ族（36ステージ改訂）
+
+内蔵画像生成で制作。`assets/sunari-residents.webp` は4列×3行の透過アトラス（スナリ／ポポ／ネム／サフランばあ、通常／待ちくたびれ／喜び）。`assets/depots/6.webp` は砂丘の温室背景。既存 `depots/5.webp` は中央便専用として継続利用。PNG原本をWebPへ変換しアルファを保持。
+
+キャラクター生成プロンプト：Warm hand-painted storybook steampunk sprite atlas, regular 4 columns x 3 rows, 1536x1024. Cute anthropomorphic jerboas with large rounded ears, long tufted tails, sandy cream fur, brass/wood/leather accessories. Col1 Sunari: teal scarf, goggles, hourglass satchel, seedling parcel. Col2 Popo: cream fur, coral vest, tea box. Col3 Nemu: brown sturdy gardener, green apron, straw hat, wrapped pot. Col4 Grandma Saffron: silver cream fur, glasses, plum shawl, seed envelope. Rows neutral / bored waiting / delighted. Complete silhouettes, generous padding, no text or borders. Transparent background. 背景除去の追指示を行い、生成画像のRGBA透明度をそのまま使用。
+
+背景生成プロンプト：THE DUNE GREENHOUSE, a cozy postal counter and botanical conservatory on a floating sandstone desert island above clouds. Warm watercolor/gouache, fine ink, brass curved glass domes, timber, leather straps, teal and ochre. Reception desk faces greenhouses, seedlings, lavender, hourglass, steam irrigation and windmills. Floating desert mesas and sky bridges through arched windows. Softly detailed center, rich edges, no people or writing, landscape with portrait center crop.

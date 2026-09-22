@@ -10,9 +10,10 @@ try {
     const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
     async function skipDialogue(){if(await page.locator('.opening-film').count()){await page.locator('.opening-skip').click();await page.locator('.story-dialog:not(.story-from-black)').waitFor();}if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
-    async function enterLevel(id){await page.locator(`[data-level="${id}"]`).click();await skipDialogue();}
+    async function enterLevel(id){await page.locator(`[data-stage="${[0,6,12,18,26,35][id]}"]`).click();await skipDialogue();}
     async function selectDiary(){await page.locator('[data-slot="0"]').click();await skipDialogue();}
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.progress.v1'))localStorage.setItem('miracle-clock.progress.v1',JSON.stringify({0:true,1:true,2:true,3:true,4:true,5:true}));});
     await page.goto('http://127.0.0.1:4173');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
     await page.screenshot({path:`artifacts/${name}-home-mobile.png`});
@@ -25,7 +26,7 @@ try {
     await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
     await selectDiary();
     await enterLevel(0);
-    await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await page.locator('#open-shop').click();
     await page.waitForTimeout(600);
     await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
     assert.equal(await page.locator('.customer').evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
@@ -60,9 +61,9 @@ try {
       for(let n=0;n<(hours-currentHour+12)%12;n++)await page.locator('#plus').click();
       if(period!==undefined)await page.locator(`[data-period="${period}"]`).click();
     }
-    await setTime(5);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
-    await setTime(9);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'時計と、なかよくなれたね！'}).waitFor();
-    await page.getByRole('button',{name:'お店をひらく',exact:true}).click();
+    await setTime(6);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
+    await setTime(9);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
+    assert.equal(await page.locator('.star-result').count(),1);await page.locator('#retry-stage').click();
     await page.getByRole('button',{name:'一時停止'}).click();
     const queue=await page.locator('#queue-count').innerText();
     assert.equal(await page.getByRole('dialog').isVisible(),true);
@@ -75,27 +76,26 @@ try {
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#queue-count').innerText(),queue);
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await enterLevel(4);await page.getByRole('button',{name:/トトじいと練習/}).click();
-    await setTime(9,30,1);await page.locator('#dispatch').click();
+    await enterLevel(4);await page.locator('#open-shop').click();
+    await setTime(3,30,1);await page.locator('#dispatch').click();
     await page.getByRole('status').filter({hasText:'午前'}).waitFor();
-    assert.equal(await page.locator('#score').innerText(),'0 / 3 便','wrong period must not dispatch');
-    await page.locator('[data-period="0"]').click();await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
+    assert.equal(await page.locator('#score').innerText(),'0 / 5 便','wrong period must not dispatch');
+    await page.locator('[data-period="0"]').click();await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await enterLevel(5);await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await enterLevel(5);await page.locator('#open-shop').click();
     await page.screenshot({path:`artifacts/${name}-relative-mobile.png`});
-    await setTime(10,15,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
-    await setTime(1,0,1);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
+    await setTime(10,15,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 8'}).waitFor();
+    await setTime(1,0,1);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 8'}).waitFor();
     assert.equal(await page.locator('.tomorrow').innerText(),'翌日のお届け');
-    await setTime(0,45,0);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'時計と、なかよくなれたね！'}).waitFor();
+    await setTime(0,45,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'3 / 8'}).waitFor();await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await enterLevel(0);await page.getByRole('button',{name:/お店をひらく/}).click();
-    for(const [index,hour] of [3,5,9,12,2].entries()) {await setTime(hour);await page.locator('#dispatch').click();if(index<4)await page.locator('#score').filter({hasText:`${index+1} / 5`}).waitFor();}
-    await page.locator('.story-dialog').waitFor();await skipDialogue();
+    await enterLevel(0);await page.locator('#open-shop').click();
+    for(const [index,hour] of [3,6,9].entries()) {await setTime(hour);await page.locator('#dispatch').click();if(index<2)await page.locator('#score').filter({hasText:`${index+1} / 3`}).waitFor();}
     await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
-    await page.reload();await page.locator('#start').click();await selectDiary();assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
-    await enterLevel(2);await page.getByRole('button',{name:/トトじいと練習/}).click();
+    assert.equal(await page.locator('.chapter').first().locator('.stamp').innerText(),'配達ずみ');
+    await page.reload();await page.locator('#start').click();await selectDiary();assert.equal(await page.locator('.chapter').first().locator('.stamp').innerText(),'配達ずみ');
+    await enterLevel(2);await page.locator('#open-shop').click();
     await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:`artifacts/${name}-game-desktop.png`});
     assert.equal(await overflow(),false,'desktop must fit');
     // Reproduce iPhone Safari with browser bars visible, safe areas, rotation,
@@ -103,7 +103,7 @@ try {
     await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(5);
-    await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await page.locator('#open-shop').click();
     await page.locator('#dispatch').click();
     assert.ok((await page.locator('#feedback').innerText()).includes('まだ刻印'));
     assert.equal(await page.locator('#clock image.gem-art').count(),12,'all hour stones are image assets');
@@ -142,13 +142,13 @@ try {
     }
     await page.setViewportSize({width:844,height:300});
     await setTime(10,15,0);await page.locator('#dispatch').click();
-    await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
+    await page.locator('#score').filter({hasText:'1 / 8'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.setViewportSize({width:844,height:390});
     await page.clock.install();
-    await enterLevel(0);await page.getByRole('button',{name:/お店をひらく/}).click();
-    await page.clock.fastForward(36000);await page.clock.fastForward(26000);
+    await page.locator('[data-stage="2"]').click();await page.locator('#open-shop').click();
+    await page.clock.fastForward(52000);await page.clock.fastForward(26000);
     assert.equal(await page.locator('.customer').count(),2);
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
     assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0']);
@@ -162,7 +162,7 @@ try {
     await page.clock.fastForward(120000);assert.equal(await page.locator('.customer').count(),2,'element guide pauses arrivals');
     await page.locator('#elements-close').click();
     await page.emulateMedia({reducedMotion:'reduce'});
-    await setTime(3);await page.locator('#seal-button').click();
+    await setTime(7);await page.locator('#seal-button').click();
     await page.clock.runFor(1000);
     await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
     assert.deepEqual(errors,[],'no runtime errors');
@@ -174,7 +174,7 @@ try {
     await diary.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.progress.v1'))localStorage.setItem('miracle-clock.progress.v1','{"0":true,"2":true}');});
     await diary.goto('http://127.0.0.1:4173');await diary.locator('#start').click();
     assert.equal(await diary.locator('[data-slot]').count(),3);
-    assert.match(await diary.locator('[data-slot="0"]').innerText(),/2 \/ 6/);
+    assert.match(await diary.locator('[data-slot="0"]').innerText(),/12 \/ 36/);
     await diary.screenshot({path:`artifacts/${name}-diaries-mobile.png`});
     await diary.locator('[data-slot="1"]').click();
     await diary.locator('.opening-pause').click();
@@ -222,7 +222,29 @@ try {
     await unavailable.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('quota');};});
     await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.opening-skip').click();await unavailable.locator('.story-skip').click();
     assert.match(await unavailable.locator('.save-warning').innerText(),/保存できません/);
-    await unavailable.close();assert.deepEqual(errors,[],'no runtime errors including story and records');
+    await unavailable.close();
+    // A fresh diary advances by stages; pauses and flight animations do not spoil stars.
+    const beginner=await browser.newPage({viewport:{width:393,height:852},reducedMotion:'reduce'});
+    beginner.on('pageerror',e=>errors.push(e.message));
+    await beginner.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
+    await beginner.clock.install();await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
+    assert.equal(await beginner.locator('[data-stage="1"]').isDisabled(),true);assert.equal(await beginner.locator('#endless').isDisabled(),true);
+    await beginner.locator('[data-stage="0"]').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
+    await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();
+    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await beginner.locator('#plus').click();await beginner.locator('#seal-button').click();await beginner.clock.runFor(1000);}
+    assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','pause and flight time are excluded');
+    await beginner.locator('#result-map').click();assert.equal(await beginner.locator('[data-stage="1"]').isEnabled(),true);assert.equal(await beginner.locator('[data-stage="2"]').isDisabled(),true);
+    assert.match(await beginner.locator('[data-stage="0"]').innerText(),/★★★/);await beginner.screenshot({path:`artifacts/${name}-campaign-stars.png`});await beginner.close();
+    // Central special stage is endless and saves every completed delivery.
+    await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
+    await page.locator('#endless').click();await skipDialogue();await page.locator('#open-shop').click();
+    assert.match(await page.locator('.stage-heading').innerText(),/特別ステージ/);
+    await setTime(3);await page.locator('#seal-button').click();await page.clock.runFor(1000);
+    assert.match(await page.locator('#score').innerText(),/1 便/);
+    await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
+    assert.equal(await page.getByRole('heading',{name:'おつかれさま、中央便！'}).isVisible(),true);
+    const best=await page.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].endless.best);assert.equal(best,1);
+    assert.deepEqual(errors,[],'no runtime errors including story and records');
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);
   }
 } finally {server.kill();}
