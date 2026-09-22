@@ -66,3 +66,13 @@
  .hand-controls{gap:3px}.hand-select{font-size:10px;padding:4px}.adjust{width:34px}
  .request strong{font-size:21px}
 }
+/* Keep optional guides under the dial, freeing the right column on short screens. */
+@media(orientation:landscape) and (max-height:600px){
+ .clock-housing{width:min(100%,calc(100dvh - 145px),330px);margin-bottom:42px}
+ .clock-status{display:none}
+ .clock-tools{position:absolute;left:0;bottom:0;width:calc((100% - 14px)/2);gap:6px}
+ .clock-tools button{min-height:40px;white-space:normal}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px){
+ .clock-tools{width:calc((100% - 8px)*.459)}
+}
