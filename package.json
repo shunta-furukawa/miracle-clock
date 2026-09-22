@@ -1,0 +1,9 @@
+{
+  "name": "miracle-clock",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Miracle Clock 〜ルカと空のとけい便〜",
+  "scripts": {"dev": "node scripts/serve.mjs", "build": "node scripts/build.mjs", "test": "node --test tests/*.test.mjs"},
+  "engines": {"node": ">=20"}
+}
