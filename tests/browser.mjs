@@ -14,7 +14,11 @@ try {
     await page.goto('http://127.0.0.1:4173');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
     await page.screenshot({path:`artifacts/${name}-home-mobile.png`});
-    const overflow=()=>page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
+    const overflow=async()=>{
+      const result=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(el=>{const b=el.getBoundingClientRect();const s=getComputedStyle(el);return {tag:el.tagName,id:el.id,cls:el.getAttribute('class'),x:b.x,right:b.right,width:b.width,visibility:s.visibility,transform:s.transform};}).filter(b=>b.width&&(b.right>innerWidth+1||b.x< -1))}));
+      if(result.overflow)console.log(name,'overflow diagnostic',JSON.stringify(result));
+      return result.overflow;
+    };
     assert.equal(await overflow(),false,'mobile home must fit');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
     await page.locator('[data-level="0"]').click();
