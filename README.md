@@ -61,19 +61,11 @@ npm run dev
 BGM、PWA、ランキング、複数セーブ、読み上げは今回の範囲に含みません。
 
 
-## CIからの本番デプロイ
+## CIと本番デプロイ
 
-`.github/workflows/test.yml` が単体テスト・ビルド・Chromium/WebKitのブラウザテストを実行します。
-`main` へのpushまたはActionsの **Run workflow**（main指定）で、全テスト成功後にテスト済みの `dist/` を既存Vercelプロジェクトへ公開します。PRはテストのみです。同一ブランチの実行を直列化し、進行中のデプロイを中断しません。
+GitHub Actions の `Check game` が単体テスト・ビルド・Chromium/WebKitテストを実行します。
+既存VercelプロジェクトのGit連携がpushを検知し、`main` は本番、他のブランチはプレビューとして公開します。GitHub側のVercelトークンは不要です。
 
-最初に [Repository secrets](https://github.com/shunta-furukawa/miracle-clock/settings/secrets/actions) に次の3つを登録してください。
+本番ビルドは `scripts/build-vercel.mjs` が同じコミットのpush起点の `test.yml` 成功を確認してから実行します。未完了は最大15分待機し、失敗・タイムアウト・APIエラー時は公開せずビルドを失敗させます。公開リポジトリのGitHub APIを認証なしで参照するため、APIの利用制限時はVercelから再デプロイしてください。
 
-| Secret | 値の取得元 |
-| --- | --- |
-| `VERCEL_TOKEN` | [Vercel Tokens](https://vercel.com/account/tokens) で対象チームに限定したトークンを作成。期限切れ前に更新 |
-| `VERCEL_ORG_ID` | [Team Settings](https://vercel.com/shunta-furukawas-projects/~/settings/general) の Team ID |
-| `VERCEL_PROJECT_ID` | [Project Settings](https://vercel.com/shunta-furukawas-projects/miracle-clock/settings/general) の Project ID |
-
-認証情報が未登録の間は、テストを実行し、デプロイは警告を出してスキップします。登録後は [Actions](https://github.com/shunta-furukawa/miracle-clock/actions/workflows/test.yml) の **Run workflow** で再実行できます。CIの初回本番デプロイは認証情報登録後の確認が必要です。
-
-静的出力は [Vercel Build Output API](https://vercel.com/docs/build-output-api) 形式へ変換し、バージョン固定のCLIで `--prebuilt --prod` を実行します。VercelのGit自動デプロイとの二重実行を避けるため、この構成ではGitHub Actionsを公開経路にします。
+Actionsの再実行だけでは新しいVercelデプロイは作られません。失敗を修正してmainへpushするか、CI成功後にVercelで同じコミットを再デプロイしてください。
