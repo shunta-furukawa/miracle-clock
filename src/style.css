@@ -4,3 +4,65 @@
 @media(max-width:600px){.scene{background-attachment:scroll}.home{height:100svh;min-height:640px;background-position:56% center}.home-header{left:5%;right:5%;top:max(15px,env(safe-area-inset-top))}.edition{font-size:9px;padding:8px 10px;letter-spacing:.08em}.home-header .icon-button{font-size:11px;min-height:36px;min-width:58px;padding:7px}.vignette{background:linear-gradient(180deg,#fff9e640,transparent 60%,#143a47b8)}.title-lockup{left:0;right:0;top:15%;text-align:center}.title-lockup .eyebrow{font-size:8px;letter-spacing:.2em}.title-lockup h1{font-size:82px;line-height:.85;margin:12px 0;letter-spacing:-.07em}.subtitle{font-size:17px;margin-top:16px;letter-spacing:.12em}.title-rule{margin:12px auto;width:42px}.home-copy{font-size:11px;line-height:1.65}.home-plane{width:40%;right:-5%;top:41%;z-index:1}.home-cast{width:78%;right:10%;bottom:18%}.home-actions{left:8%;bottom:6.5%;width:84%}.home-actions .primary{min-height:53px;font-size:17px}.home-actions .text-button{font-size:12px;margin:0;min-height:38px}.home-actions small{display:none}.home-footer{bottom:max(10px,env(safe-area-inset-bottom));font-size:8px}.home-footer span{font-size:8px}.topbar{padding:10px 12px;gap:6px}.wordmark{font-size:20px}.subtle{font-size:12px;padding:6px;min-height:36px}.icon-button{font-size:11px;min-width:60px;min-height:36px;padding:6px}.map-heading{padding:27px 10px 20px}.map-heading h1{font-size:27px}.map-heading p:last-child{font-size:11px}.level-grid{grid-template-columns:1fr 1fr;padding:0 15px;gap:12px}.level-art{height:110px}.level-art .portrait{width:117px;right:2px;top:1px}.chapter-number{font-size:36px;left:10px}.level-details{padding:12px 10px}.level-details .eyebrow{font-size:9px;letter-spacing:.05em}.level-details h2{font-size:13px;white-space:nowrap}.level-details p{font-size:10px}.level-go{font-size:11px;margin-top:12px}.save-note{font-size:10px}.stamp{font-size:9px;left:5px;bottom:5px}.game-top{padding:7px 10px;padding-top:max(7px,env(safe-area-inset-top))}.game-top .subtle{font-size:10px;padding:5px;min-width:68px}.stage-heading{gap:2px}.stage-heading .eyebrow{font-size:8px;letter-spacing:.06em}.stage-heading strong{font-size:12px}.score{font-size:11px;padding:7px 9px}.queue-area{margin:8px 12px 0;padding:7px 10px 4px;border-radius:12px}.queue-heading{font-size:9px}.queue-track{height:82px;gap:5px;padding-top:5px}.customer{width:59px;flex-shrink:0}.customer .portrait{width:48px;height:48px}.customer-bubble{font-size:8px;padding:3px 4px;max-width:67px}.customer>span:last-child{font-size:8px}.play-layout{display:block;margin-top:10px;padding:0 18px;max-width:440px}.companion-side,.toto-side{display:none}.clock-station{width:100%}.order-ticket{padding:9px 12px;border-radius:9px}.ticket-meta{font-size:9px}.request{margin-top:5px;gap:7px}.request strong{font-size:27px}.request>span{font-size:11px}.clock-housing{width:min(72vw,290px);height:min(72vw,290px);padding:8px;margin-top:20px;margin-bottom:6px;box-shadow:inset 0 0 0 2px #f5d28a,0 4px 0 #684c2c,0 12px 25px #1b414339}.clock-status{font-size:9px;bottom:-19px}.clock-crown{height:18px;top:-17px;width:36px;left:calc(50% - 18px)}.hand-controls{margin-top:21px;gap:7px}.hand-select{min-height:37px;font-size:11px;padding:5px 10px}.adjust{height:37px;width:37px}.dispatch{min-height:49px;margin-top:10px;font-size:16px}.clock-tools{gap:24px;margin-top:1px}.clock-tools button{font-size:10px;min-height:36px}.period-toggle{margin-top:22px}.period-toggle button{font-size:11px;padding:5px 20px;min-height:28px}.period-toggle:not([hidden])+.hand-controls{margin-top:7px}.reference-time{font-size:9px;padding-top:3px;margin-top:5px}.reference-time b{font-size:12px}.mini-clock{width:29px;height:29px}.feedback{font-size:12px;max-width:92vw;padding:10px 15px;bottom:max(10px,env(safe-area-inset-bottom))}.modal{padding:22px;max-width:380px}.modal h2{font-size:21px}.modal p:not(.eyebrow){font-size:13px}.lesson{font-size:12px}.flight-layer>img{width:230px;left:0;top:45%}}
 @media(max-width:600px) and (max-height:730px){.home{min-height:600px}.title-lockup{top:13%}.title-lockup h1{font-size:71px}.home-copy{display:none}.home-cast{bottom:19%;width:73%;right:12%}.queue-track{height:71px}.customer .portrait{width:40px;height:40px}.clock-housing{width:245px;height:245px;margin-top:18px}.request strong{font-size:24px}.game-top{padding-top:5px}.play-layout{margin-top:7px}.clock-tools button{min-height:30px}.dispatch{min-height:44px}.hand-controls{margin-top:18px}.period-toggle{margin-top:18px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition:none!important}.flying .flight-layer>img{animation:none;opacity:0}}
+
+/* Illustrated destinations remain behind the original Miracle Mine cast. */
+.level-card:nth-child(n) .level-art{background-image:url('assets/delivery-islands.webp');background-size:300% 200%;background-position:0 0;height:150px}
+.level-card:nth-child(2) .level-art{background-position:50% 0}
+.level-card:nth-child(3) .level-art{background-position:100% 0}
+.level-card:nth-child(4) .level-art{background-position:0 100%}
+.level-card:nth-child(5) .level-art{background-position:50% 100%}
+.level-card:nth-child(6) .level-art{background-position:100% 100%}
+.level-art .portrait{width:110px;top:auto;bottom:-7px;right:0;filter:drop-shadow(0 3px 3px #173f444a)}
+.chapter-number{color:#fff9e9;text-shadow:0 2px 5px #173f44;font-size:35px}
+.game{background-image:linear-gradient(#eaf8ff12,#14434b20),url('assets/cockpit-sky.webp')}
+.station-controls{width:100%;display:flex;flex-direction:column;align-items:center}
+.game{--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:600px) and (orientation:portrait){
+ .game{min-height:100dvh;padding-bottom:max(8px,var(--safe-bottom))}
+ .clock-housing{width:clamp(140px,calc(100dvh - 515px),290px);height:clamp(140px,calc(100dvh - 515px),290px)}
+ .hand-select,.adjust{min-height:44px}
+ .clock-tools button{min-height:40px}
+ .level-card .level-art{height:122px}
+ .level-art .portrait{width:88px}
+}
+/* A landscape cockpit: queue | clock | order and controls. Never crop gameplay. */
+@media(orientation:landscape) and (max-height:600px){
+ .game{height:100dvh;min-height:100dvh;display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-rows:44px minmax(0,1fr);gap:8px;padding:0 max(10px,var(--safe-right)) max(8px,var(--safe-bottom)) max(10px,var(--safe-left));background-attachment:scroll}
+ .game-top{grid-column:1/-1;padding:0 8px;min-width:0;border-radius:0 0 12px 12px}
+ .game-top .subtle{min-height:40px;font-size:11px;padding:4px 8px}
+ .stage-heading{gap:1px}.stage-heading strong{font-size:12px}.stage-heading .eyebrow{font-size:8px}
+ .score{font-size:12px;padding:6px 10px}
+ .queue-area{grid-column:1;grid-row:2;width:100%;max-width:none;margin:0;padding:7px 4px;align-self:stretch;min-height:0;display:flex;flex-direction:column}
+ .queue-heading{font-size:9px;flex-direction:column;align-items:center;gap:3px}
+ .queue-track{height:auto;min-height:0;flex:1;display:flex;flex-direction:column;gap:3px;padding-top:5px;justify-content:flex-start}
+ .customer{width:100%;flex:1;min-height:0;max-height:65px;display:grid;grid-template-columns:28px minmax(0,1fr);align-content:center;align-items:center;gap:1px}
+ .customer .portrait{width:28px;height:28px;grid-column:1;grid-row:1/3}
+ .customer-bubble{grid-column:2;grid-row:1;font-size:8px;padding:2px 1px;white-space:normal;overflow-wrap:anywhere}
+ .customer>span:last-child{grid-column:2;grid-row:2;font-size:8px}
+ .arrival-track{flex-shrink:0}
+ .play-layout{grid-column:2;grid-row:2;display:block;min-width:0;min-height:0;width:100%;max-width:none;margin:0;padding:0}
+ .companion-side,.toto-side{display:none}
+ .clock-station{height:100%;display:grid;grid-template-columns:minmax(155px,1fr) minmax(238px,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:14px;row-gap:4px;align-items:center}
+ .clock-housing{grid-column:1;grid-row:1/3;justify-self:center;width:min(100%,calc(100dvh - 105px),360px);height:auto;aspect-ratio:1;margin:0 0 10px;padding:8px}
+ .clock-crown{height:17px;top:-16px}.clock-status{font-size:9px;bottom:-20px}
+ .order-ticket{grid-column:2;grid-row:1;align-self:end;padding:7px 10px;min-width:0}
+ .ticket-meta{font-size:9px;gap:4px}.request{gap:5px;margin-top:3px;white-space:normal;flex-wrap:wrap;row-gap:0}
+ .request strong{font-size:23px}.request>span{font-size:10px}
+ .reference-time{margin-top:3px;padding-top:3px;font-size:9px}.reference-time b{font-size:11px}.mini-clock{width:25px;height:25px}
+ .station-controls{grid-column:2;grid-row:2;align-self:start;min-height:0;gap:4px}
+ .period-toggle,.period-toggle:not([hidden])+.hand-controls,.hand-controls{margin:0}
+ .period-toggle{padding:2px}.period-toggle button{padding:3px 18px;min-height:30px;font-size:11px}
+ .hand-controls{gap:5px}.hand-select{font-size:11px;min-height:40px;padding:4px 7px}.adjust{height:40px;min-height:40px;width:40px}
+ .dispatch{margin:0;min-height:44px;padding:8px 14px;font-size:15px}
+ .clock-tools{margin:0;gap:10px}.clock-tools button{min-height:34px;padding:5px 3px;font-size:10px}
+ .feedback{bottom:auto;top:48px;padding:6px 12px;font-size:11px;max-width:70vw}
+ .home{height:100dvh;min-height:100dvh}.home-header{top:10px}.title-lockup{top:20%;left:6%;right:auto}.title-lockup h1{font-size:clamp(45px,12dvh,70px);margin:8px 0}.title-lockup .eyebrow{font-size:7px}.subtitle{font-size:14px;margin-top:12px}.title-rule,.home-copy{display:none}.home-actions{left:auto;right:7%;bottom:13%;width:36%}.home-actions .primary{min-height:44px;font-size:14px}.home-actions small{display:none}.home-actions .text-button{min-height:32px;margin:2px;font-size:11px}.home-cast{width:30%;right:12%;bottom:38%}.home-plane{width:24%;right:35%;top:9%}.home-footer{bottom:7px;font-size:8px}
+ .modal{max-height:calc(100dvh - 24px)}.modal-backdrop{padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left))}
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px){
+ .game{grid-template-columns:65px minmax(0,1fr);gap:6px;padding-left:max(6px,var(--safe-left));padding-right:max(6px,var(--safe-right))}
+ .clock-station{grid-template-columns:minmax(125px,.85fr) minmax(220px,1fr);column-gap:8px}
+ .customer{grid-template-columns:20px minmax(0,1fr)}.customer .portrait{width:20px;height:20px}
+ .hand-controls{gap:3px}.hand-select{font-size:10px;padding:4px}.adjust{width:34px}
+ .request strong{font-size:21px}
+}

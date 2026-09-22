@@ -68,7 +68,32 @@ try {
     await page.locator('[data-level="2"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:`artifacts/${name}-game-desktop.png`});
     assert.equal(await overflow(),false,'desktop must fit');
-    for(const size of [{width:375,height:667},{width:844,height:390}]){await page.setViewportSize(size);assert.equal(await overflow(),false,`layout fits ${size.width}`);}
+    // Reproduce iPhone Safari with browser bars visible, safe areas, rotation,
+    // and the largest order (relative time plus AM/PM), not just horizontal overflow.
+    await page.getByRole('button',{name:'一時停止'}).click();
+    await page.getByRole('button',{name:'島えらびにもどる',exact:true}).click();
+    await page.locator('[data-level="5"]').click();
+    await page.getByRole('button',{name:/トトじいと練習/}).click();
+    for(const size of [{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
+      await page.setViewportSize(size);
+      // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
+      const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'});
+      const boxes=await page.evaluate(()=>{
+        const selectors=['#clock','#order','#period-toggle','.hand-controls','#dispatch','.clock-tools','.queue-area'];
+        return selectors.map(selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {selector,x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};});
+      });
+      assert.equal(await overflow(),false,`horizontal fit ${size.width}x${size.height}`);
+      for(const b of boxes) assert.ok(b.x>=0&&b.y>=0&&b.right<=size.width+1&&b.bottom<=size.height+1,`${name} ${size.width}x${size.height}: ${JSON.stringify(b)} outside viewport`);
+      if(size.width>size.height) {
+        const clock=boxes.find(b=>b.selector==='#clock'), order=boxes.find(b=>b.selector==='#order');
+        assert.ok(clock.right<=order.x,'clock and order must not overlap');
+      }
+      await page.screenshot({path:`artifacts/${name}-fit-${size.width}x${size.height}.png`});
+      await inset.evaluate(el=>el.remove());
+    }
+    await page.setViewportSize({width:844,height:300});
+    await setTime(10,15,0);await page.locator('#dispatch').click();
+    await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     assert.deepEqual(errors,[],'no runtime errors');
     const images=await page.locator('img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0));assert.equal(images,true,'all image elements loaded');
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);
