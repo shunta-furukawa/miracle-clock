@@ -1,0 +1,38 @@
+const portraits={'ルカ':0,'トトじい':1,'モス':2,'シェル':3,'クリム':4,'フレア':5,'フウ':6};
+let dismiss=null;
+export function closeDialogue(){dismiss?.(false);}
+export function showDialogue(story,onDone,{fadeIn=false}={}){
+ dismiss?.(false);
+ const previous=document.activeElement;
+ const root=document.createElement('dialog');root.className='story-dialog';
+ root.setAttribute('aria-label',story.title);
+ root.innerHTML=`<section class="story-scene"><div class="story-background-window"><div class="story-backdrop"></div></div><div class="story-wash"></div><header class="story-header"><h2></h2><button class="story-skip">スキップ ≫</button></header><div class="story-actor story-left" aria-hidden="true"></div><div class="story-actor story-right" aria-hidden="true"></div><div class="story-box"><div class="story-speaker"></div><p class="story-words" aria-hidden="true"></p><p class="sr-only story-accessible" aria-live="polite" aria-atomic="true"></p><div class="story-footer"><span class="story-count"></span><button class="story-next">全文を表示 ▸</button></div></div></section>`;
+ const q=s=>root.querySelector(s);q('h2').textContent=story.title;
+ const bg=q('.story-backdrop');bg.style.backgroundImage=`url(assets/depots/${story.scene}.webp)`;
+ let index=0,chars=[],visible=0,timer=null,introTimer=null,closed=false;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ let entering=fadeIn&&!reduced;if(entering)root.classList.add('story-from-black');
+ function sprite(el,n){el.classList.remove('expression-portrait');el.style.backgroundPosition=`${n%4/3*100}% ${Math.floor(n/4)*100}%`;}
+ function paint(){q('.story-words').textContent=chars.slice(0,visible).join('');const typing=visible<chars.length;root.classList.toggle('is-typing',typing);q('.story-next').textContent=typing?'全文を表示 ▸':index===story.lines.length-1?(story.goal?'配送所をひらく ▸':'つづける ▸'):'次へ ▸';}
+ function draw(){clearInterval(timer);const line=story.lines[index];chars=Array.from(line.text);visible=reduced?chars.length:0;q('.story-speaker').textContent=line.who;q('.story-accessible').textContent=`${line.who}。${line.text}`;q('.story-count').textContent=`${index+1} / ${story.lines.length}`;
+ const left=line.who==='ルカ';sprite(q('.story-left'),left?0:7);const right=q('.story-right'),base=portraits[story.partner]-1;
+ if(left||line.expression==='emotion'){const n=base+(left?0:6);right.classList.add('expression-portrait');right.style.backgroundPosition=`${n%3*50}% ${[0,362,710,1050][Math.floor(n/3)]/1086*100}%`;}else sprite(right,portraits[story.partner]);
+ right.dataset.expression=left?'listen':line.expression||'talk';q('.story-left').classList.toggle('speaking',left);q('.story-right').classList.toggle('speaking',!left);paint();if(!reduced&&!entering)timer=setInterval(()=>{visible=Math.min(chars.length,visible+1);paint();if(visible===chars.length)clearInterval(timer);},32);}
+ function end(run=true){if(closed)return;closed=true;resize.disconnect();clearInterval(timer);clearTimeout(introTimer);root.close();root.remove();dismiss=null;if(previous?.isConnected)previous.focus({preventScroll:true});if(run)onDone();}
+ function advance(){if(entering)return;if(visible<chars.length){clearInterval(timer);visible=chars.length;paint();}else if(index+1<story.lines.length){index++;draw();}else end();}
+ root.addEventListener('click',e=>{if(e.target.closest('.story-skip'))end();else if(e.target.closest('.story-box'))advance();});
+ root.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){if(e.target.closest('.story-skip'))return;e.preventDefault();advance();}});
+ root.addEventListener('cancel',e=>{e.preventDefault();if(entering)return;if(visible<chars.length){clearInterval(timer);visible=chars.length;paint();}});
+ function layoutPortraits(){
+ const scene=q('.story-scene').getBoundingClientRect(),box=q('.story-box').getBoundingClientRect(),header=q('.story-header').getBoundingClientRect();
+ const portrait=scene.height>scene.width;
+ const top=header.bottom+12;
+ const baseline=box.top+32;
+ const size=Math.max(0,Math.min(scene.width*(portrait?.46:.43),baseline-top));
+ root.style.setProperty('--portrait-size',size+'px');root.style.setProperty('--portrait-bottom',(scene.bottom-baseline)+'px');
+ }
+ const resize=new ResizeObserver(layoutPortraits);
+ document.body.append(root);root.showModal();dismiss=end;draw();layoutPortraits();
+ for(const el of [q('.story-scene'),q('.story-box'),q('.story-header')])resize.observe(el);q('.story-next').focus();
+ if(entering)introTimer=setTimeout(()=>{if(closed)return;entering=false;root.classList.remove('story-from-black');draw();},1250);
+}

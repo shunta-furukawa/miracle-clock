@@ -63,3 +63,7 @@ Three.js runtime is pinned and vendored (0.184.0, MIT, `src/vendor/THREE-LICENSE
 `src/assets/gems/1.webp` through `12.webp` replace the flat SVG mineral plates. Each transparent image includes its numeral, elemental emblem, faceted crystal and brass bezel. The legend uses the same files. Built-in image generation was used with Miracle Mine's `stones.webp` as the visual reference; the resulting 1086 × 1448 transparent 3-column / 4-row sheet was cropped into cells, alpha-trimmed and resized to 256 × 256 WebP without redrawing its contents.
 
 Prompt: Create exactly twelve isolated front-facing octagonal brass-mounted mineral tiles in a uniform 3-column / 4-row transparent sprite sheet. Match the reference's rich crystalline facets, internal glow, tiny gear clasps and broad readable serif numerals. Rows: 1 blue water/drop, 2 yellow sunlight/sun, 3 red fire/flame; 4 green forest/leaf, 5 amber resin/double chevron, 6 cyan ice/snowflake; 7 indigo moon/crescent, 8 magenta star, 9 lavender steam/three crystals; 10 celadon wind/curled wind lines, 11 copper orange lightning/bolt, 12 pearl white raw crystal/hollow circle. Paint the exact numeral and emblem into every tile; white raw crystal reads 12, never 0. Equal scale and transparent gutters; no poster, titles, captions, paper or connecting decorations.
+
+
+### 会話の立ち絵
+`dialogue-cast-safe.webp` と `cast-expressions-safe.webp` は Miracle Mine の同名素材をそのまま共用。会話背景は各配送所の既存画像を使用する。

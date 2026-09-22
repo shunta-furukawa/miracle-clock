@@ -9,6 +9,9 @@ try {
   for(const [name,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.TEST_BROWSER||process.env.TEST_BROWSER===name)) {
     const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+    async function skipDialogue(){if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
+    async function enterLevel(id){await page.locator(`[data-level="${id}"]`).click();await skipDialogue();}
+    async function selectDiary(){await page.locator('[data-slot="0"]').click();await skipDialogue();}
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:4173');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
@@ -20,7 +23,8 @@ try {
     };
     assert.equal(await overflow(),false,'mobile home must fit');
     await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
-    await page.locator('[data-level="0"]').click();
+    await selectDiary();
+    await enterLevel(0);
     await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.waitForTimeout(600);
     await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
@@ -71,33 +75,34 @@ try {
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#queue-count').innerText(),queue);
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await page.locator('[data-level="4"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await enterLevel(4);await page.getByRole('button',{name:/トトじいと練習/}).click();
     await setTime(9,30,1);await page.locator('#dispatch').click();
     await page.getByRole('status').filter({hasText:'午前'}).waitFor();
     assert.equal(await page.locator('#score').innerText(),'0 / 3 便','wrong period must not dispatch');
     await page.locator('[data-period="0"]').click();await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await page.locator('[data-level="5"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await enterLevel(5);await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.screenshot({path:`artifacts/${name}-relative-mobile.png`});
     await setTime(10,15,0);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     await setTime(1,0,1);await page.locator('#dispatch').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
     assert.equal(await page.locator('.tomorrow').innerText(),'翌日のお届け');
     await setTime(0,45,0);await page.locator('#dispatch').click();await page.getByRole('heading',{name:'時計と、なかよくなれたね！'}).waitFor();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await page.locator('[data-level="0"]').click();await page.getByRole('button',{name:/お店をひらく/}).click();
+    await enterLevel(0);await page.getByRole('button',{name:/お店をひらく/}).click();
     for(const [index,hour] of [3,5,9,12,2].entries()) {await setTime(hour);await page.locator('#dispatch').click();if(index<4)await page.locator('#score').filter({hasText:`${index+1} / 5`}).waitFor();}
+    await page.locator('.story-dialog').waitFor();await skipDialogue();
     await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
-    await page.reload();await page.locator('#start').click();assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
-    await page.locator('[data-level="2"]').click();await page.getByRole('button',{name:/トトじいと練習/}).click();
+    await page.reload();await page.locator('#start').click();await selectDiary();assert.equal(await page.locator('[data-level="0"] .stamp').innerText(),'配達ずみ');
+    await enterLevel(2);await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:`artifacts/${name}-game-desktop.png`});
     assert.equal(await overflow(),false,'desktop must fit');
     // Reproduce iPhone Safari with browser bars visible, safe areas, rotation,
     // and the largest order (relative time plus AM/PM), not just horizontal overflow.
     await page.getByRole('button',{name:'一時停止'}).click();
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
-    await page.locator('[data-level="5"]').click();
+    await enterLevel(5);
     await page.getByRole('button',{name:/トトじいと練習/}).click();
     await page.locator('#dispatch').click();
     assert.ok((await page.locator('#feedback').innerText()).includes('まだ刻印'));
@@ -142,7 +147,7 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.setViewportSize({width:844,height:390});
     await page.clock.install();
-    await page.locator('[data-level="0"]').click();await page.getByRole('button',{name:/お店をひらく/}).click();
+    await enterLevel(0);await page.getByRole('button',{name:/お店をひらく/}).click();
     await page.clock.fastForward(36000);await page.clock.fastForward(26000);
     assert.equal(await page.locator('.customer').count(),2);
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
@@ -163,6 +168,49 @@ try {
     assert.deepEqual(errors,[],'no runtime errors');
     await page.waitForFunction(()=>[...document.images].every(img=>img.complete&&img.naturalWidth>0));
     const images=await page.locator('img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0));assert.equal(images,true,'all image elements loaded');
+    // Three isolated diaries, legacy migration, dialogue layout and deliberate deletion.
+    const diary=await browser.newPage({viewport:{width:393,height:852},isMobile:true,hasTouch:true});
+    diary.on('pageerror',e=>errors.push(e.message));
+    await diary.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.progress.v1'))localStorage.setItem('miracle-clock.progress.v1','{"0":true,"2":true}');});
+    await diary.goto('http://127.0.0.1:4173');await diary.locator('#start').click();
+    assert.equal(await diary.locator('[data-slot]').count(),3);
+    assert.match(await diary.locator('[data-slot="0"]').innerText(),/2 \/ 6/);
+    await diary.screenshot({path:`artifacts/${name}-diaries-mobile.png`});
+    await diary.locator('[data-slot="1"]').click();
+    assert.equal(await diary.locator('.story-dialog').isVisible(),true);
+    if(await diary.locator('.story-dialog.is-typing').count())await diary.locator('.story-next').click(); // reveal the first line
+    assert.match(await diary.locator('.story-words').innerText(),/小さな配送機/);
+    await diary.locator('.story-next').click();
+    assert.equal(await diary.locator('.story-speaker').innerText(),'トトじい');
+    assert.equal(await diary.locator('.story-right.speaking').count(),1);
+    if(await diary.locator('.story-dialog.is-typing').count())await diary.locator('.story-next').click();
+    for(const [width,height] of [[393,852],[852,393],[568,320]]){
+      await diary.setViewportSize({width,height});
+      await diary.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+      const fits=await diary.evaluate(()=>['.story-header','.story-box','.story-next','.story-skip','.story-words','.story-left','.story-right'].every(sel=>{const b=document.querySelector(sel).getBoundingClientRect();return b.width>0&&b.height>0&&b.x>=0&&b.y>=0&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1;}));
+      assert.equal(fits,true,`${name}: conversation fits ${width}x${height}`);
+      await diary.screenshot({path:`artifacts/${name}-conversation-${width}x${height}.png`,animations:'disabled'});
+    }
+    await diary.locator('.story-skip').click();
+    assert.equal(await diary.locator('.stamp').count(),0,'new diary must not inherit another diary clears');
+    await diary.locator('#records').click();await diary.locator('[data-delete-slot="1"]').click();await diary.locator('#delete-cancel').click();
+    assert.equal(await diary.locator('[data-delete-slot="1"]').count(),1,'cancel retains diary');
+    await diary.locator('[data-slot="2"]').click();await diary.locator('.story-skip').click();await diary.locator('#records').click();
+    await diary.locator('[data-delete-slot="1"]').click();await diary.locator('#delete-confirm').click();
+    assert.equal(await diary.locator('[data-delete-slot="1"]').count(),0);
+    assert.equal(await diary.locator('[data-delete-slot="0"]').count(),1);
+    assert.equal(await diary.locator('[data-delete-slot="2"]').count(),1);
+    await diary.reload();await diary.locator('#start').click();await diary.locator('[data-slot="0"]').click();
+    assert.equal(await diary.locator('.story-dialog').count(),0,'migrated diary already knows the introduction');
+    assert.equal(await diary.locator('.stamp').count(),2,'legacy progress survives slot changes, deletion and reload');
+    const stored=await diary.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')));
+    assert.deepEqual(stored.slots[0].cleared,[0,2]);assert.equal(stored.slots[1],null);assert.equal(stored.slots[2].introSeen,true);
+    await diary.close();
+    const unavailable=await browser.newPage();
+    await unavailable.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('quota');};});
+    await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.story-skip').click();
+    assert.match(await unavailable.locator('.save-warning').innerText(),/保存できません/);
+    await unavailable.close();assert.deepEqual(errors,[],'no runtime errors including story and records');
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);
   }
 } finally {server.kill();}
