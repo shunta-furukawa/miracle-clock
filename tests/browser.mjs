@@ -9,7 +9,7 @@ try {
   for(const [name,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.TEST_BROWSER||process.env.TEST_BROWSER===name)) {
     const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-    async function skipDialogue(){if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
+    async function skipDialogue(){if(await page.locator('.opening-film').count()){await page.locator('.opening-skip').click();await page.locator('.story-dialog:not(.story-from-black)').waitFor();}if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
     async function enterLevel(id){await page.locator(`[data-level="${id}"]`).click();await skipDialogue();}
     async function selectDiary(){await page.locator('[data-slot="0"]').click();await skipDialogue();}
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -177,6 +177,16 @@ try {
     assert.match(await diary.locator('[data-slot="0"]').innerText(),/2 \/ 6/);
     await diary.screenshot({path:`artifacts/${name}-diaries-mobile.png`});
     await diary.locator('[data-slot="1"]').click();
+    await diary.locator('.opening-pause').click();
+    assert.equal(await diary.locator('.opening-film.is-paused').count(),1);
+    for(const [width,height] of [[393,852],[852,393],[568,320]]){
+      await diary.setViewportSize({width,height});
+      await diary.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+      assert.equal(await diary.locator('.opening-top,.opening-caption,.opening-progress').evaluateAll(es=>es.every(e=>{const b=e.getBoundingClientRect();return b.x>=0&&b.y>=0&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1;})),true,'prologue controls and captions fit');
+      await diary.screenshot({path:`artifacts/${name}-prologue-${width}x${height}.png`});
+    }
+    await diary.locator('.opening-skip').click();
+    await diary.locator('.story-dialog:not(.story-from-black)').waitFor();
     assert.equal(await diary.locator('.story-dialog').isVisible(),true);
     if(await diary.locator('.story-dialog.is-typing').count())await diary.locator('.story-next').click(); // reveal the first line
     assert.match(await diary.locator('.story-words').innerText(),/小さな配送機/);
@@ -195,7 +205,7 @@ try {
     assert.equal(await diary.locator('.stamp').count(),0,'new diary must not inherit another diary clears');
     await diary.locator('#records').click();await diary.locator('[data-delete-slot="1"]').click();await diary.locator('#delete-cancel').click();
     assert.equal(await diary.locator('[data-delete-slot="1"]').count(),1,'cancel retains diary');
-    await diary.locator('[data-slot="2"]').click();await diary.locator('.story-skip').click();await diary.locator('#records').click();
+    await diary.locator('[data-slot="2"]').click();await diary.locator('.opening-skip').click();await diary.locator('.story-skip').click();await diary.locator('#records').click();
     await diary.locator('[data-delete-slot="1"]').click();await diary.locator('#delete-confirm').click();
     assert.equal(await diary.locator('[data-delete-slot="1"]').count(),0);
     assert.equal(await diary.locator('[data-delete-slot="0"]').count(),1);
@@ -203,12 +213,14 @@ try {
     await diary.reload();await diary.locator('#start').click();await diary.locator('[data-slot="0"]').click();
     assert.equal(await diary.locator('.story-dialog').count(),0,'migrated diary already knows the introduction');
     assert.equal(await diary.locator('.stamp').count(),2,'legacy progress survives slot changes, deletion and reload');
+    await diary.locator('#replay-story').click();await diary.locator('.opening-skip').click();await diary.locator('.story-skip').click();
+    assert.equal(await diary.locator('.stamp').count(),2,'replay retains diary progress');
     const stored=await diary.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')));
     assert.deepEqual(stored.slots[0].cleared,[0,2]);assert.equal(stored.slots[1],null);assert.equal(stored.slots[2].introSeen,true);
     await diary.close();
     const unavailable=await browser.newPage();
     await unavailable.addInitScript(()=>{Storage.prototype.setItem=function(){throw new Error('quota');};});
-    await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.story-skip').click();
+    await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.opening-skip').click();await unavailable.locator('.story-skip').click();
     assert.match(await unavailable.locator('.save-warning').innerText(),/保存できません/);
     await unavailable.close();assert.deepEqual(errors,[],'no runtime errors including story and records');
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);

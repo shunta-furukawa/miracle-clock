@@ -4,6 +4,7 @@ import {elements, elementMark, elementalNumbers} from './elements.js';
 import {freshRecord,loadRecords,saveRecords} from './save.js';
 import {showDialogue,closeDialogue} from './dialogue.js';
 import {clockPrologue,depotStory} from './stories.js';
+import {showOpening,closeOpening} from './opening.js';
 
 const app=document.querySelector('#app');
 const $=selector=>app.querySelector(selector);
@@ -25,14 +26,14 @@ function playSound(kind){
   if(!soundOn)return;
   try{audio ||= new (window.AudioContext||window.webkitAudioContext)();audio.resume();const notes=kind==='stamp'?[164,330,659]:kind==='win'?[523,659,784,1047]:kind==='send'?[440,659,880]:kind==='wrong'?[294,262]:[660];notes.forEach((f,i)=>{const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+i*.12;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.08,t+.015);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.25);});}catch{}
 }
-function cleanup(){closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
+function cleanup(){closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
 function renderHome(){
   cleanup();screen='home';
   app.innerHTML=`<main class="home scene"><div class="vignette"></div><header class="home-header"><span class="edition">MIRACLE MINE の、その先へ</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><div class="title-lockup"><p class="eyebrow">A LITTLE TIME. A BIG ADVENTURE.</p><h1><span>Miracle</span><span>Clock</span></h1><p class="subtitle">ルカと空のとけい便</p><span class="title-rule"></span><p class="home-copy">きみが合わせた時刻に、<br>だれかの「ありがとう」が届く。</p></div><img class="home-plane" src="assets/delivery-plane.webp" alt="荷物を積んだ蒸気飛行機"><div class="home-cast">${portrait(0,'home-luka')}${toto('home-toto')}</div><div class="home-actions"><button class="primary" id="start">空の配送屋さんへ <span>→</span></button><small>時刻を刻んで、空へ届けよう。</small></div><footer class="home-footer">MIRACLE CLOCK <span>配送所と魔法の刻印 · v0.2</span></footer></main>`;
   $('#start').onclick=renderSlots;bindSound();
 }
 function bindSound(){ $('.sound')?.addEventListener('click',e=>{soundOn=!soundOn;e.currentTarget.textContent=`音 ${soundOn?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',soundOn);if(soundOn)playSound('tap');});}
-function showStory(){showDialogue(clockPrologue,()=>{});}
+function showStory(onDone=()=>{}){showOpening(()=>showDialogue(clockPrologue,onDone,{fadeIn:true}),{dial:clockMarkup()});}
 function renderSlots(){
  cleanup();screen='slots';
  app.innerHTML=`<main class="records-page scene"><header class="topbar"><button class="subtle" id="home">← タイトル</button><span class="wordmark">配達の記録</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading"><p class="eyebrow">LUCA & TOTO'S LOGBOOK</p><h1>配達日誌をえらぼう</h1><p>3つの記録で、それぞれの空のとけい便。</p></section><div class="records-grid">${records.slots.map((record,i)=>`<article class="record-card"><button class="record-open" data-slot="${i}" aria-label="配達日誌 ${i+1} ${record?'つづきから':'はじめる'}"><span class="record-heading"><span>LOGBOOK 0${i+1}</span><b>${['Ⅰ','Ⅱ','Ⅲ'][i]}</b></span><img src="assets/delivery-plane.webp" alt=""><strong>${record?'空のとけい便':'新しい配達日誌'}</strong><span>${record?`${record.cleared.length} / 6 配送所を達成`:'ルカと、ここからはじめよう'}</span><span class="record-stamps" aria-label="配送所の達成状況">${levels.map(l=>`<i class="${record?.cleared.includes(l.id)?'done':''}" aria-label="${depotNames[l.id]} ${record?.cleared.includes(l.id)?'達成':'未達成'}">${l.id+1}</i>`).join('')}</span><small>${record?.updated?'最終記録 '+new Date(record.updated).toLocaleDateString('ja-JP'):''}</small><span class="level-go">${record?'つづきから':'はじめる'} →</span></button>${record?`<button class="text-button record-delete" data-delete-slot="${i}" aria-label="配達日誌 ${i+1} のデータを消す">データを消す</button>`:''}</article>`).join('')}</div><p class="records-note">クリアした配送所を、この端末のブラウザに保存します。<br>配達途中の状態は保存されません。</p>${records.migrated?'<p class="records-note">以前の配達記録は、配達日誌1へ引き継ぎました。</p>':''}<p class="save-warning" role="status">${saveNotice}</p></main>`;
@@ -42,7 +43,7 @@ function openSlot(index){
  activeSlot=index;records.active=index;
  if(!records.slots[index])records.slots[index]=freshRecord();
  persistRecords();syncProgress();renderMap();
- if(!records.slots[index].introSeen)showDialogue(clockPrologue,()=>{records.slots[index].introSeen=true;records.slots[index].updated=Date.now();persistRecords();renderMap();});
+ if(!records.slots[index].introSeen)showStory(()=>{records.slots[index].introSeen=true;records.slots[index].updated=Date.now();persistRecords();renderMap();});
 }
 function deleteSlot(index){
  openModal(`<p class="eyebrow">LOGBOOK 0${index+1}</p><h2>この配達日誌を消す？</h2><p>${records.slots[index].cleared.length} / 6 配送所の記録を消します。<br>消したデータは元に戻せません。ほかの日誌は残ります。</p><p id="delete-error" role="alert"></p><button class="primary" id="delete-cancel">やめる</button><button class="secondary danger-button" id="delete-confirm">この日誌を消す</button>`,false);
@@ -51,7 +52,7 @@ function deleteSlot(index){
 function renderMap(){
  cleanup();screen='map';
  app.innerHTML=`<main class="map scene"><header class="topbar"><button class="subtle" id="home">← タイトル</button><span class="wordmark">Miracle Clock</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading"><p class="eyebrow">LUCA & TOTO'S AIR POST</p><h1>今日は、どの配送所を開く？</h1><p>島の住民から荷物を預かり、時刻を刻んで空へ。</p></section><div class="level-grid">${levels.map(l=>`<button class="level-card" data-level="${l.id}"><div class="level-art">${portrait(l.id%5+1)}<span class="chapter-number">0${l.id+1}</span>${progress[l.id]?' <span class="stamp">配達ずみ</span>':''}</div><div class="level-details"><span class="eyebrow">${depotNames[l.id]}</span><h2>${l.title}</h2><p>${l.skill}</p><span class="level-go">配送所をひらく →</span></div></button>`).join('')}</div><p class="save-note">配達日誌 ${activeSlot+1} · ${Object.keys(progress).length} / 6 配送所を達成</p><div class="map-record-actions"><button class="secondary" id="records">配達日誌をえらび直す</button><button class="secondary" id="replay-story">はじまりの物語を見返す</button></div><p class="save-warning" role="status">${saveNotice}</p></main>`;
- $('#home').onclick=renderHome;$('#records').onclick=renderSlots;$('#replay-story').onclick=showStory;bindSound();document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>chooseLevel(levels[Number(b.dataset.level)]));
+ $('#home').onclick=renderHome;$('#records').onclick=renderSlots;$('#replay-story').onclick=()=>showStory();bindSound();document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>chooseLevel(levels[Number(b.dataset.level)]));
 }
 function chooseLevel(level){showDialogue(depotStory(level),()=>levelDetails(level));}
 function levelDetails(level){openModal(`<div class="modal-companion">${toto()}</div><p class="eyebrow">第${level.id+1}章 · ${depotNames[level.id]}</p><h2>${level.title}</h2><p>${level.intro}</p><div class="lesson">${level.lesson}</div><button class="primary" id="practice">トトじいと練習 <small>行列なし・3件</small></button><button class="secondary" id="open-shop">お店をひらく <small>${level.count}件お届け・行列あり</small></button>`);$('#practice').onclick=()=>{closeModal();startLevel(level,true);};$('#open-shop').onclick=()=>{closeModal();startLevel(level,false);};}

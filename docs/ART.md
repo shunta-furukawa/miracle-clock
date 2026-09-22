@@ -67,3 +67,5 @@ Prompt: Create exactly twelve isolated front-facing octagonal brass-mounted mine
 
 ### 会話の立ち絵
 `dialogue-cast-safe.webp` と `cast-expressions-safe.webp` は Miracle Mine の同名素材をそのまま共用。会話背景は各配送所の既存画像を使用する。
+
+プロローグの冒頭は Miracle Mine の `sky-world.webp` を共用。残る場面は Clock の既存配送所・郵便局・機体画像を使用し、時計はゲームと同じ文字盤を重ねて表示する。
