@@ -9,6 +9,18 @@ try {
   for(const [name,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.TEST_BROWSER||process.env.TEST_BROWSER===name)) {
     const browser=await engine.launch({headless:true,...(name==='chromium'?{args:['--enable-unsafe-swiftshader'],...(process.env.TEST_CHROMIUM_PATH?{executablePath:process.env.TEST_CHROMIUM_PATH}: {})}: {})});
     const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+    async function checkMenuInsets(){
+      const previous=page.viewportSize();
+      for(const size of [{width:375,height:667},{width:393,height:852},{width:844,height:390}]){
+        await page.setViewportSize(size);const top=size.width<size.height?59:0,left=top?0:44;
+        const style=await page.addStyleTag({content:`:root{--menu-safe-top:${top}px;--menu-safe-left:${left}px;--menu-safe-right:${left}px}`});
+        const boxes=await page.locator('.topbar>*').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().toJSON()));
+        for(const b of boxes)assert.ok(b.top>=top&&b.left>=left&&b.right<=size.width-left,`menu avoids status bar and notch: ${JSON.stringify(b)}`);
+        await page.screenshot({path:`artifacts/${name}-menu-safe-${await page.locator('.records-page').count()?'diaries':'map'}-${size.width}.png`});
+        await style.evaluate(e=>e.remove());
+      }
+      await page.setViewportSize(previous);
+    }
     async function skipDialogue(){if(await page.locator('.opening-film').count()){await page.locator('.opening-skip').click();await page.locator('.story-dialog:not(.story-from-black)').waitFor();}if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
     async function enterLevel(id){await page.locator(`[data-stage="${[0,6,12,18,26,35][id]}"]`).click();await skipDialogue();}
     async function selectDiary(){await page.locator('[data-slot="0"]').click();await skipDialogue();}
@@ -24,7 +36,7 @@ try {
     };
     assert.equal(await overflow(),false,'mobile home must fit');
     await page.getByRole('button',{name:/冒険を(はじめる|つづける)/}).click();
-    await selectDiary();
+    await checkMenuInsets();await selectDiary();await checkMenuInsets();
     await enterLevel(0);
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.locator('#open-shop').click();
