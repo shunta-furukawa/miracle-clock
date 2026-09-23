@@ -1,0 +1,25 @@
+/* The same two-column play area as phone landscape, scaled for taller screens. */
+@media (orientation:landscape) and (min-height:601px) {
+ .game{display:grid;height:100dvh;min-height:0;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;padding:env(safe-area-inset-top,0px) max(16px,var(--safe-right)) max(12px,var(--safe-bottom)) max(16px,var(--safe-left));background-attachment:scroll}
+ .game .game-top{padding:8px 16px;min-height:60px}
+ .game .game-workspace{display:grid;position:relative;min-width:0;min-height:0;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:clamp(140px,24dvh,230px) auto minmax(0,1fr);gap:16px 24px}
+ .game .play-layout,.game .clock-station{display:contents}
+ .game .companion-side,.game .toto-side,.game .clock-status{display:none}
+ .game .queue-area{grid-column:2;grid-row:1;margin:0;width:100%;max-width:none;height:100%;min-height:0;grid-template-columns:40px minmax(0,1fr) 82px;gap:8px;padding:10px;align-items:end}
+ .game .queue-area .queue-track{height:100%;width:100%;padding:32px 0 3px;align-items:flex-end}
+ .game .queue-track .customer{height:clamp(58px,10dvh,90px);flex:0 0 25%;width:25%;margin-right:-15%}
+ .game .queue-track .customer .portrait{width:100%;max-width:clamp(58px,10dvh,90px);height:auto}
+ .game .queue-track .customer.active .customer-bubble{font-size:9px;min-width:70px;bottom:calc(100% + 3px)}
+ .game #queue-count,.game #queue-lead{padding-bottom:8px}
+ .game .clock-bay{display:grid;place-items:center;grid-column:1;grid-row:1/4;container-type:size;min-width:0;min-height:0;width:100%;height:100%;padding-bottom:56px}
+ .game .clock-housing{width:min(100cqw,100cqh);height:auto;aspect-ratio:1;margin:0;padding:0;min-width:0;min-height:0}
+ .game .clock-housing #clock{position:absolute;inset:0;width:100%;height:100%}
+ .game .order-ticket{grid-column:2;grid-row:2;padding:16px;min-width:0}
+ .game .request{white-space:normal;flex-wrap:wrap}.game .request strong{font-size:clamp(28px,3vw,42px)}
+ .game .station-controls{grid-column:2;grid-row:3;align-self:start;gap:12px;min-width:0}
+ .game .hand-controls,.game .period-toggle,.game .period-toggle:not([hidden])+.hand-controls{margin:0}
+ .game .hand-select,.game .adjust{min-height:52px;height:52px}.game .adjust{width:52px}
+ .game .clock-tools{position:absolute;left:0;bottom:0;width:calc((100% - 24px)*1.15/2.15);height:44px;margin:0;gap:16px}
+ .game .clock-tools button{min-height:44px;font-size:13px;padding:6px}
+ .game .feedback{margin:0;min-height:44px;padding:8px 12px}
+}

@@ -152,7 +152,7 @@ try {
     await page.locator('#open-shop').click();
     await page.locator('#hint').click();
     assert.equal(await page.locator('#clock image.gem-art').count(),12,'all hour stones are image assets');
-    for(const size of [{width:393,height:852},{width:852,height:393},{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
+    for(const size of [{width:393,height:852},{width:852,height:393},{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664},{width:1024,height:768},{width:1180,height:820},{width:1366,height:1024},{width:1024,height:650}]) {
       await page.setViewportSize(size);
       // Desktop WebKit does not expose iPhone notch insets; inject equivalent CSS inputs.
       const inset=await page.addStyleTag({content:'.game{--safe-left:44px;--safe-right:44px;--safe-bottom:21px}'+(size.width===393?'.game{--safe-bottom:34px}.game-top{padding-top:59px}':'')});
@@ -168,6 +168,13 @@ try {
       assert.equal(crowd.hearts,3);
       const speech=await page.evaluate(()=>{const q=document.querySelector('.queue-area').getBoundingClientRect(),b=document.querySelector('.customer.active .customer-bubble').getBoundingClientRect(),c=document.querySelector('.customer.active .portrait').getBoundingClientRect();return {inside:b.top>=q.top&&b.bottom<=q.bottom&&b.left>=q.left&&b.right<=q.right,above:b.bottom<=c.top+1};});
       assert.ok(speech.inside&&speech.above,`speech stays above the character and inside the queue at ${size.width}x${size.height}`);
+      const art=await page.locator('.queue-backdrop').evaluate(el=>{const m=el.getScreenCTM();return {x:Math.hypot(m.a,m.b),y:Math.hypot(m.c,m.d)};});
+      assert.ok(Math.abs(art.x-art.y)<.001,'reception artwork scales uniformly without stretching');
+      if(size.width>size.height&&size.height>600){
+        assert.equal(await page.locator('.companion-side').isVisible(),false);
+        assert.equal(await page.locator('.toto-side').isVisible(),false);
+        assert.ok(boxes.find(b=>b.selector==='#clock').width>=size.width*.4,'tablet prioritizes a large dial');
+      }
       const seal=boxes.find(b=>b.selector==='#seal-button');
       assert.ok(seal.width>=44&&seal.height>=44,'central stamp must retain a 44px touch target');
       const message=boxes.find(b=>b.selector==='#feedback');
@@ -208,7 +215,7 @@ try {
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
     assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0','0','0','0']);
     assert.equal(await page.locator('.customer .queue-resident[data-facing="left"]').count(),5,'guide and all residents face the reception desk');
-    assert.match(await page.locator('.queue-track').evaluate(el=>getComputedStyle(el,'::before').backgroundImage),/queue-places/,'customers stand in their illustrated reception area');assert.ok(await page.locator('.customer[data-mood=waiting],.customer[data-mood=tired]').count()>0,'waiting moods are retained with the queue sprites');
+    assert.match(await page.locator('.queue-backdrop image').getAttribute('href'),/queue-places/,'customers stand in their illustrated reception area');assert.ok(await page.locator('.customer[data-mood=waiting],.customer[data-mood=tired]').count()>0,'waiting moods are retained with the queue sprites');
     await page.clock.runFor(700);
     await page.screenshot({path:`artifacts/${name}-waiting-queue.png`,animations:'disabled'});
     assert.equal(await page.locator('.customer').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).opacity==='1')),true,'all waiting residents remain visible');

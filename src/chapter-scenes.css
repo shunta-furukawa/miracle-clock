@@ -12,7 +12,7 @@
 @keyframes reward-dock{0%{left:50%;top:58%;transform:translate(-50%,-50%) scale(1)}30%{left:44%;top:25%;transform:translate(-50%,-50%) scale(1.08) rotate(-8deg)}100%{left:var(--dock-x);top:var(--dock-y);transform:translate(-50%,-50%) scale(.25) rotate(0)}}
 @keyframes reward-impact{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.5)}}
 /* A real floor and a left-hand reception desk behind the horizontal queue. */
-.game .queue-track:before{content:"";position:absolute;inset:0 -2px -3px -10px;border-radius:7px;background:url(assets/queue-places.webp) var(--queue-x) var(--queue-y)/200% 400% no-repeat;box-shadow:inset 0 -1px 0 #714d28;pointer-events:none}
+.game .queue-backdrop{position:absolute;inset:0;width:100%;height:100%;border-radius:7px;overflow:hidden;pointer-events:none;box-shadow:0 1px 0 #714d28}
 .game .queue-track{padding-left:15px!important;padding-bottom:3px!important}.game .queue-track .customer:not(.active){transform:none}.game .queue-track .customer:after{content:"";position:absolute;bottom:0;left:17%;width:66%;height:6px;border-radius:50%;background:#271c1570;filter:blur(1px);z-index:-1}.game .queue-track .queue-resident{background:none!important;overflow:hidden;transform-origin:50% 100%}
 @media(prefers-reduced-motion:reduce){.reward-scene.installed .reward-impact{animation:none}.reward-scene.installed .reward-before{transition:none}}
 
