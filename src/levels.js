@@ -48,23 +48,25 @@ export function makeOrder(level,index){
  const format=question.format==='24'||question.stageId===undefined&&question.id===4&&index>=4?'24':period?'period':'12';
  let label=duration?durationText(duration):timeText(target,format);
  if(question.format==='half'&&index%2===0)label=label.replace('30分','半');
- return {...person,waited:0,origin:depotNames[level.id],orderId:index,characterId:person.id,target,base,duration,period,step,label,questionChapter:question.id,nextDay:!!duration&&base+duration>=1440};
+ return {...person,waited:0,attended:0,origin:depotNames[level.id],orderId:index,characterId:person.id,target,base,duration,period,step,label,questionChapter:question.id,nextDay:!!duration&&base+duration>=1440};
 }
 export const prepareDial=(order,current=720)=>order.duration?order.base:normalizeTime(Math.round(current/order.step)*order.step);
 export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):0;
-export function createSession(level,lives=3){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count,maxLives:level.endless?null:lives===6?6:3,lives:level.endless?null:lives===6?6:3};}
+export const patienceLimit=level=>Math.max(50,([100,100,105,120,125,145][level.id]||110)-(level.number||1)*5);
+export function createSession(level,lives=3){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,departed:0,processed:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count,maxLives:level.endless?null:lives===6?6:3,lives:level.endless?null:lives===6?6:3};}
 export function tickSession(s,seconds){
  if(s.status!=='playing'||!Number.isFinite(seconds)||seconds<0)return;
- s.activeTime+=seconds;for(const order of s.queue)order.waited+=seconds;
+ s.activeTime+=seconds;for(const order of s.queue)order.waited+=seconds;if(s.queue[0])s.queue[0].attended+=seconds;
  const interval=arrivalInterval(s);if(!interval)return;
  s.elapsed+=seconds;
  while(s.elapsed>=interval&&s.generated<s.level.count){s.elapsed-=interval;if(s.queue.length>=s.capacity){s.status='over';return;}s.queue.push(makeOrder(s.level,s.generated++));if(s.queue.length>=s.capacity){s.status='over';return;}}
 }
-export function completeOrder(s){if(s.status!=='playing')return;s.queue.shift();s.delivered++;if(s.delivered>=s.level.count){s.status='cleared';return;}if(!s.queue.length)s.queue.push(makeOrder(s.level,s.generated++));}
+function advanceQueue(s){s.processed++;if(!s.level.endless&&s.processed>=s.level.count){s.status='cleared';return;}if(!s.queue.length)s.queue.push(makeOrder(s.level,s.generated++));}
+export function completeOrder(s){if(s.status!=='playing')return;s.queue.shift();s.delivered++;advanceQueue(s);}
 export const starGoal=stage=>({time:Math.round(stage.count*stage.starPace),twoTime:Math.round(stage.count*stage.starPace*1.6),mistakes:0,twoMistakes:2});
 export function rateRun(stage,session){const goal=starGoal(stage),time=Math.round(session.activeTime*10)/10,mistakes=session.mistakes;return {stars:time<=goal.time&&mistakes===0?3:time<=goal.twoTime&&mistakes<=2?2:1,time,mistakes};}
 export function betterRecord(a,b){if(!a)return b;if(a.stars!==b.stars)return a.stars>b.stars?a:b;if(a.mistakes!==b.mistakes)return a.mistakes<b.mistakes?a:b;return a.time<=b.time?a:b;}
 export const starText=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 export const totalStars=r=>Object.values(r?.stars||{}).reduce((n,s)=>n+s.stars,0);
 
-export function recordMistake(s){if(s.status!=='playing')return;s.mistakes++;if(!s.level.endless){s.lives=Math.max(0,s.lives-1);if(s.lives===0)s.status='over';}}
+export function recordMistake(s){if(s.status!=='playing')return;s.mistakes++;s.departed++;s.queue.shift();if(!s.level.endless){s.lives=Math.max(0,s.lives-1);if(s.lives===0){s.processed++;s.status='over';return;}}advanceQueue(s);}

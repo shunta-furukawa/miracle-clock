@@ -57,6 +57,7 @@ try {
     await page.waitForFunction(()=>document.body.classList.contains('flying'));
     await page.waitForTimeout(500);
     await page.screenshot({path:`artifacts/${name}-flight.png`});
+    await page.locator('#skip-delivery').click();
     console.log(name,'flight renderer:',await page.locator('#flight-viewport').getAttribute('data-renderer')||'painted fallback');
     await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
     async function setTime(hours,minutes=0,period){
@@ -68,7 +69,7 @@ try {
       for(let n=0;n<(hours-currentHour+12)%12;n++)await page.locator('#plus').click();
       if(period!==undefined)await page.locator(`[data-period="${period}"]`).click();
     }
-    await setTime(6);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
+    await setTime(6);await page.locator('#seal-button').click();await page.locator('#skip-delivery').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();assert.match(await page.locator('#queue-count').innerText(),/1/);
     await setTime(9);await page.locator('#seal-button').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
     assert.equal(await page.locator('.star-result').count(),1);
     for(const [width,height] of [[844,390],[568,320],[375,667]]){
@@ -91,9 +92,9 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(4);await page.locator('#open-shop').click();
     await setTime(3,30,1);await page.locator('#seal-button').click();
-    await page.getByRole('status').filter({hasText:'午前'}).waitFor();
+    await page.locator('.customer.leaving').waitFor();await page.waitForFunction(()=>!document.querySelector('.customer.leaving'));
     assert.equal(await page.locator('#score').innerText(),'0 / 5 便','wrong period must not dispatch');
-    await page.locator('[data-period="0"]').click();await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
+    await setTime(3,30,1);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'1 / 5'}).waitFor();
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(5);await page.locator('#open-shop').click();
     await page.screenshot({path:`artifacts/${name}-relative-mobile.png`});
@@ -117,8 +118,7 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await enterLevel(5);
     await page.locator('#open-shop').click();
-    await page.locator('#seal-button').click();
-    assert.ok((await page.locator('#feedback').innerText()).includes('まだ刻印'));
+    await page.locator('#hint').click();
     assert.equal(await page.locator('#clock image.gem-art').count(),12,'all hour stones are image assets');
     for(const size of [{width:393,height:852},{width:852,height:393},{width:844,height:390},{width:844,height:300},{width:667,height:320},{width:568,height:320},{width:375,height:667},{width:390,height:664}]) {
       await page.setViewportSize(size);
@@ -130,6 +130,10 @@ try {
         const selectors=['#clock','#order','#period-toggle','.hand-controls','#seal-button','.clock-tools','.queue-area','.clock-housing','#feedback'];
         return selectors.map(selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {selector,x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};});
       });
+      const crowd=await page.evaluate(()=>{const area=document.querySelector('.queue-area').getBoundingClientRect(),actors=[...document.querySelectorAll('.customer')].map(e=>e.getBoundingClientRect()),gauge=document.querySelector('.patience').getBoundingClientRect();return {horizontal:actors.every((b,i)=>!i||b.x>actors[i-1].x&&b.x<actors[i-1].right),gaugeInside:gauge.top>=area.top&&gauge.bottom<=area.bottom,hearts:document.querySelectorAll('.heart-vessel.full').length};});
+      assert.ok(crowd.horizontal,`overlapping horizontal queue at ${size.width}x${size.height}`);
+      assert.ok(crowd.gaugeInside,'front customer patience gauge stays inside queue');
+      assert.equal(crowd.hearts,3);
       const seal=boxes.find(b=>b.selector==='#seal-button');
       assert.ok(seal.width>=44&&seal.height>=44,'central stamp must retain a 44px touch target');
       const message=boxes.find(b=>b.selector==='#feedback');
@@ -163,7 +167,7 @@ try {
     await page.setViewportSize({width:844,height:390});
     await page.clock.install();
     await page.locator('[data-stage="2"]').click();await page.locator('#open-shop').click();
-    await page.clock.fastForward(52000);await page.clock.fastForward(26000);
+    await page.clock.fastForward(40000);await page.clock.fastForward(21000);
     assert.equal(await page.locator('.customer').count(),5);
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
     assert.deepEqual(await page.locator('.customer').evaluateAll(nodes=>nodes.map(n=>n.dataset.region)),['0','0','0','0','0']);
@@ -255,23 +259,28 @@ try {
     life.on('pageerror',e=>errors.push(e.message));
     await life.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.records.v2'))localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]}));});
     await life.clock.install();await life.goto('http://127.0.0.1:4173');await life.locator('#start').click();await life.locator('[data-slot="0"]').click();await life.locator('[data-stage="0"]').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();
-    assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
-    await life.clock.runFor(120000);assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
-    for(let n=0;n<3;n++)await life.locator('#seal-button').click();
+    assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
+    await life.locator('#pause').click();await life.clock.runFor(120000);await life.locator('#resume').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
+    for(let n=0;n<3;n++){await life.locator('#seal-button').click();await life.clock.runFor(250);}
     await life.locator('#retry-assisted').waitFor();
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[]);
     await life.screenshot({path:`artifacts/${name}-lives-failure.png`});
-    await life.locator('#result-main').click();assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
-    for(let n=0;n<3;n++)await life.locator('#seal-button').click();
+    await life.locator('#result-main').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
+    for(let n=0;n<3;n++){await life.locator('#seal-button').click();await life.clock.runFor(250);}
     await life.setViewportSize({width:568,height:320});await life.locator('#retry-assisted').click();
-    assert.match(await life.locator('#lives').innerText(),/6 \/ 6.*おてつだい/);
-    for(let n=0;n<5;n++)await life.locator('#seal-button').click();
-    assert.match(await life.locator('#lives').innerText(),/1 \/ 6/);
+    assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り6、最大6.*おてつだい/);
+    for(let n=0;n<2;n++){await life.locator('#seal-button').click();await life.clock.runFor(250);}
+    assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り4、最大6/);
     await life.screenshot({path:`artifacts/${name}-lives-assisted-landscape.png`});
-    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await life.locator('#plus').click();await life.locator('#seal-button').click();await life.clock.runFor(1000);}
-    assert.equal(await life.locator('.star-result').getAttribute('data-stars'),'1');
-    await life.locator('#result-main').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').innerText(),/3 \/ 3/);
+    for(let n=0;n<9;n++)await life.locator('#plus').click();await life.locator('#seal-button').click();await life.clock.runFor(1000);
+    assert.equal(await life.locator('.star-result').getAttribute('data-stars'),'2');
+    await life.locator('#result-main').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
+    const patience=await browser.newPage({viewport:{width:568,height:320},reducedMotion:'reduce'});
+    await patience.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
+    await patience.clock.install();await patience.goto('http://127.0.0.1:4173');await patience.locator('#start').click();await patience.locator('[data-slot="0"]').click();await patience.locator('[data-stage="0"]').click();await patience.locator('.story-skip').click();await patience.locator('#open-shop').click();
+    await patience.clock.runFor(95500);assert.match(await patience.locator('#lives').getAttribute('aria-label'),/残り2/);assert.match(await patience.locator('#queue-count').innerText(),/2/);assert.equal(await patience.locator('.patience').getAttribute('aria-valuenow'),'100');
+    await patience.close();
     // Central special stage is endless and saves every completed delivery.
     await page.getByRole('button',{name:'一時停止'}).click();await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.locator('#endless').click();await skipDialogue();await page.locator('#open-shop').click();

@@ -80,6 +80,7 @@ export function createFlight(host) {
   const p=sphere(.13,m,0,0,0,1,1,1,scene);p.castShadow=false;p.receiveShadow=false;smoke.push(p);
  }
  const trajectory=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(.25,.6,0),new THREE.Vector3(2,1.3,-.4),new THREE.Vector3(4,2.3,-3),new THREE.Vector3(1,4,-12)]);
+ let destination=0;
  let raf=0,start=0,duration=0,disposed=false,elapsed=0,previous=0;
  const resize=()=>{const b=host.getBoundingClientRect();if(!b.width||!b.height)return;renderer.setSize(b.width,b.height,false);camera.aspect=b.width/b.height;camera.updateProjectionMatrix();};
  const observer=new ResizeObserver(resize);observer.observe(host);
@@ -99,12 +100,14 @@ export function createFlight(host) {
    q.scale.setScalar(.35+t*2.8);q.material.opacity=(1-t)*.36;
   }
   plane.scale.setScalar(1-fly*.15);
+  camera.position.set(7+(destination%3-1)*.65-fly*.3,4.2+(destination%2)*.4+fly*.4,8.5+(destination%3-1)*.4);camera.lookAt(fly*.4,.2+fly*.5,0);
   renderer.render(scene,camera);
   if(p<1)raf=requestAnimationFrame(render);
  };
  const onLost=e=>{e.preventDefault();host.closest('.flight-layer')?.classList.remove('has-3d');cancelAnimationFrame(raf);};canvas.addEventListener('webglcontextlost',onLost);
  return {
-  play(ms){if(disposed||gl.isContextLost()){host.closest('.flight-layer')?.classList.remove('has-3d');return false;}cancelAnimationFrame(raf);resize();duration=ms;elapsed=0;start=previous=performance.now();render(start);return true;},
+  stop(){cancelAnimationFrame(raf);},
+  play(ms,place=0){destination=place;sun.color.setHex([0xffedbf,0xd6efff,0xe0dbff,0xffc898,0xf1e5ff,0xffdda6][place%6]);rim.color.setHex([0xbddbc6,0xa4dcff,0xccb9ff,0xffdf9f,0xc2e7ff,0xffd6b0][place%6]);if(disposed||gl.isContextLost()){host.closest('.flight-layer')?.classList.remove('has-3d');return false;}cancelAnimationFrame(raf);resize();duration=ms;elapsed=0;start=previous=performance.now();render(start);return true;},
   dispose(){disposed=true;cancelAnimationFrame(raf);observer.disconnect();canvas.removeEventListener('webglcontextlost',onLost);geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());environment.dispose();sun.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();}
  };
 }
