@@ -93,3 +93,9 @@ Built-in image generation, matching Miracle Mine's title-logo.webp and Clock's m
 - `src/icons/luca-clock-{180,192,512}.png`: new square app icon, Luca's smiling face with the existing gemstone-ring magic clock and a parcel. Prompt: "Luca's exact character: chestnut hair, amber eyes, aviator goggles, orange scarf, teal jacket. Face principal subject, magic clock clear secondary subject: brass/wood ring, teal enamel, colorful gemstones, ivory face, teal short hand and copper long hand. Kraft parcel, deep teal full bleed background. Warm storybook paint, readable at 60 pixels, no text."
 - `src/assets/menu-icons.webp`: shared existing Miracle Mine menu sprite, used for the adventure, instructions and settings buttons.
 Generated source PNGs converted/resized for delivery; logo alpha preserved. Original clock-only icons retained as previous assets; all active manifest and Apple icon references use the Luca version.
+
+## 配送所と中央配送所の開所準備（0.4.0）
+
+- `depot-icons.webp`: 3列×2行。森の受付小屋、港の荷物桟橋、結晶の洞窟受付、真鍮の工房、雲の通信所、砂丘の温室。各章の緑・青緑・紫・銅・空色・淡い赤を使った、真鍮枠の円形メダリオン。人物の肖像の代わりに使用。
+- `central-preparation.webp`: 4列×2行の固定視点。閉じた配送所から、受付カウンター→荷物棚→結晶の案内灯→仕分け機→通信塔→花の開所看板の順に加わる。最後の補助セルは夕景。温かな絵本風、木・真鍮・浮遊島の空の港。文字は画像に焼き込まずUIで表示。
+- 生成時は既存の配送所・タイトルの画像を参照。アトラスのセル位置は `depot.js` にまとめ、CSSの背景位置で描画。

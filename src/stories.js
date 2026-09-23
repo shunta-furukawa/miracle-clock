@@ -4,7 +4,7 @@ export const clockPrologue={title:'空のとけい便、開店！',scene:0,partn
  {who:'ルカ',text:'この時計で、お届けする時刻を決めるんだね。'},
  {who:'トトじい',text:'そうじゃ。針を合わせて、真ん中の刻印を押す。荷札に時刻の魔法が宿るぞ。'},
  {who:'ルカ',text:'あとは小さな飛行機におまかせ！ ぼくらは次のお客さんを迎えるんだ。'},
- {who:'トトじい',text:'約束の時刻に届くと、みんなうれしい。まずは森の配送所から始めよう。',expression:'emotion'}
+ {who:'トトじい',text:'島の配送所を繁盛させて、みんなと中央配送所の開所を準備するんじゃ。まずは森から始めよう。',expression:'emotion'}
 ]};
 const depotConversations=[
  ['モス','森の配送所','花のたねを、港の友だちに送りたいんだ。3時に届けてくれる？','うん！ 短い針を3に、長い針を12に合わせるよ。','森のみんなにも知らせてくるよ。ここへ荷物を持ってくればいいんだね。','たねが届いたって！ 港でも、森の花が咲くのが楽しみだな。','時計の針と、約束の時刻。ちょっと仲よくなれた気がする！'],
@@ -16,3 +16,13 @@ const depotConversations=[
  ['トトじい','空の中央配送所','ルカ、ふたりで中央配送所をひらこう。森から砂丘まで、みんなの荷物をここで預かるんじゃ。','これまで出会ったみんなが来るんだね。時計の読み方も、全部使ってみよう！','うむ。終わりのない空の便じゃ。行列がいっぱいになるまで、いくつ届けられるかのう。','今日もたくさんの約束が届いたのう。','また一緒に、空の便をひらこうね！']
 ];
 export function depotStory(level,ending=false){const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
+
+const growingMessages=[
+ ['ふたばたちにも、この配送所のことを教えたよ。','森の仲間が、お昼の荷物を持ってきたんだ。','12時をこえる便も頼めるって、評判だよ。','今日は花のたねも、はちみつもたくさん！','森のみんなが頼りにしてるよ。最後の便もお願い！'],
+ ['贈りものを送りたい仲間が来てくれたわ。','ぴったりの時刻と半の便、両方お願いね。','朝じたくの荷物が集まってきたわ。','お茶会の招待状を見て、みんな並んでいるの。','港の大事な便を任せられるお店になったわね。'],
+ ['結晶の灯りを見て、仲間が集まってきたよ。','いろいろな時間の注文も増えてきたんだ。','次の時刻をまたぐ便も、君なら安心だね。','島中の灯りを届ける、にぎやかな便だよ。','洞窟のみんなから、最後の結晶便をお願い！'],
+ ['工房の仲間も部品を送りたいんだって。','5分刻みの便が評判で、注文が増えたよ。','今度は1分刻み。小さな部品ほど時間が大切なんだ。','職人たちが次々に荷物を持ってくるよ。','工房の配送係として、最後の便を頼んだよ！'],
+ ['午後の手紙を送りたい仲間が並んでいるよ。','朝も夜も頼めるって、評判になったんだ。','昼の12時と夜の12時、注文をよく見ようね。','24時間の言い方で頼むお客さんも増えたよ。','空のたよりを集めて、最後の便を届けよう！'],
+ ['お茶の便も増えて、温室がにぎやかになってきたよ。','時刻をまたいでも、苗が元気に届くようにお願いね。','遠い温室から、何時間後の注文も来たんだ。','育った苗がいっぱい！ 出荷の列も長くなったね。','明日のお届けまで任せられるね。中央配送所までもう少し！']
+];
+export function stageStory(level){if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:`${level.count}人のお客さんが待ってるね。ひとつずつ、時刻を確かめて刻印しよう！`}]};}

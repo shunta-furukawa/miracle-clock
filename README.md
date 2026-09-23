@@ -88,3 +88,9 @@ Safari の共有 → ホーム画面に追加 →「Webアプリとして開く�
 
 ### Title and app updates
 The title matches Miracle Mine's illustrated logo / parchment-button layout. It shows `Ver. 0.3.0`, a generated Miracle Clock emblem and a Luca-with-clock app icon. `更新を確認` is always available on the title. It reports download progress, a ready update, the latest version or a retryable connection failure. `新しい版であそぶ` activates a fully downloaded release and reloads without clearing diary data. The build emits a content-based `version.json` and an HTML build identifier. Precache downloads revalidate resources; code, CSS, HTML and manifests are served with revalidation headers.
+
+### 配送所の繁盛と開所準備（0.4.0）
+
+各章は6つの小さな便ボタンで選択します。全36便に開店前の会話があり、来客数とお店の評判が徐々に増えます。選んだ章のBGMは会話・プレイ・結果・配送所選択を通して継続し、別の章を選ぶと切り替わります。
+
+各章の6便をクリアすると、中央配送所へ受付カウンター／荷物棚／案内灯／仕分け機／通信塔／開所看板が届きます。「中央配送所のしたく」で設備と贈り物を見返せます。獲得状態は各配達日誌の既存ステージ記録から算出するため、以前クリアした章にも反映されます。全36便で中央便のエンドレスを開所できます。

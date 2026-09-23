@@ -37,6 +37,14 @@ try {
     assert.equal(await overflow(),false,'mobile home must fit');
     await page.getByRole('button',{name:/冒険を(はじめる|つづける)/}).click();
     await checkMenuInsets();await selectDiary();await checkMenuInsets();
+    for(const size of [{width:375,height:667},{width:844,height:390}]){
+      await page.setViewportSize(size);
+      const buttons=await page.locator('.chapter').first().locator('.stage').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().toJSON()));
+      assert.equal(buttons.length,6);assert.ok(buttons.every(b=>Math.abs(b.top-buttons[0].top)<1&&b.width>=38),'six compact stages remain in one row');
+      assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-compact-map-${size.width}.png`});
+    }
+    await page.locator('#preparations').click();assert.equal(await page.locator('.reward-card.earned').count(),6);assert.match(await page.locator('.preparation-count').innerText(),/6 \/ 6/);
+    await page.screenshot({path:`artifacts/${name}-central-ready.png`});await page.locator('#back-map').click();await page.setViewportSize({width:390,height:844});
     await enterLevel(0);
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.locator('#open-shop').click();
@@ -178,7 +186,7 @@ try {
     await page.getByRole('button',{name:'配送所えらびにもどる',exact:true}).click();
     await page.setViewportSize({width:844,height:390});
     await page.clock.install();
-    await page.locator('[data-stage="2"]').click();await page.locator('#open-shop').click();
+    await page.locator('[data-stage="2"]').click();await skipDialogue();await page.locator('#open-shop').click();
     await page.clock.fastForward(40000);await page.clock.fastForward(21000);
     assert.equal(await page.locator('.customer').count(),5);
     assert.equal(await page.locator('.customer.active').getAttribute('data-mood'),'tired');
@@ -286,8 +294,19 @@ try {
     await life.screenshot({path:`artifacts/${name}-lives-assisted-landscape.png`});
     for(let n=0;n<9;n++)await life.locator('#plus').click();await life.locator('#seal-button').click();await life.clock.runFor(1000);
     assert.equal(await life.locator('.star-result').getAttribute('data-stars'),'2');
-    await life.locator('#result-main').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
+    await life.locator('#result-main').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
+    const gift=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
+    await gift.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
+    await gift.clock.install();await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();
+    for(let customer=0;customer<8;customer++){
+      const target=Number((await gift.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12;
+      const current=Number(await gift.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
+      for(let i=0;i<(target-current+12)%12;i++)await gift.locator('#plus').click();
+      await gift.locator('#seal-button').click();await gift.locator('#skip-delivery').click();await gift.clock.runFor(1000);
+    }
+    await gift.locator('.story-skip').click();await gift.locator('.reward-modal').waitFor();assert.match(await gift.locator('.reward-modal h2').innerText(),/受付カウンター/);assert.equal(await gift.locator('.reward-scene>.central-art').getAttribute('aria-label'),'中央配送所の準備 1 / 6');
+    await gift.evaluate(async()=>{const image=new Image();image.src='assets/central-preparation.webp';await image.decode();});await gift.screenshot({path:`artifacts/${name}-first-chapter-gift.png`});await gift.locator('#reward-done').click();await gift.locator('#result-map').click();await gift.locator('#preparations').click();assert.equal(await gift.locator('.reward-card.earned').count(),1);await gift.screenshot({path:`artifacts/${name}-central-preparation-mobile.png`});await gift.close();
     const patience=await browser.newPage({viewport:{width:568,height:320},reducedMotion:'reduce'});
     await patience.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await patience.clock.install();await patience.goto('http://127.0.0.1:4173');await patience.locator('#start').click();await patience.locator('[data-slot="0"]').click();await patience.locator('[data-stage="0"]').click();await patience.locator('.story-skip').click();await patience.locator('#open-shop').click();
