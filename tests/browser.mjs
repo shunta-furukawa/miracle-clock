@@ -83,12 +83,6 @@ try {
     await page.screenshot({path:`artifacts/${name}-stamp.png`});
     await page.waitForFunction(()=>document.body.classList.contains('flying'));
     await page.waitForTimeout(500);
-    for(const size of [{width:844,height:390},{width:568,height:320},{width:390,height:844}]){
-      await page.setViewportSize(size);
-      const overlay=await page.evaluate(()=>{const label=document.querySelector('#skip-delivery span').getBoundingClientRect(),windowBox=document.querySelector('.flight-window').getBoundingClientRect();return {inside:label.top>=windowBox.top&&label.bottom<=windowBox.bottom,feedback:getComputedStyle(document.querySelector('#feedback')).visibility,postmark:getComputedStyle(document.querySelector('.flight-postmark')).visibility};});
-      assert.ok(overlay.inside,'skip prompt stays inside flight panel');assert.equal(overlay.feedback,'hidden');assert.equal(overlay.postmark,'hidden');
-      await page.screenshot({path:`artifacts/${name}-flight-skip-${size.width}.png`});
-    }
     await page.screenshot({path:`artifacts/${name}-flight.png`});
     await page.locator('#skip-delivery').click();
     console.log(name,'flight renderer:',await page.locator('#flight-viewport').getAttribute('data-renderer')||'painted fallback');
@@ -315,12 +309,24 @@ try {
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
     const gift=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
     await gift.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
-    await gift.clock.install();await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();
+    await gift.clock.install({time:new Date('2026-01-01T00:00:00Z')});await gift.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();
     for(let customer=0;customer<8;customer++){
       const target=Number((await gift.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12;
       const current=Number(await gift.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
       for(let i=0;i<(target-current+12)%12;i++)await gift.locator('#plus').click();
-      await gift.locator('#seal-button').click();await gift.locator('#skip-delivery').click();await gift.clock.runFor(1000);
+      await gift.locator('#seal-button').click();
+      if(customer===0){
+        // The virtual clock is already installed before navigation. Freeze the flight while taking rotation screenshots.
+        await gift.clock.runFor(300);
+    for(const size of [{width:844,height:390},{width:568,height:320},{width:390,height:844}]){
+      await gift.setViewportSize(size);
+      const overlay=await gift.evaluate(()=>{const label=document.querySelector('#skip-delivery span').getBoundingClientRect(),windowBox=document.querySelector('.flight-window').getBoundingClientRect();return {inside:label.top>=windowBox.top&&label.bottom<=windowBox.bottom,feedback:getComputedStyle(document.querySelector('#feedback')).visibility,postmark:getComputedStyle(document.querySelector('.flight-postmark')).visibility};});
+      assert.ok(overlay.inside,'skip prompt stays inside flight panel');assert.equal(overlay.feedback,'hidden');assert.equal(overlay.postmark,'hidden');
+      await gift.screenshot({path:`artifacts/${name}-flight-skip-${size.width}.png`});
+    }
+        await gift.setViewportSize({width:390,height:844});
+      }
+      await gift.locator('#skip-delivery').click();await gift.clock.runFor(1000);
     }
     await gift.locator('.story-skip').click();await gift.locator('.reward-modal').waitFor();assert.match(await gift.locator('.reward-modal h2').innerText(),/受付カウンター/);assert.equal(await gift.locator('.reward-scene>.central-art').getAttribute('aria-label'),'中央配送所の準備 1 / 6');
     await gift.evaluate(async()=>{const image=new Image();image.src='assets/central-preparation.webp';await image.decode();});await gift.screenshot({path:`artifacts/${name}-first-chapter-gift.png`});await gift.locator('#reward-done').click();await gift.locator('#result-map').click();await gift.locator('#preparations').click();assert.equal(await gift.locator('.reward-card.earned').count(),1);await gift.screenshot({path:`artifacts/${name}-central-preparation-mobile.png`});await gift.close();
