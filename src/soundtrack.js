@@ -13,7 +13,7 @@ export const MUSIC={
 };
 export const CHAPTER_MUSIC=['forest','sea','cave','volcano','sky','puzzle'];
 export function gameMusicScene(mode,chapter){return mode==='sky'?'voyage':mode==='story'?(CHAPTER_MUSIC[chapter]||'puzzle'):'puzzle';}
-export const EFFECTS=['click','back','select','merge','success','clear','hint','shuffle','assemble','failure','chapter','discard','arrival','intro'];
+export const EFFECTS=['click','back','select','merge','success','clear','hint','shuffle','assemble','failure','chapter','discard','arrival','intro','dial-minute','dial-hour','hand-select'];
 export function audioSettings(value,legacySound=true){
  const result={music:legacySound,sound:legacySound,musicVolume:.45,soundVolume:.6};
  if(value?.version!==1)return result;
@@ -123,15 +123,15 @@ export class Soundtrack{
  async play(name){
   const file=name==='collect'?'click':name;
   if(!EFFECTS.includes(file)||!this.unlocked||this.hidden||!this.settings.sound||!this.settings.soundVolume)return;
-  const now=performance.now(),cooldown=name==='collect'?35:name==='select'?65:100;
+  const now=performance.now(),cooldown=name.startsWith('dial-')?45:name==='collect'?35:name==='select'?65:100;
   if(now-(this.lastEffect.get(name)??-Infinity)<cooldown)return;
   this.lastEffect.set(name,now);const epoch=this.effectEpoch;
   try{
    const buffer=await this.buffer(file+'.mp3');
    // Never replay old input after a slow load, mute or a background transition.
    if(this.hidden||!this.settings.sound||epoch!==this.effectEpoch||performance.now()-now>350||this.context.state!=='running')return;
-   const limit=name==='select'?2:8;
-   if([...this.voices].filter(v=>name!=='select'||v.name==='select').length>=limit)return;
+   const limit=name==='select'||name.startsWith('dial-')?2:8;
+   if([...this.voices].filter(v=>name.startsWith('dial-')?v.name.startsWith('dial-'):name!=='select'||v.name==='select').length>=limit)return;
    const source=this.context.createBufferSource();source.buffer=buffer;source.connect(this.soundBus);
    const voice={source,name};this.voices.add(voice);
    const jingle=['chapter','clear','arrival','intro'].includes(name);if(jingle)this.duck(voice,true);

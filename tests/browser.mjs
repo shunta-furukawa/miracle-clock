@@ -98,7 +98,7 @@ try {
     }
     await setTime(6);await page.locator('#seal-button').click();await page.locator('#skip-delivery').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();assert.match(await page.locator('#queue-count').innerText(),/1/);
     await setTime(9);await page.locator('#seal-button').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
-    assert.equal(await page.locator('.star-result').count(),1);
+    assert.equal(await page.locator('.star-result').count(),1);assert.equal(await page.locator('.result-character .victory-luca').getAttribute('src'),'assets/luka-victory.webp');assert.equal(await page.locator('.victory-confetti').count(),64);assert.equal(await page.locator('.victory-effects').getAttribute('aria-hidden'),'true');
     for(const [width,height] of [[844,390],[568,320],[375,667]]){
       await page.setViewportSize({width,height});
       const fits=await page.evaluate(()=>{const m=document.querySelector('.result-modal'),r=m.getBoundingClientRect(),c=m.querySelector('.result-character').getBoundingClientRect(),a=m.querySelector('.dialog-actions').getBoundingClientRect();return {face:c.top>=r.top&&c.bottom<=r.bottom,buttons:a.bottom<=innerHeight,scroll:m.scrollTop};});

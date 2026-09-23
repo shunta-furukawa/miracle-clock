@@ -308,6 +308,45 @@
       "bytes": 1559555,
       "duration": 129.933061,
       "changes": "Full author loop OGG, normalized to -20 LUFS / -2 dBTP, encoded as 96 kbps stereo MP3. Original melody, tempo and pitch retained."
+    },
+    {
+      "title": "dial-minute",
+      "file": "dial-minute.mp3",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "creator": "Kenney",
+      "license": "CC0-1.0",
+      "originalFile": "tick_002.ogg",
+      "originalSHA256": "869442f54214be902ec7437f79e400dc91c1bfd90d18a6dd2d5b7e41ffbf457b",
+      "sha256": "b2fc9de052adc9077d69182d7af05f2e2f4119f343fc5021d3c7931553e498c5",
+      "bytes": 1297,
+      "changes": "High/low pass filtering, volume 0.7, MP3 128 kbps.",
+      "retrieved": "2026-09-23"
+    },
+    {
+      "title": "dial-hour",
+      "file": "dial-hour.mp3",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "creator": "Kenney",
+      "license": "CC0-1.0",
+      "originalFile": "tick_001.ogg",
+      "originalSHA256": "9d057b918024c787bbe6c00beed13a7ef72a3fa0c259add3cef36582792f4230",
+      "sha256": "4c8e8f537b7a73314dfed784f3265aa46fbf69196d8caf00c0b75c2bec88b8fd",
+      "bytes": 1715,
+      "changes": "High/low pass filtering, volume 0.85, MP3 128 kbps.",
+      "retrieved": "2026-09-23"
+    },
+    {
+      "title": "hand-select",
+      "file": "hand-select.mp3",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "creator": "Kenney",
+      "license": "CC0-1.0",
+      "originalFile": "switch_001.ogg",
+      "originalSHA256": "3b74efad87f1e69dbd1d05c5ad952ab90859b5a3d11da6ec5bd79b4f03b42afa",
+      "sha256": "fb30ba38ccec19d457d4bb72025c32b6dad2bc6ac89a41abcfc5a4f66bbb0f6d",
+      "bytes": 2969,
+      "changes": "Trim 120 ms, fade last 40 ms, volume 0.6, MP3 128 kbps.",
+      "retrieved": "2026-09-23"
     }
   ]
 }
