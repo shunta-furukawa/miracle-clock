@@ -1,6 +1,6 @@
 export const SAVE_KEY='miracle-clock.records.v2';
 export const LEGACY_KEY='miracle-clock.progress.v1';
-export const freshRecord=()=>({cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:false,updated:Date.now()});
+export const freshRecord=()=>({cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:false,shopEmblem:0,updated:Date.now()});
 export const freshRecords=()=>({version:2,revision:0,active:0,slots:[null,null,null],migrated:false});
 export function normalizeRecords(value){
  if(!value||value.version!==2||!Array.isArray(value.slots))return null;
@@ -14,7 +14,7 @@ export function normalizeRecords(value){
  const stageIds=Array.isArray(s.stages)?[...new Set(s.stages.filter(n=>Number.isInteger(n)&&n>=0&&n<36))]:cleared.flatMap(c=>Array.from({length:6},(_,n)=>c*6+n));
  const stars={};for(const id of stageIds){const r=s.stars?.[id];if(r&&Number.isInteger(r.stars)&&r.stars>=1&&r.stars<=3&&Number.isFinite(r.time)&&r.time>=0&&Number.isInteger(r.mistakes)&&r.mistakes>=0)stars[id]={stars:r.stars,time:r.time,mistakes:r.mistakes};}
  const nonnegative=n=>Number.isSafeInteger(n)&&n>=0?n:0;
- return {cleared,stages:stageIds,stars,endless:{best:nonnegative(s.endless?.best),total:nonnegative(s.endless?.total)},introSeen:s.introSeen===true,updated:Number.isFinite(s.updated)&&s.updated>=0?s.updated:0};});
+ return {cleared,stages:stageIds,stars,shopEmblem:Number.isInteger(s.shopEmblem)&&s.shopEmblem>=0&&s.shopEmblem<3?s.shopEmblem:0,endless:{best:nonnegative(s.endless?.best),total:nonnegative(s.endless?.total)},introSeen:s.introSeen===true,updated:Number.isFinite(s.updated)&&s.updated>=0?s.updated:0};});
  return data;
 }
 export function loadRecords(storage){

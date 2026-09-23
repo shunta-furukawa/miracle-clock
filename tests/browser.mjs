@@ -21,8 +21,8 @@ try {
       }
       await page.setViewportSize(previous);
     }
-    async function skipDialogue(){if(await page.locator('.opening-film').count()){await page.locator('.opening-skip').click();await page.locator('.story-dialog:not(.story-from-black)').waitFor();}if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
-    async function enterLevel(id){await page.locator(`[data-stage="${[0,6,12,18,26,35][id]}"]`).click();await skipDialogue();}
+    async function skipDialogue(){if(await page.locator('#chapter-begin').count())await page.locator('#chapter-begin').click();if(await page.locator('.opening-film').count()){await page.locator('.opening-skip').click();await page.locator('.story-dialog:not(.story-from-black)').waitFor();}if(await page.locator('.story-dialog').count())await page.locator('.story-skip').click();}
+    async function enterLevel(id){await page.locator(`[data-stage="${[0,6,12,18,26,35][id]}"]`).click();if(id<4){await page.locator('#chapter-begin').waitFor();assert.match(await page.locator('.chapter-arrival h1').innerText(),/配送所/);for(const viewport of [{width:390,height:844},{width:844,height:300}]){await page.setViewportSize(viewport);const b=await page.locator('#chapter-begin').boundingBox();assert.ok(b.y>=0&&b.y+b.height<=viewport.height,'chapter action stays visible');await page.screenshot({path:`artifacts/${name}-chapter-${id}-${viewport.width}.png`});}await page.setViewportSize({width:390,height:844});}await skipDialogue();}
     async function selectDiary(){await page.locator('[data-slot="0"]').click();await skipDialogue();}
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.progress.v1'))localStorage.setItem('miracle-clock.progress.v1',JSON.stringify({0:true,1:true,2:true,3:true,4:true,5:true}));});
@@ -279,7 +279,7 @@ try {
     await beginner.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await beginner.clock.install();await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
     assert.equal(await beginner.locator('[data-stage="1"]').isDisabled(),true);assert.equal(await beginner.locator('#endless').isDisabled(),true);
-    await beginner.locator('[data-stage="0"]').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
+    await beginner.locator('[data-stage="0"]').click();await beginner.locator('#chapter-begin').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
     await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();
     for(let i=0;i<3;i++){for(let n=0;n<3;n++)await beginner.locator('#plus').click();await beginner.locator('#seal-button').click();await beginner.clock.runFor(1000);}
     assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','pause and flight time are excluded');
@@ -289,7 +289,7 @@ try {
     const life=await browser.newPage({viewport:{width:375,height:667},reducedMotion:'reduce'});
     life.on('pageerror',e=>errors.push(e.message));
     await life.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.records.v2'))localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]}));});
-    await life.clock.install();await life.goto('http://127.0.0.1:4173');await life.locator('#start').click();await life.locator('[data-slot="0"]').click();await life.locator('[data-stage="0"]').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();
+    await life.clock.install();await life.goto('http://127.0.0.1:4173');await life.locator('#start').click();await life.locator('[data-slot="0"]').click();await life.locator('[data-stage="0"]').click();await life.locator('#chapter-begin').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();
     assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     await life.locator('#pause').click();await life.clock.runFor(120000);await life.locator('#resume').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     for(let n=0;n<3;n++){await life.locator('#seal-button').click();await life.clock.runFor(250);}
@@ -308,7 +308,7 @@ try {
     await life.locator('#result-main').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
     const gift=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
-    await gift.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
+    await gift.addInitScript(()=>localStorage.getItem('miracle-clock.records.v2')||localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await gift.clock.install({time:new Date('2026-01-01T00:00:00Z')});await gift.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();
     for(let customer=0;customer<8;customer++){
       const target=Number((await gift.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12;
@@ -329,10 +329,10 @@ try {
       await gift.locator('#skip-delivery').click();await gift.clock.runFor(1000);
     }
     await gift.locator('.story-skip').click();await gift.locator('.reward-modal').waitFor();assert.match(await gift.locator('.reward-modal h2').innerText(),/受付カウンター/);assert.equal(await gift.locator('.reward-scene>.central-art').getAttribute('aria-label'),'中央配送所の準備 1 / 6');
-    await gift.evaluate(async()=>{const image=new Image();image.src='assets/central-preparation.webp';await image.decode();});await gift.screenshot({path:`artifacts/${name}-first-chapter-gift.png`});await gift.locator('#reward-done').click();await gift.locator('#result-map').click();await gift.locator('#preparations').click();assert.equal(await gift.locator('.reward-card.earned').count(),1);await gift.screenshot({path:`artifacts/${name}-central-preparation-mobile.png`});await gift.close();
+    await gift.evaluate(async()=>{const image=new Image();image.src='assets/central-construction.webp';await image.decode();});await gift.screenshot({path:`artifacts/${name}-first-chapter-gift.png`});await gift.locator('#reward-install').click();await gift.locator('#reward-done').click();await gift.locator('#result-main').click();await gift.locator('#chapter-begin').waitFor();assert.match(await gift.locator('.chapter-arrival .eyebrow').innerText(),/CHAPTER 2/);await gift.locator('#chapter-begin').click();await gift.locator('.story-skip').click();await gift.locator('.modal-close').click();await gift.locator('#preparations').click();assert.equal(await gift.locator('.reward-card.earned').count(),1);await gift.locator('[data-shop-emblem="2"]').click();assert.equal(await gift.locator('.central-picture .shop-emblem').getAttribute('data-emblem'),'2');await gift.reload();await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('#preparations').click();assert.equal(await gift.locator('[data-shop-emblem="2"]').getAttribute('aria-pressed'),'true');await gift.screenshot({path:`artifacts/${name}-shop-design.png`});await gift.screenshot({path:`artifacts/${name}-central-preparation-mobile.png`});await gift.close();
     const patience=await browser.newPage({viewport:{width:568,height:320},reducedMotion:'reduce'});
     await patience.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
-    await patience.clock.install();await patience.goto('http://127.0.0.1:4173');await patience.locator('#start').click();await patience.locator('[data-slot="0"]').click();await patience.locator('[data-stage="0"]').click();await patience.locator('.story-skip').click();await patience.locator('#open-shop').click();
+    await patience.clock.install();await patience.goto('http://127.0.0.1:4173');await patience.locator('#start').click();await patience.locator('[data-slot="0"]').click();await patience.locator('[data-stage="0"]').click();await patience.locator('#chapter-begin').click();await patience.locator('.story-skip').click();await patience.locator('#open-shop').click();
     await patience.clock.runFor(95500);assert.match(await patience.locator('#lives').getAttribute('aria-label'),/残り2/);assert.match(await patience.locator('#queue-count').innerText(),/2/);assert.equal(await patience.locator('.patience').getAttribute('aria-valuenow'),'100');
     await patience.close();
     // Central special stage is endless and saves every completed delivery.

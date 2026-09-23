@@ -103,3 +103,13 @@ Generated source PNGs converted/resized for delivery; logo alpha preserved. Orig
 ## クリア演出（0.4.2）
 
 `luka-victory.webp` は同一作者の Miracle Mine の喜ぶルカをそのまま共有。拳と顔を切らず、結果枠内にcontain表示。`celebration.js` の64枚の紙吹雪・20個の星・2つの光輪もMineから共有し、操作を遮らず一度だけ再生。動きを減らす設定では静止画のみ。
+
+## 章頭と自分の配送所（0.4.3）
+
+内蔵image_genを使用。`central-construction.webp` は既存の `central-preparation.webp` をスタイル参照に新規生成した4列×2行アトラス。元素材は保存。固定カメラで空の配送所→受付→荷物棚→紫の案内灯→真鍮の仕分け機→通信塔→花の開所看板の順に設備が増える。報酬画面でプレイヤーが取り付けを選び、前後のセルが切り替わる。
+生成元: exec-c7f36e28-913d-408b-a51a-4b29c75355b2.png。
+Prompt: Game sprite atlas of central air-post shop construction. NEW 4 columns x 2 rows, eight equal square panels, no gutters or text, identical camera and building scale. Warm detailed storybook steampunk brass, wood and teal on a floating island. Cumulative upgrades: empty closed shop; reception counter; parcel shelves; purple crystal lanterns; brass sorting conveyor; rooftop radio mast; flower garlands and winged envelope opening sign; completed shop at sunset. No characters. Preserve building identity from reference.
+
+`shop-emblems.webp` は3列の看板紋章。空の便（青緑の翼と封筒）、森の約束（緑の葉と荷物）、月と星（紺と金）。透過を保持。建物上の看板と選択肢で同一画像を使用。日誌ごとに選択を保存。
+生成元: exec-f0fdea99-3a0f-4055-b83b-7464d7877c4f.png。
+Prompt: Three equal square cells horizontally, each one elaborate circular brass shop medallion front facing, same size. Left teal enamel winged postal envelope, center emerald oak leaves and parcel, right sapphire crescent moon and gold star. Hand painted storybook steampunk, brass bevels, rivets, patina and translucent enamel. Transparent background, no text, no extra objects.

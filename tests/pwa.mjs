@@ -34,7 +34,7 @@ try{
  await page.reload();await page.locator('#start').waitFor();
  assert.equal(await page.evaluate(()=>getComputedStyle(document.body).touchAction),'manipulation');
  await page.locator('#start').click();await page.locator('[data-slot="0"]').click();await page.locator('.opening-skip').click();await page.locator('.story-skip').click();
- await page.locator('[data-stage="0"]').click();await page.locator('.story-skip').click();await page.locator('#open-shop').click();
+ await page.locator('[data-stage="0"]').click();await page.locator('#chapter-begin').click();await page.locator('.story-skip').click();await page.locator('#open-shop').click();
  assert.equal(await page.locator('.gem-art').count(),12);await page.locator('#plus').click();await page.locator('#plus').click();await page.locator('#plus').click();await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'1 / 3'}).waitFor();
  assert.deepEqual(errors,[]);console.log(name+': install help, home layout, offline reload and delivery PASS');await browser.close();server=spawn(process.execPath,['scripts/serve.mjs']);await new Promise(r=>setTimeout(r,300));
  }
