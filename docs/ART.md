@@ -113,3 +113,13 @@ Prompt: Game sprite atlas of central air-post shop construction. NEW 4 columns x
 `shop-emblems.webp` は3列の看板紋章。空の便（青緑の翼と封筒）、森の約束（緑の葉と荷物）、月と星（紺と金）。透過を保持。建物上の看板と選択肢で同一画像を使用。日誌ごとに選択を保存。
 生成元: exec-f0fdea99-3a0f-4055-b83b-7464d7877c4f.png。
 Prompt: Three equal square cells horizontally, each one elaborate circular brass shop medallion front facing, same size. Left teal enamel winged postal envelope, center emerald oak leaves and parcel, right sapphire crescent moon and gold star. Hand painted storybook steampunk, brass bevels, rivets, patina and translucent enamel. Transparent background, no text, no extra objects.
+
+## 全画面の章頭・設備の取り付け・受付の行列（0.4.5）
+
+内蔵image_genで以下を生成。元画像は変更せず新規アセットとして追加。
+
+- `src/assets/depot-rewards.webp`：6章の報酬そのもの。受付カウンター、荷物棚、結晶の案内灯、仕分け機、通信塔、開所看板。生成元 exec-f6ee6240-934a-49dd-a767-a24227eff912.png。中央配送所の既存画像を参照し、透過背景・3列2行・温かな木と真鍮・独立した設備として生成。SVGのviewBoxで各アイテムの輪郭を切らず表示。取り付け地点は設備ごとに異なり、飛来アニメーションの終了イベントで建物を更新する。
+- `src/assets/queue-places.webp`：森、港、結晶洞窟、工房、雲の展望台、砂丘の温室、中央配送所、中央配送所の夕景。生成元 exec-72cbcd93-6ef6-40a5-9446-ffae5fc4c6fe.png。2列4行の背景アトラス。各セルは横長2:1、受付が左端、人物を重ねる床を下35%に確保。無人、文字なし、同じ高さの床、絵本風スチームパンク。
+- `src/assets/queue-residents.webp`：行列専用の24人。生成元 exec-af9bd5a7-78ea-4657-9f0f-fdcb43f595f7.png。既存game-cast、residents-waiting、sunari-residentsを人物参照に生成。4列6行、各章の案内役＋住民3人、荷物を持った全身、全員左の受付を向く3/4側面、透過背景。元の会話画像は維持。各行の実際の余白に合わせたviewBoxで足まで表示。退屈・お礼・退出は既存の動きで表現。
+
+共通プロンプト指定：warm detailed hand-painted storybook steampunk, brass and timber, preserve reference character identity, no lettering, no scenery in transparent item/character atlases. Queue backgrounds: empty waiting area, counter far left, continuous horizontal floor, no characters. Chapter cinema matches Mine's full viewport, thin gold border, top-left location label, central/bottom serif title, explicit continue action and iPhone safe-area padding.
