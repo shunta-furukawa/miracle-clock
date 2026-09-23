@@ -84,3 +84,45 @@
 @media(max-width:600px) and (orientation:portrait){.campaign-map .depot-map-heading{display:block;padding:22px 0}.campaign-map .depot-map-heading h1{font-size:25px;margin:8px 0 16px}.map-heading-actions{flex-direction:row}.map-heading-actions button{flex:1}.map-heading-actions small{display:inline;margin-left:6px}}
 @media(max-width:600px) and (orientation:landscape){.campaign-map .compact-chapter{grid-template-columns:1fr}.campaign-map .compact-chapter .stage-list{gap:8px}}
 .compact-chapter .chapter-info h2,.campaign-map .depot-map-heading h1,.preparation-copy h1{font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif}.map-heading-actions #replay-story{border-radius:8px}.reward-modal h2{font-size:clamp(20px,3vw,26px)}
+
+/* Keep the dial and the receiving desk in separate landscape columns. */
+.game-workspace{display:contents}
+.modal.start-modal{max-width:560px;padding:22px}.start-modal h2{font-size:24px;line-height:1.3;margin:10px 30px 14px 0}.modal.start-modal p{margin:8px 0;font-size:14px;line-height:1.5}.modal.start-modal .eyebrow{font-size:11px}.start-modal .start-goal{font-weight:800}.start-modal .start-rule{font-size:12px!important}.start-stars{color:#96691d}.start-modal .dialog-actions{margin-top:16px}.start-modal .dialog-actions button{width:100%;min-height:44px}
+.game .queue-track .customer.active .customer-bubble{z-index:50;line-height:1.3;transform:none}
+@media(orientation:portrait) and (max-width:600px){.game .queue-area{min-height:104px}.game .queue-area .queue-track{height:88px;padding-top:26px}.game .queue-track .customer.active .customer-bubble{bottom:calc(100% + 2px)}}
+.flying .feedback,.stamping .feedback,.loading-parcel .feedback{visibility:hidden}
+.flying .flight-postmark{visibility:hidden}
+.skip-delivery{padding-bottom:calc((100dvh - min(350px,72dvh))/2 + 12px)}
+.skip-delivery span{display:block;padding:8px 16px;border:1px solid #d2ae69;border-radius:30px;background:#123e47ed;color:#fff6dc;font-size:13px;text-shadow:none;box-shadow:0 2px 8px #102e3366}
+@media(orientation:landscape) and (max-height:600px){
+ .game{grid-template-columns:minmax(0,1fr);grid-template-rows:36px minmax(0,1fr) 30px;gap:5px}
+ .game .game-top{grid-column:1;grid-row:1}
+ .game .game-workspace{display:grid;position:relative;min-width:0;min-height:0;grid-column:1;grid-row:2;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:88px auto minmax(0,1fr);gap:6px 12px}
+ .game .play-layout,.game .clock-station{display:contents}
+ .game .queue-area{grid-column:2;grid-row:1;min-height:0;height:100%;grid-template-columns:32px minmax(0,1fr) 78px;gap:5px;padding:5px 8px;align-items:end}
+ .game .queue-area .queue-track{height:76px;width:100%;max-width:220px;padding:23px 4px 0 0;align-items:flex-end}
+ .game .queue-track .customer{height:44px;flex:0 0 25%;width:25%;margin-right:-15%}
+ .game .queue-track .customer .portrait{width:min(100%,44px);height:auto;max-width:44px}
+ .game .queue-track .customer.active .customer-bubble{bottom:calc(100% + 2px);font-size:7px;min-width:58px;padding:2px 3px}
+ .game #queue-count{font-size:9px;padding-bottom:7px}.game #queue-count strong{font-size:27px}.game #queue-lead{font-size:8px;padding-bottom:7px}.game #queue-lead strong{font-size:11px}
+ .game .clock-bay{grid-column:1;grid-row:1/4;padding:0 0 30px;height:100%;width:100%;margin:0;align-self:stretch;container-type:size}
+ .game .clock-housing{width:min(100cqw,100cqh,480px);height:auto;margin:0;min-height:0;min-width:0}
+ .game .order-ticket{grid-column:2;grid-row:2;align-self:stretch;padding:5px 8px}
+ .game .station-controls{grid-column:2;grid-row:3;align-self:start;gap:4px;position:static}
+ .game .clock-tools{position:absolute;left:0;bottom:0;width:calc((100% - 12px)/2);height:26px;margin:0;padding:0;gap:6px}
+ .game .clock-tools button{min-height:26px;font-size:10px;padding:2px}
+ .game .feedback{grid-column:1;grid-row:3}
+ .game .request strong{font-size:25px}.game .hand-select,.game .adjust{height:40px;min-height:40px}.game .hand-controls{margin:0;gap:5px}.game .period-toggle button{min-height:26px;padding:2px 12px}
+ .modal.start-modal{padding:16px 22px}.modal.start-modal h2{font-size:22px;margin:6px 30px 8px 0}.modal.start-modal p{margin:5px 0;font-size:13px}.start-modal .dialog-actions{margin-top:10px}.start-modal .dialog-actions button{padding:8px;min-height:40px}
+}
+@media(orientation:landscape) and (max-height:340px){
+ .game{grid-template-rows:32px minmax(0,1fr) 28px;gap:4px}
+ .game .game-workspace{grid-template-rows:72px auto minmax(0,1fr);gap:3px 8px}
+ .game .queue-area{padding:3px 6px;grid-template-columns:28px minmax(0,1fr) 65px;gap:4px}
+ .game .queue-area .queue-track{height:64px;padding-top:21px}.game .queue-track .customer{height:34px}.game .queue-track .customer .portrait{width:min(100%,34px);max-width:34px}.game .queue-track .customer.active .customer-bubble{font-size:6px;min-width:48px}
+ .game #queue-count strong{font-size:23px}.game #queue-lead strong{font-size:9px}
+ .game .order-ticket{padding:3px 6px}.game .request strong{font-size:20px}.game .request{margin-top:1px}.game .ticket-meta{font-size:8px}.game .ticket-route{display:none}.game .reference-time{margin:1px 0 0;padding:1px 0 0}.game .reference-time .mini-clock{width:19px;height:19px}
+ .game .station-controls{gap:2px}.game .hand-select,.game .adjust{height:32px;min-height:32px}.game .period-toggle{padding:0}.game .period-toggle button{min-height:22px;padding:1px 10px}
+ .game .clock-bay{padding-bottom:26px}.game .clock-tools{height:24px;width:calc((100% - 8px)/2)}.game .clock-tools button{min-height:24px;font-size:9px}
+ .modal.start-modal{padding:12px 20px}.modal.start-modal h2{font-size:20px}.modal.start-modal p{font-size:12px;margin:4px 0}.start-modal .dialog-actions{margin-top:8px}
+}

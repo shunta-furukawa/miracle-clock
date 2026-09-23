@@ -46,6 +46,13 @@ try {
     await page.locator('#preparations').click();assert.equal(await page.locator('.reward-card.earned').count(),6);assert.match(await page.locator('.preparation-count').innerText(),/6 \/ 6/);
     await page.screenshot({path:`artifacts/${name}-central-ready.png`});await page.locator('#back-map').click();await page.setViewportSize({width:390,height:844});
     await enterLevel(0);
+    for(const size of [{width:844,height:390},{width:844,height:300},{width:568,height:320},{width:375,height:667}]){
+      await page.setViewportSize(size);
+      const fit=await page.locator('.start-modal').evaluate(el=>{const box=el.getBoundingClientRect(),button=el.querySelector('#open-shop').getBoundingClientRect();return {scroll:el.scrollHeight>el.clientHeight+1,top:box.top,bottom:box.bottom,buttonBottom:button.bottom};});
+      assert.equal(fit.scroll,false,'short preflight summary fits without scrolling');assert.ok(fit.top>=0&&fit.bottom<=size.height&&fit.buttonBottom<=size.height);
+      await page.screenshot({path:`artifacts/${name}-start-summary-${size.width}x${size.height}.png`});
+    }
+    await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.locator('#open-shop').click();
     await page.waitForTimeout(600);
@@ -76,6 +83,12 @@ try {
     await page.screenshot({path:`artifacts/${name}-stamp.png`});
     await page.waitForFunction(()=>document.body.classList.contains('flying'));
     await page.waitForTimeout(500);
+    for(const size of [{width:844,height:390},{width:568,height:320},{width:390,height:844}]){
+      await page.setViewportSize(size);
+      const overlay=await page.evaluate(()=>{const label=document.querySelector('#skip-delivery span').getBoundingClientRect(),windowBox=document.querySelector('.flight-window').getBoundingClientRect();return {inside:label.top>=windowBox.top&&label.bottom<=windowBox.bottom,feedback:getComputedStyle(document.querySelector('#feedback')).visibility,postmark:getComputedStyle(document.querySelector('.flight-postmark')).visibility};});
+      assert.ok(overlay.inside,'skip prompt stays inside flight panel');assert.equal(overlay.feedback,'hidden');assert.equal(overlay.postmark,'hidden');
+      await page.screenshot({path:`artifacts/${name}-flight-skip-${size.width}.png`});
+    }
     await page.screenshot({path:`artifacts/${name}-flight.png`});
     await page.locator('#skip-delivery').click();
     console.log(name,'flight renderer:',await page.locator('#flight-viewport').getAttribute('data-renderer')||'painted fallback');
@@ -154,6 +167,8 @@ try {
       assert.ok(crowd.horizontal,`overlapping horizontal queue at ${size.width}x${size.height}`);
       assert.ok(crowd.gaugeInside,'front customer patience gauge stays inside queue');
       assert.equal(crowd.hearts,3);
+      const speech=await page.evaluate(()=>{const q=document.querySelector('.queue-area').getBoundingClientRect(),b=document.querySelector('.customer.active .customer-bubble').getBoundingClientRect(),c=document.querySelector('.customer.active .portrait').getBoundingClientRect();return {inside:b.top>=q.top&&b.bottom<=q.bottom&&b.left>=q.left&&b.right<=q.right,above:b.bottom<=c.top+1};});
+      assert.ok(speech.inside&&speech.above,`speech stays above the character and inside the queue at ${size.width}x${size.height}`);
       const seal=boxes.find(b=>b.selector==='#seal-button');
       assert.ok(seal.width>=44&&seal.height>=44,'central stamp must retain a 44px touch target');
       const message=boxes.find(b=>b.selector==='#feedback');
@@ -174,6 +189,8 @@ try {
       if(size.width>size.height) {
         const clock=boxes.find(b=>b.selector==='#clock'), order=boxes.find(b=>b.selector==='#order');
         assert.ok(clock.right<=order.x,'clock and order must not overlap');
+        const queue=boxes.find(b=>b.selector==='.queue-area');assert.ok(queue.x>=clock.right&&queue.bottom<=order.y+1,'queue occupies the right column above the order');
+        assert.ok(clock.width>=Math.min(220,size.height-140),`landscape dial stays large at ${size.width}x${size.height}: ${clock.width}`);
       }
       await page.screenshot({path:`artifacts/${name}-fit-${size.width}x${size.height}-${advice}.png`,animations:'disabled'});
       }
