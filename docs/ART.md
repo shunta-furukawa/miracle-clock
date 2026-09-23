@@ -123,3 +123,13 @@ Prompt: Three equal square cells horizontally, each one elaborate circular brass
 - `src/assets/queue-residents.webp`：行列専用の24人。生成元 exec-af9bd5a7-78ea-4657-9f0f-fdcb43f595f7.png。既存game-cast、residents-waiting、sunari-residentsを人物参照に生成。4列6行、各章の案内役＋住民3人、荷物を持った全身、全員左の受付を向く3/4側面、透過背景。元の会話画像は維持。各行の実際の余白に合わせたviewBoxで足まで表示。退屈・お礼・退出は既存の動きで表現。
 
 共通プロンプト指定：warm detailed hand-painted storybook steampunk, brass and timber, preserve reference character identity, no lettering, no scenery in transparent item/character atlases. Queue backgrounds: empty waiting area, counter far left, continuous horizontal floor, no characters. Chapter cinema matches Mine's full viewport, thin gold border, top-left location label, central/bottom serif title, explicit continue action and iPhone safe-area padding.
+
+
+## 0.4.7 — assembled clock-shaped ink stamp
+Built-in image_gen; three original transparent assets. PNG originals are preserved, with alpha-preserving crop/downscale to WebP for the game. Each part is independently composed in `src/stamp.js`; the hour hand advances continuously with minutes. Twelve exact ticks are rendered in SVG; the artwork itself contains no numerals or words.
+
+- `src/assets/stamp-frame.webp`: `exec-b010e329-a1e8-4ba8-9ccc-9d94832f21df.png`. Prompt: one centered circular rubber-stamp impression outer frame, flat rusty vermilion ink, two concentric circles and restrained botanical/airmail flourishes between them; empty transparent interior; no hands, hub, numbers, words, paper, shadows, or perspective. Warm storybook steampunk postal game, subtly distressed ink, readable at 90 pixels, actual alpha transparency.
+- `src/assets/stamp-hour.webp`: `exec-294808ce-e900-44f4-af1b-266cc592683a.png`. Prompt: one isolated short stout hour hand, exactly upright, broad pointed spear/leaf tip, thick tapered stem and small round pivot hub at bottom; rusty vermilion, slightly distressed flat 2D rubber-stamp ink, transparent background. No dial, frame, markings, other hands, lettering, shadow or paper.
+- `src/assets/stamp-minute.webp`: `exec-31543a57-83e0-4be0-9da5-4fe0e81a4e7e.png`. Prompt: one isolated long slender minute hand, exactly upright, small pointed spear tip, narrow straight shaft and tiny circular pivot ring; rusty vermilion flat distressed ink, readable at small icon size, actual alpha transparency. No dial, frame, text, numerals, other hands, shadows, paper or metal.
+
+Original hour pivot (627,976), crop (495,202,759,1057); minute pivot (627,1095), crop (573,90,681,1149). Reused the pre-0.4.4 stamp sound `assemble.mp3` (Kenney switch_003, already documented in audio-sources.json) at 180ms when the ink lands, alongside the magic sound. Reduced motion stamps immediately; skip cancels the pending impact sound.

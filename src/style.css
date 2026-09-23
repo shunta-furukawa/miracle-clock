@@ -126,9 +126,10 @@
 .seal-button:active{transform:translate(-50%,-46%);box-shadow:0 1px 0 #77502a}
 .seal-ripple{position:absolute;inset:30%;border:2px solid #ffe0a0;border-radius:50%;opacity:0;pointer-events:none;z-index:4}
 .stamping .seal-button{animation:seal-press .65s ease both}.stamping .seal-ripple{animation:seal-ripple .7s ease-out both}.stamping .element-gem{filter:drop-shadow(0 0 4px #ffedb4)}
-.parcel-seal{position:absolute;inset:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:3px double #a35435;border-radius:8px;background:#f9e9c9f5;transform:rotate(-7deg) scale(1.3);opacity:0;pointer-events:none;color:#9d492f;z-index:4;font-family:var(--storybook-font);text-align:center}
-.parcel-seal span{font-size:11px}.parcel-seal strong{font-size:24px}
-.stamping .parcel-seal{animation:parcel-imprint .7s .1s ease-out both}.loading-parcel .parcel-seal{animation:parcel-load .4s ease-in both}
+.parcel-seal{position:absolute;inset:auto;left:50%;top:50%;height:calc(100% - 10px);max-height:92px;aspect-ratio:1;opacity:0;pointer-events:none;z-index:4;transform:translate(-50%,-50%);mix-blend-mode:multiply}
+.stamp-clock{display:block;width:100%;height:100%;overflow:visible}.stamp-clock path{fill:none;stroke:#ae2515;stroke-width:.8;stroke-linecap:round}.stamp-clock circle{fill:#ae2515}
+.stamping .parcel-seal{animation:parcel-imprint .45s linear both}.loading-parcel .parcel-seal{animation:parcel-load .4s ease-in both}
+.stamping .order-ticket>:not(.parcel-seal),.loading-parcel .order-ticket>:not(.parcel-seal){opacity:.12}
 .dispatch{background:linear-gradient(125deg,#296c6b,#16484c);border:2px solid #dab369;box-shadow:0 4px 0 #60452e,inset 0 0 0 2px #8eb39b30;font-family:var(--storybook-font)}
 .dispatch .stamp-icon{margin-left:0;font-size:22px}.stamping .station-controls button{pointer-events:none}
 .element-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.element-legend>div{background:var(--gem);border:2px solid #c49c59;border-radius:7px;padding:6px 2px;box-shadow:inset 0 0 12px #ffffff33;display:grid;grid-template-columns:22px 1fr;align-items:center}.element-legend svg{width:24px;height:24px}.element-legend b{font:700 20px Georgia,serif}.element-legend span{grid-column:1/-1;font-size:10px;font-weight:700;line-height:1.6}
@@ -147,8 +148,8 @@
 @keyframes queue-enter{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 @keyframes seal-press{0%,100%{transform:translate(-50%,-50%)}35%{transform:translate(-50%,-43%) scale(.9);filter:brightness(1.8)}}
 @keyframes seal-ripple{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(2.7)}}
-@keyframes parcel-imprint{0%{opacity:0;transform:rotate(-7deg) scale(1.4)}45%,100%{opacity:1;transform:rotate(-7deg) scale(.95)}}
-@keyframes parcel-load{from{opacity:1;transform:scale(.95)}to{opacity:0;transform:translate(40px,-60px) scale(.25)}}
+@keyframes parcel-imprint{0%{opacity:0;transform:translate(-50%,-70%) scale(1.65) rotate(-9deg)}40%{opacity:1;transform:translate(-50%,-50%) scale(.9)}60%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes parcel-load{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + 40px),calc(-50% - 60px)) scale(.25)}}
 @keyframes painted-takeoff{0%{transform:translate(-10%,15%) rotate(-4deg) scale(.9)}35%{transform:translate(0,-10%) rotate(-10deg)}100%{transform:translate(90%,-100%) rotate(-20deg) scale(.12);opacity:0}}
 @media(max-width:600px) and (orientation:portrait){
  .game{background-attachment:scroll}.queue-area{margin:7px 12px 0;padding:6px 9px 4px}.queue-track{height:83px;gap:3px}.customer{width:calc((100% - 12px)/5);min-width:0}.customer .portrait{width:52px;height:54px}.customer-bubble{font-size:8px;min-width:0;width:100%;padding:2px}.customer-name{font-size:8px!important;padding:1px 3px}.queue-counter{margin:2px -5px 0;padding:3px;font-size:10px}.queue-counter span{font-size:7px}
@@ -166,7 +167,7 @@
 @media(orientation:landscape) and (max-height:600px) and (max-width:700px){
  .game{grid-template-columns:78px minmax(0,1fr);gap:5px}.clock-station{grid-template-columns:minmax(120px,.8fr) minmax(207px,1fr);column-gap:7px}.customer{grid-template-columns:33px minmax(0,1fr)}.customer .portrait{width:33px;height:40px}.customer-bubble{font-size:7px}.customer-name{font-size:7px!important}.queue-heading{font-size:8px}.queue-counter span{display:none}.clock-tools{width:calc((100% - 7px)*.444)}.clock-tools button{font-size:9px;padding:3px 0}.hand-select{font-size:9px;padding:3px}.adjust{width:31px}.request strong{font-size:21px}.ticket-route{display:block;font-size:8px}.ticket-route span{display:none}.seal-button{min-width:32px;min-height:32px}.seal-button small{font-size:7px}
 }
-@media(prefers-reduced-motion:reduce){.customer .portrait,.customer,.waiting-dot,.seal-button,.seal-ripple,.parcel-seal{animation:none!important}.stamping .parcel-seal{opacity:1;transform:none}.loading-parcel .parcel-seal{opacity:0}.flying .flight-fallback{animation:none!important;transform:none;opacity:1}.flight-layer{transition:none;backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){.customer .portrait,.customer,.waiting-dot,.seal-button,.seal-ripple,.parcel-seal{animation:none!important}.stamping .parcel-seal{opacity:1;transform:translate(-50%,-50%)}.loading-parcel .parcel-seal{opacity:0}.flying .flight-fallback{animation:none!important;transform:none;opacity:1}.flight-layer{transition:none;backdrop-filter:none}}
 @media(max-width:600px) and (orientation:portrait){
  .dispatch{padding:7px 12px}.relative-order .clock-housing{width:clamp(150px,calc(100dvh - 527px),290px);height:clamp(150px,calc(100dvh - 527px),290px)}
 }

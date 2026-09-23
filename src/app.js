@@ -1,3 +1,4 @@
+import {parcelSeal} from './stamp.js';
 import {Soundtrack,creditsHTML,gameMusicScene} from './soundtrack.js';
 import {mod, normalizeTime, clockAngles, angleDelta, dragMinutes, freeMinutes, settleDelta, matchesTime, timeText, orderHint} from './time.js';
 import {levels, makeOrder, createSession, tickSession, completeOrder, depotNames, customerMood, stages, endlessLevel, stageUnlocked, endlessUnlocked, arrivalInterval, starGoal, rateRun, betterRecord, starText, totalStars, prepareDial, recordMistake, patienceLimit} from './levels.js';
@@ -13,7 +14,7 @@ import {showOpening,closeOpening} from './opening.js';
 const app=document.querySelector('#app');
 const $=selector=>app.querySelector(selector);
 let screen='home', session=null, dial=720, selectedHand='hour', paused=false, busy=false, drag=null, timer=null, flightTimer=null;
-let skipDelivery=null,chapterMusic=null;
+let skipDelivery=null,chapterMusic=null,stampImpactTimer=null;
 let flightView=null, flightLoading=null, launchToken=0;
 let shown=720, settleId=0; // shown: fractional dial position drawn while dragging or settling
 const soundtrack=new Soundtrack(false);
@@ -29,7 +30,7 @@ syncProgress();
 const portrait=(id,cls='')=>id===6?`<span class="portrait sunari-art ${cls}" role="img" aria-label="スナリ" style="--sunari-x:0%"></span>`:`<span class="portrait cast-${id} ${cls}" role="img" aria-label="${['ルカ','モス','シェル','クリム','フレア','フウ'][id]}"></span>`;
 const toto=(cls='')=>`<img class="toto ${cls}" src="assets/sky-toto.webp" alt="トトじい">`;
 const smallClock=(time)=>{const a=clockAngles(time);return `<svg viewBox="0 0 60 60" class="mini-clock" aria-label="${timeText(time,'period')}"><circle cx="30" cy="30" r="27"/><path d="M30 30V15" transform="rotate(${a.hour} 30 30)"/><path d="M30 30V8" transform="rotate(${a.minute} 30 30)" class="mini-minute"/><circle cx="30" cy="30" r="2"/></svg>`;};
-function playSound(kind){soundtrack.play(({tap:'select',stamp:'spell',send:'arrival',win:'clear',wrong:'failure'})[kind]||kind);}
+function playSound(kind){soundtrack.play(({tap:'select',stamp:'spell',imprint:'assemble',send:'arrival',win:'clear',wrong:'failure'})[kind]||kind);}
 function audioSettingsDialog(){
  const fromPlay=screen==='play',wasPaused=paused;if(fromPlay)paused=true;
  const a=soundtrack.settings;
@@ -38,11 +39,11 @@ function audioSettingsDialog(){
  dialog.addEventListener('input',e=>{const key=e.target.dataset.audio;if(!key)return;const volume=e.target.type==='range',value=volume?Number(e.target.value)/100:e.target.checked;const ok=soundtrack.configure({[key]:value});soundtrack.unlock();if(volume)dialog.querySelector('#'+key+'-value').textContent=Math.round(value*100)+'%';dialog.querySelector('.audio-save-status').textContent=ok?'音の設定を保存しました。':'この端末では音の設定を保存できません。';if(key==='sound'||key==='soundVolume')soundtrack.play('select');});
  dialog.querySelector('#audio-done').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();if(fromPlay){paused=wasPaused;lastTick=performance.now();}});document.body.append(dialog);dialog.showModal();
 }
-function cleanup(){skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
+function cleanup(){clearTimeout(stampImpactTimer);stampImpactTimer=null;skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.4.6</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.4.7</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>お客さんの注文を見て、短い針と長い針を合わせよう。針は指で動かすか、選んで＋・−で動かせます。</p><p>時計の真ん中で刻印をおすと出発！ 飛行機の演出はタップでスキップできます。</p><p>先頭のお客さんの待ちゲージがなくなるか、違う時刻を刻むと、お客さんが帰ってハートが1つ減ります。ハートを残して全員の受付を終えよう。</p>');
@@ -131,7 +132,7 @@ function updateLives(){const el=$('#lives');if(!el||session.level.endless)return
 function updateOrder(){
  updateLives();
  const order=session.queue[0];if(!order)return;$('.game').classList.toggle('relative-order',!!order.duration);
- $('#order').innerHTML=`<div class="ticket-meta"><span>${order.name}から</span><span>${order.parcel}</span></div><div class="ticket-route"><span>受付：${order.origin}</span><b>→ ${order.destination}へ</b></div><p class="request"><strong>${order.label}</strong><span>${order.duration?'に届くように！':'に届けてね！'}</span></p>${order.duration?`<div class="reference-time">${smallClock(order.base)}<span>受付の時刻 <b>${timeText(order.base,'period')}</b></span>${order.nextDay?'<span class="tomorrow">翌日のお届け</span>':''}</div>`:''}<div class="parcel-seal" aria-hidden="true"><span>時刻の刻印</span><strong>${timeText(order.target,order.period?'period':'12')}</strong></div>`;
+ $('#order').innerHTML=`<div class="ticket-meta"><span>${order.name}から</span><span>${order.parcel}</span></div><div class="ticket-route"><span>受付：${order.origin}</span><b>→ ${order.destination}へ</b></div><p class="request"><strong>${order.label}</strong><span>${order.duration?'に届くように！':'に届けてね！'}</span></p>${order.duration?`<div class="reference-time">${smallClock(order.base)}<span>受付の時刻 <b>${timeText(order.base,'period')}</b></span>${order.nextDay?'<span class="tomorrow">翌日のお届け</span>':''}</div>`:''}<div class="parcel-seal" aria-hidden="true">${parcelSeal(order.target)}</div>`;
  $('#period-toggle').hidden=!order.period;$('#score').textContent=session.level.endless?`${session.delivered} 便 · BEST ${records.slots[activeSlot].endless.best}`:`${session.delivered} / ${session.level.count} 便`;
  $('.clock-status').textContent='針を合わせて、真ん中の刻印をおそう';
 }
@@ -164,12 +165,15 @@ function dispatch(){
  if(!matchesTime(dial,order.target,order.period)){customerLeaves('wrong');return;}
  busy=true;$('#seal-button').disabled=true;
  const token=launchToken,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches,hero=session.delivered===0||!session.level.endless&&session.delivered===session.level.count-1;
- prepareSpell();document.body.classList.add('stamping');playSound('stamp');$('#feedback').textContent='ぴったり！ 荷札に時刻を刻んだよ。';
+ prepareSpell();document.body.classList.add('stamping');playSound('stamp');
+ const imprint=()=>{stampImpactTimer=null;if(token===launchToken&&document.body.classList.contains('stamping'))playSound('imprint');};
+ if(reduced)imprint();else stampImpactTimer=setTimeout(imprint,180);
+ $('#feedback').textContent='ぴったり！ 荷札に時刻を刻んだよ。';
  $('#flight-destination').textContent=`${order.destination}へ`;
  $('#flight-time').textContent=`${timeText(order.target,order.period?'period':'12')} お届け`;
  const actor=$('.customer.active');actor.dataset.mood='happy';actor.querySelector('.customer-bubble').textContent='ありがとう！';
  const log=$('#flight-log');if(!session.delivered)log.innerHTML='';const li=document.createElement('li');li.innerHTML=`<span>✓ ${order.name}</span><b>${timeText(order.target,order.period?'period':'12')}</b>`;log.prepend(li);if(log.children.length>5)log.lastChild.remove();
- let ended=false;const end=()=>{if(ended||token!==launchToken)return;ended=true;skipDelivery=null;clearTimeout(flightTimer);flightView?.stop?.();$('#skip-delivery').hidden=true;soundtrack.stopEffects();document.body.classList.remove('flying','stamping','loading-parcel');completeOrder(session);if(session.level.endless){const r=records.slots[activeSlot];r.endless.best=Math.max(r.endless.best,session.delivered);r.endless.total++;r.updated=Date.now();persistRecords();}busy=false;lastTick=performance.now();if(session.status==='cleared'){finish(true);return;}$('#seal-button').disabled=false;$('#feedback').textContent='';dial=prepareDial(session.queue[0],dial);if(session.level.endless)selectedHand=session.queue[0].step===60?'hour':'minute';updateOrder();updateQueue();updateDial();};
+ let ended=false;const end=()=>{if(ended||token!==launchToken)return;ended=true;skipDelivery=null;clearTimeout(stampImpactTimer);stampImpactTimer=null;clearTimeout(flightTimer);flightView?.stop?.();$('#skip-delivery').hidden=true;soundtrack.stopEffects();document.body.classList.remove('flying','stamping','loading-parcel');completeOrder(session);if(session.level.endless){const r=records.slots[activeSlot];r.endless.best=Math.max(r.endless.best,session.delivered);r.endless.total++;r.updated=Date.now();persistRecords();}busy=false;lastTick=performance.now();if(session.status==='cleared'){finish(true);return;}$('#seal-button').disabled=false;$('#feedback').textContent='';dial=prepareDial(session.queue[0],dial);if(session.level.endless)selectedHand=session.queue[0].step===60?'hour':'minute';updateOrder();updateQueue();updateDial();};
  skipDelivery=end;$('#skip-delivery').hidden=false;$('.flight-layer').dataset.destination=String((order.region+1+order.orderId%5)%6);
  flightTimer=setTimeout(()=>{
   if(token!==launchToken)return;document.body.classList.add('loading-parcel');

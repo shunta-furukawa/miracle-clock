@@ -318,11 +318,25 @@ try {
     await spell.goto('http://127.0.0.1:4173');await spell.locator('#start').click();await spell.locator('[data-slot="0"]').click();await spell.locator('[data-stage="0"]').click();await spell.locator('#chapter-begin').click();await spell.locator('.story-skip').click();await spell.locator('#open-shop').click();
     const spellTarget=Number((await spell.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12,spellCurrent=Number(await spell.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
     for(let i=0;i<(spellTarget-spellCurrent+12)%12;i++)await spell.locator('#plus').click();
+    await spell.evaluate(()=>{window.stampSounds=[];const play=soundtrack.play.bind(soundtrack);soundtrack.play=name=>{window.stampSounds.push(name);return play(name);};});
     await spell.locator('#seal-button').click();await spell.clock.runFor(350);
     assert.equal(await spell.locator('.stamping .spell-spark').count(),36);
+    assert.equal(await spell.locator('.parcel-seal').innerText(),'','ink stamp has no redundant written time');
+    assert.equal(await spell.locator('.stamp-clock image').count(),3,'frame and both generated hands are composed');
+    assert.equal(await spell.locator('.stamp-hour').getAttribute('transform'),`rotate(${spellTarget*30} 50 50)`);
+    assert.equal(await spell.locator('.stamp-minute').getAttribute('transform'),'rotate(0 50 50)');
+    assert.equal(await spell.evaluate(()=>window.stampSounds.includes('assemble')),true,'pop follows the stamp landing');
+
     assert.equal(await spell.locator('.spell-burst').evaluate(e=>getComputedStyle(e).pointerEvents),'none');
     for(const size of [{width:844,height:390},{width:390,height:664}]){await spell.setViewportSize(size);const fits=await spell.locator('.spell-burst').evaluate(e=>{const b=e.getBoundingClientRect();return b.left>=0&&b.right<=innerWidth&&b.top>=0&&b.bottom<=innerHeight});assert.ok(fits,'spell remains inside clock and viewport');await spell.screenshot({path:`artifacts/${name}-spell-${size.width}.png`});}
-    await spell.locator('#skip-delivery').click();assert.equal(await spell.locator('body.stamping').count(),0);assert.equal(await spell.locator('#seal-button').isEnabled(),true);await spell.close();
+    await spell.clock.runFor(150);await spell.screenshot({path:`artifacts/${name}-clock-imprint.png`});
+    await spell.locator('#skip-delivery').click();assert.equal(await spell.locator('body.stamping').count(),0);assert.equal(await spell.locator('#seal-button').isEnabled(),true);
+    await spell.evaluate(()=>window.stampSounds=[]);
+    const nextTarget=Number((await spell.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12,nextCurrent=Number(await spell.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
+    for(let i=0;i<(nextTarget-nextCurrent+12)%12;i++)await spell.locator('#plus').click();
+    await spell.locator('#seal-button').click();await spell.locator('#skip-delivery').click();await spell.clock.runFor(400);
+    assert.equal(await spell.evaluate(()=>window.stampSounds.includes('assemble')),false,'skipping before impact cancels the delayed pop');
+    await spell.close();
     const gift=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
     await gift.addInitScript(()=>localStorage.getItem('miracle-clock.records.v2')||localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await gift.clock.install({time:new Date('2026-01-01T00:00:00Z')});await gift.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();
