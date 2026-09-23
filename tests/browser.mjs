@@ -15,7 +15,7 @@ try {
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.addInitScript(()=>{if(!localStorage.getItem('miracle-clock.progress.v1'))localStorage.setItem('miracle-clock.progress.v1',JSON.stringify({0:true,1:true,2:true,3:true,4:true,5:true}));});
     await page.goto('http://127.0.0.1:4173');
-    await page.getByRole('button',{name:/空の配送屋さんへ/}).waitFor();
+    await page.getByRole('button',{name:/冒険を(はじめる|つづける)/}).waitFor();
     await page.screenshot({path:`artifacts/${name}-home-mobile.png`});
     const overflow=async()=>{
       const result=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(el=>{const b=el.getBoundingClientRect();const s=getComputedStyle(el);return {tag:el.tagName,id:el.id,cls:el.getAttribute('class'),x:b.x,right:b.right,width:b.width,visibility:s.visibility,transform:s.transform};}).filter(b=>b.width&&(b.right>innerWidth+1||b.x< -1))}));
@@ -23,7 +23,7 @@ try {
       return result.overflow;
     };
     assert.equal(await overflow(),false,'mobile home must fit');
-    await page.getByRole('button',{name:/空の配送屋さんへ/}).click();
+    await page.getByRole('button',{name:/冒険を(はじめる|つづける)/}).click();
     await selectDiary();
     await enterLevel(0);
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');

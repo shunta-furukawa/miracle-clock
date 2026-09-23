@@ -85,3 +85,6 @@ Safari の共有 → ホーム画面に追加 →「Webアプリとして開く�
 音の設定はタイトル・配送所選択・一時停止から開けます。BGM／効果音は個別ON・OFF、音量を端末に保存。初期状態はOFF。Miracle Mineと共通のPeriTuneの章別楽曲とKenneyの効果音・ジングルを使用し、設定内にクレジットを表示します。画面切替時はクロスフェード、会話／結果／ジングル中はBGMを抑え、バックグラウンドでは停止。音源はPWAのオフラインキャッシュに含めます。出典と加工履歴は docs/audio-sources.json。
 
 行列は縦横とも重なる横並びで、先頭の名前と待ちゲージ、残り人数を表示します。刻印から離陸まで、演出中の画面タップ／スキップボタンで直ちに次へ進めます。配達処理は一度だけ実行し、行き先6種に合わせて空の色・照明・カメラを変えます。
+
+### Title and app updates
+The title matches Miracle Mine's illustrated logo / parchment-button layout. It shows `Ver. 0.3.0`, a generated Miracle Clock emblem and a Luca-with-clock app icon. `更新を確認` is always available on the title. It reports download progress, a ready update, the latest version or a retryable connection failure. `新しい版であそぶ` activates a fully downloaded release and reloads without clearing diary data. The build emits a content-based `version.json` and an HTML build identifier. Precache downloads revalidate resources; code, CSS, HTML and manifests are served with revalidation headers.

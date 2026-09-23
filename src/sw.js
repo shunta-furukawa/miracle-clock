@@ -3,7 +3,7 @@ const CACHE='miracle-clock-__VERSION__';
 const ASSETS=__ASSETS__;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
- try{await cache.addAll(ASSETS);}catch(error){await caches.delete(CACHE);throw error;}
+ try{await cache.addAll(ASSETS.map(url=>new Request(url,{cache:'reload'})));}catch(error){await caches.delete(CACHE);throw error;}
 })()));
 self.addEventListener('message',event=>{if(event.data?.type==='ACTIVATE')self.skipWaiting();});
 self.addEventListener('activate',event=>event.waitUntil((async()=>{

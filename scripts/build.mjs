@@ -14,5 +14,9 @@ console.log('Built Miracle Clock → dist/');
 async function assetsAt(dir){const entries=await readdir(dir,{withFileTypes:true});return (await Promise.all(entries.map(e=>e.isDirectory()?assetsAt(dir+'/'+e.name):dir+'/'+e.name))).flat();}
 const files=(await assetsAt('dist')).filter(p=>!p.endsWith('/sw.js')).sort();
 const hash=createHash('sha256');for(const file of files){hash.update(file);hash.update(await readFile(file));}
-const worker=(await readFile('src/sw.js','utf8')).replace('__VERSION__',hash.digest('hex').slice(0,16)).replace('__ASSETS__',JSON.stringify(files.map(p=>'./'+p.slice(5))));
+const version=hash.digest('hex').slice(0,16);
+await writeFile('dist/index.html',html.replace('__BUILD__',version));
+await writeFile('dist/version.json',JSON.stringify({build:version}));
+files.push('dist/version.json');
+const worker=(await readFile('src/sw.js','utf8')).replace('__VERSION__',version).replace('__ASSETS__',JSON.stringify(files.map(p=>'./'+p.slice(5))));
 await writeFile('dist/sw.js',worker);
