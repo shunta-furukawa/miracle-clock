@@ -70,7 +70,13 @@ try {
     }
     await setTime(6);await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'2 / 3'}).waitFor();
     await setTime(9);await page.locator('#seal-button').click();await page.getByRole('heading',{name:'みんなの荷物が届いたよ！'}).waitFor();
-    assert.equal(await page.locator('.star-result').count(),1);await page.locator('#retry-stage').click();
+    assert.equal(await page.locator('.star-result').count(),1);
+    for(const [width,height] of [[844,390],[568,320],[375,667]]){
+      await page.setViewportSize({width,height});
+      const fits=await page.evaluate(()=>{const m=document.querySelector('.result-modal'),r=m.getBoundingClientRect(),c=m.querySelector('.result-character').getBoundingClientRect(),a=m.querySelector('.dialog-actions').getBoundingClientRect();return {face:c.top>=r.top&&c.bottom<=r.bottom,buttons:a.bottom<=innerHeight,scroll:m.scrollTop};});
+      assert.equal(fits.face,true,'result character must be fully visible');assert.equal(fits.buttons,true,'result actions fit');assert.equal(fits.scroll,0,'focus must not scroll result');await page.screenshot({path:`artifacts/${name}-result-${width}x${height}.png`});
+    }
+    await page.setViewportSize({width:390,height:844});await page.locator('#retry-stage').click();
     await page.getByRole('button',{name:'一時停止'}).click();
     const queue=await page.locator('#queue-count').innerText();
     assert.equal(await page.getByRole('dialog').isVisible(),true);

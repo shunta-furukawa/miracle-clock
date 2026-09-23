@@ -24,6 +24,8 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - name: Exercise desktop and iPhone-sized browsers
         run: node tests/browser.mjs
+      - name: Verify music and sound settings
+        run: node tests/audio-browser.mjs
       - name: Verify offline app
         run: node tests/pwa.mjs
       - uses: actions/upload-artifact@v4

@@ -2,7 +2,7 @@ const portraits={'ルカ':0,'トトじい':1,'モス':2,'シェル':3,'クリム
 let dismiss=null;
 export function closeDialogue(){dismiss?.(false);}
 export function showDialogue(story,onDone,{fadeIn=false}={}){
- dismiss?.(false);
+ dismiss?.(false);document.dispatchEvent(new CustomEvent('clock:dialogue',{detail:true}));
  const previous=document.activeElement;
  const root=document.createElement('dialog');root.className='story-dialog';
  root.setAttribute('aria-label',story.title);
@@ -18,7 +18,7 @@ export function showDialogue(story,onDone,{fadeIn=false}={}){
  const left=line.who==='ルカ';sprite(q('.story-left'),left?0:7);const right=q('.story-right'),base=portraits[story.partner]-1;
  if(story.partner==='スナリ'){right.classList.add('sunari-dialogue');right.style.backgroundPosition=`0% ${line.expression==='emotion'?100:0}%`;}else if(left||line.expression==='emotion'){const n=base+(left?0:6);right.classList.add('expression-portrait');right.style.backgroundPosition=`${n%3*50}% ${[0,362,710,1050][Math.floor(n/3)]/1086*100}%`;}else sprite(right,portraits[story.partner]);
  right.dataset.expression=left?'listen':line.expression||'talk';q('.story-left').classList.toggle('speaking',left);q('.story-right').classList.toggle('speaking',!left);paint();if(!reduced&&!entering)timer=setInterval(()=>{visible=Math.min(chars.length,visible+1);paint();if(visible===chars.length)clearInterval(timer);},32);}
- function end(run=true){if(closed)return;closed=true;resize.disconnect();clearInterval(timer);clearTimeout(introTimer);root.close();root.remove();dismiss=null;if(previous?.isConnected)previous.focus({preventScroll:true});if(run)onDone();}
+ function end(run=true){if(closed)return;closed=true;document.dispatchEvent(new CustomEvent('clock:dialogue',{detail:false}));resize.disconnect();clearInterval(timer);clearTimeout(introTimer);root.close();root.remove();dismiss=null;if(previous?.isConnected)previous.focus({preventScroll:true});if(run)onDone();}
  function advance(){if(entering)return;if(visible<chars.length){clearInterval(timer);visible=chars.length;paint();}else if(index+1<story.lines.length){index++;draw();}else end();}
  root.addEventListener('click',e=>{if(e.target.closest('.story-skip'))end();else if(e.target.closest('.story-box'))advance();});
  root.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){if(e.target.closest('.story-skip'))return;e.preventDefault();advance();}});
