@@ -347,6 +347,17 @@
       "bytes": 2969,
       "changes": "Trim 120 ms, fade last 40 ms, volume 0.6, MP3 128 kbps.",
       "retrieved": "2026-09-23"
+    },
+    {
+      "title": "Clock spell cast",
+      "file": "spell.mp3",
+      "creator": "Miracle Clock original synthesized sound",
+      "license": "Project original; no third-party samples",
+      "generator": "scripts/make-spell-audio.py",
+      "sha256": "065790e8d6d7d79cdd9c5f1ca84b208a1fc4077a3c2a0619342f8a0402519750",
+      "bytes": 22613,
+      "duration": 1.35,
+      "changes": "Resonant impact, rising breath, six-note crystal arpeggio and short stereo echoes; peak -2.2 dBFS before MP3 encoding."
     }
   ]
 }

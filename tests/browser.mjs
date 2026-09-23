@@ -307,6 +307,17 @@ try {
     assert.equal(await life.locator('.star-result').getAttribute('data-stars'),'2');
     await life.locator('#result-main').click();await life.locator('.story-skip').click();await life.locator('#open-shop').click();assert.match(await life.locator('#lives').getAttribute('aria-label'),/残り3、最大3/);
     assert.deepEqual(await life.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].stages),[0]);await life.close();
+    const spell=await browser.newPage({viewport:{width:844,height:390}});
+    await spell.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],introSeen:true},null,null]})));
+    await spell.clock.install({time:new Date('2026-01-01T00:00:00Z')});await spell.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+    await spell.goto('http://127.0.0.1:4173');await spell.locator('#start').click();await spell.locator('[data-slot="0"]').click();await spell.locator('[data-stage="0"]').click();await spell.locator('#chapter-begin').click();await spell.locator('.story-skip').click();await spell.locator('#open-shop').click();
+    const spellTarget=Number((await spell.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12,spellCurrent=Number(await spell.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
+    for(let i=0;i<(spellTarget-spellCurrent+12)%12;i++)await spell.locator('#plus').click();
+    await spell.locator('#seal-button').click();await spell.clock.runFor(350);
+    assert.equal(await spell.locator('.stamping .spell-spark').count(),36);
+    assert.equal(await spell.locator('.spell-burst').evaluate(e=>getComputedStyle(e).pointerEvents),'none');
+    for(const size of [{width:844,height:390},{width:390,height:664}]){await spell.setViewportSize(size);const fits=await spell.locator('.spell-burst').evaluate(e=>{const b=e.getBoundingClientRect();return b.left>=0&&b.right<=innerWidth&&b.top>=0&&b.bottom<=innerHeight});assert.ok(fits,'spell remains inside clock and viewport');await spell.screenshot({path:`artifacts/${name}-spell-${size.width}.png`});}
+    await spell.locator('#skip-delivery').click();assert.equal(await spell.locator('body.stamping').count(),0);assert.equal(await spell.locator('#seal-button').isEnabled(),true);await spell.close();
     const gift=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
     await gift.addInitScript(()=>localStorage.getItem('miracle-clock.records.v2')||localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[0,1,2,3,4],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await gift.clock.install({time:new Date('2026-01-01T00:00:00Z')});await gift.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));await gift.goto('http://127.0.0.1:4173');await gift.locator('#start').click();await gift.locator('[data-slot="0"]').click();await gift.locator('[data-stage="5"]').click();await gift.locator('.story-skip').click();await gift.locator('#open-shop').click();

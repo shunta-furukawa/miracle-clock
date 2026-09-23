@@ -13,7 +13,7 @@ export const MUSIC={
 };
 export const CHAPTER_MUSIC=['forest','sea','cave','volcano','sky','puzzle'];
 export function gameMusicScene(mode,chapter){return mode==='sky'?'voyage':mode==='story'?(CHAPTER_MUSIC[chapter]||'puzzle'):'puzzle';}
-export const EFFECTS=['click','back','select','merge','success','clear','hint','shuffle','assemble','failure','chapter','discard','arrival','intro','dial-minute','dial-hour','hand-select'];
+export const EFFECTS=['click','back','select','merge','success','clear','hint','shuffle','assemble','failure','chapter','discard','arrival','intro','dial-minute','dial-hour','hand-select','spell'];
 export function audioSettings(value,legacySound=true){
  const result={music:legacySound,sound:legacySound,musicVolume:.45,soundVolume:.6};
  if(value?.version!==1)return result;
@@ -134,7 +134,7 @@ export class Soundtrack{
    if([...this.voices].filter(v=>name.startsWith('dial-')?v.name.startsWith('dial-'):name!=='select'||v.name==='select').length>=limit)return;
    const source=this.context.createBufferSource();source.buffer=buffer;source.connect(this.soundBus);
    const voice={source,name};this.voices.add(voice);
-   const jingle=['chapter','clear','arrival','intro'].includes(name);if(jingle)this.duck(voice,true);
+   const jingle=['chapter','clear','arrival','intro','spell'].includes(name);if(jingle)this.duck(voice,true);
    source.onended=()=>{source.disconnect();this.voices.delete(voice);if(jingle)this.duck(voice,false);};
    source.start();
   }catch{}
@@ -157,4 +157,4 @@ export class Soundtrack{
   this.onChange();
  }
 }
-export const creditsHTML=`<details class="audio-credits"><summary>音楽・効果音のクレジット</summary><p>音楽：PeriTune / むつき醒</p><ul>${Object.values(MUSIC).map(v=>`<li><a href="${v.url}" target="_blank" rel="noopener noreferrer">${v.title}</a></li>`).join('')}</ul><p><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 作者配布のループ版を使用。音量調整・MP3再圧縮。</p><p>効果音・ジングル：<a href="https://kenney.nl/assets/interface-sounds" target="_blank" rel="noopener noreferrer">Kenney — Interface Sounds</a> / <a href="https://kenney.nl/assets/music-jingles" target="_blank" rel="noopener noreferrer">Music Jingles</a> / <a href="https://kenney.nl/assets/impact-sounds" target="_blank" rel="noopener noreferrer">Impact Sounds</a>（<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a>）。MP3変換・音量調整。クリア音に短い残響を追加。</p><p>ガラス破砕音：<a href="https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx" target="_blank" rel="noopener noreferrer">rubberduck — 75 CC0 breaking / falling / hit sfx</a>（CC0）。音量調整・MP3変換。</p></details>`;
+export const creditsHTML=`<details class="audio-credits"><summary>音楽・効果音のクレジット</summary><p>音楽：PeriTune / むつき醒</p><ul>${Object.values(MUSIC).map(v=>`<li><a href="${v.url}" target="_blank" rel="noopener noreferrer">${v.title}</a></li>`).join('')}</ul><p><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 作者配布のループ版を使用。音量調整・MP3再圧縮。</p><p>効果音・ジングル：<a href="https://kenney.nl/assets/interface-sounds" target="_blank" rel="noopener noreferrer">Kenney — Interface Sounds</a> / <a href="https://kenney.nl/assets/music-jingles" target="_blank" rel="noopener noreferrer">Music Jingles</a> / <a href="https://kenney.nl/assets/impact-sounds" target="_blank" rel="noopener noreferrer">Impact Sounds</a>（<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a>）。MP3変換・音量調整。クリア音に短い残響を追加。</p><p>刻印の魔法音：Miracle Clock オリジナル合成音。</p><p>ガラス破砕音：<a href="https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx" target="_blank" rel="noopener noreferrer">rubberduck — 75 CC0 breaking / falling / hit sfx</a>（CC0）。音量調整・MP3変換。</p></details>`;

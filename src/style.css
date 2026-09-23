@@ -272,3 +272,14 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 @media(prefers-reduced-motion:reduce){.selected-hand .hand-art{animation:none;filter:drop-shadow(0 0 3px #f3bd50)}}
 
 @media(orientation:portrait) and (max-width:600px){.batch-queue .customer{max-width:64px}}
+/* One short cast, anchored to the dial. Never intercept taps or expand layout. */
+.spell-burst{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:50%;overflow:hidden;contain:layout paint}
+.spell-circle{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#ffe2a0;stroke-width:1;opacity:0;filter:drop-shadow(0 0 4px #62ecd8)}
+.spell-circle circle:nth-child(2){stroke:#a5ffe7;stroke-dasharray:3 6}.spell-circle path{stroke-width:.8}.spell-core{position:absolute;inset:36%;border-radius:50%;background:radial-gradient(circle,#fffce8,#9efbe777,transparent 70%);opacity:0}
+.spell-spark{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--spark-color);box-shadow:0 0 6px 2px var(--spark-color);opacity:0}
+.spell-spark:nth-child(3n){width:3px;height:10px;border-radius:50%}
+.stamping .spell-circle{animation:spell-circle 900ms ease-out both}.stamping .spell-core{animation:spell-core 650ms ease-out both}.stamping .spell-spark{animation:spell-spark 780ms var(--spark-delay) cubic-bezier(.15,.65,.25,1) both}
+@keyframes spell-circle{0%{opacity:0;transform:scale(.35) rotate(-25deg)}22%{opacity:.9}65%{opacity:.65}100%{opacity:0;transform:scale(1.08) rotate(20deg)}}
+@keyframes spell-core{0%{opacity:0;transform:scale(.25)}20%{opacity:.85}100%{opacity:0;transform:scale(2.4)}}
+@keyframes spell-spark{0%{opacity:0;transform:translate(0,0) scale(.2)}15%{opacity:1}65%{opacity:.85}100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(.15)}}
+@media(prefers-reduced-motion:reduce){.spell-burst{display:none}.stamping .spell-circle,.stamping .spell-core,.stamping .spell-spark{animation:none}}
