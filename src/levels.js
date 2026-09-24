@@ -53,7 +53,7 @@ export function makeOrder(level,index){
 export const prepareDial=(order,current=720)=>order.duration?order.base:normalizeTime(Math.round(current/order.step)*order.step);
 export const arrivalInterval=s=>s.level.endless?Math.max(10,36-Math.floor(s.delivered/12)*2):0;
 export const patienceLimit=level=>Math.max(50,([100,100,105,120,125,145][level.id]||110)-(level.number||1)*5);
-export function createSession(level,lives=3){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,departed:0,processed:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count,maxLives:level.endless?null:lives===6?6:3,lives:level.endless?null:lives===6?6:3};}
+export function createSession(level,lives=3){const count=level.endless?1:level.count;return {level,queue:Array.from({length:count},(_,i)=>makeOrder(level,i)),generated:count,delivered:0,departed:0,processed:0,mistakes:0,elapsed:0,activeTime:0,status:'playing',capacity:level.endless?5:count,maxLives:!level.endless&&lives===6?6:3,lives:!level.endless&&lives===6?6:3};}
 export function tickSession(s,seconds){
  if(s.status!=='playing'||!Number.isFinite(seconds)||seconds<0)return;
  s.activeTime+=seconds;for(const order of s.queue)order.waited+=seconds;if(s.queue[0])s.queue[0].attended+=seconds;
@@ -69,4 +69,4 @@ export function betterRecord(a,b){if(!a)return b;if(a.stars!==b.stars)return a.s
 export const starText=n=>'★'.repeat(n)+'☆'.repeat(3-n);
 export const totalStars=r=>Object.values(r?.stars||{}).reduce((n,s)=>n+s.stars,0);
 
-export function recordMistake(s){if(s.status!=='playing')return;s.mistakes++;s.departed++;s.queue.shift();if(!s.level.endless){s.lives=Math.max(0,s.lives-1);if(s.lives===0){s.processed++;s.status='over';return;}}advanceQueue(s);}
+export function recordMistake(s,reason='wrong'){if(s.status!=='playing')return;s.mistakes++;if(s.level.endless&&reason!=='timeout')return;s.departed++;s.queue.shift();s.lives=Math.max(0,s.lives-1);if(s.lives===0){s.processed++;s.status='over';return;}advanceQueue(s);}

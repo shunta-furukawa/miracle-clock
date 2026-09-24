@@ -54,8 +54,24 @@ test('every finite stage opens with the complete batch, without a full-queue fai
 
 test('normal lives decrease only on mistakes and stop processing at zero',()=>{const s=createSession(stages[0]);tickSession(s,10000);assert.equal(s.lives,3);for(let i=0;i<2;i++)recordMistake(s);assert.equal(s.status,'playing');assert.equal(s.lives,1);recordMistake(s);assert.equal(s.status,'over');recordMistake(s);completeOrder(s);assert.equal(s.mistakes,3);assert.equal(s.delivered,0);assert.equal(s.lives,0);});
 test('assisted retry allows six lives but a new stage defaults to three',()=>{const s=createSession(stages[5],6);for(let i=0;i<5;i++)recordMistake(s);assert.equal(s.status,'playing');assert.equal(s.lives,1);for(let i=0;i<3;i++)completeOrder(s);assert.equal(s.status,'cleared');assert.equal(rateRun(stages[0],s).stars,1);assert.equal(createSession(stages[1]).lives,3);assert.equal(createSession(stages[0],12).lives,3);});
-test('endless mistakes do not replace the existing queue-based ending',()=>{const s=createSession(endlessLevel,6);for(let i=0;i<20;i++)recordMistake(s);assert.equal(s.lives,null);assert.equal(s.status,'playing');tickSession(s,144);assert.equal(s.status,'over');});
+test('endless mistakes do not replace the existing queue-based ending',()=>{const s=createSession(endlessLevel,6);for(let i=0;i<20;i++)recordMistake(s);assert.equal(s.lives,3);assert.equal(s.status,'playing');tickSession(s,144);assert.equal(s.status,'over');});
 
 test('each waiting timer starts only at the front and departures count toward completion',()=>{const s=createSession(stages[0]);tickSession(s,30);assert.equal(s.queue[0].attended,30);assert.equal(s.queue[1].attended,0);recordMistake(s);assert.equal(s.queue[0].orderId,1);assert.equal(s.queue[0].attended,0);assert.equal(s.departed,1);assert.equal(s.lives,2);completeOrder(s);completeOrder(s);assert.equal(s.status,'cleared');assert.equal(s.processed,3);assert.equal(s.delivered,2);assert.equal(s.queue.length,0);assert.notEqual(rateRun(stages[0],s).stars,3);});
 test('last departure with no heart is a failure, not a cleared stage',()=>{const s=createSession(stages[0]);for(let i=0;i<3;i++)recordMistake(s);assert.equal(s.status,'over');assert.equal(s.processed,3);assert.equal(s.departed,3);assert.equal(s.queue.length,0);});
 test('patience gives early lessons more time and remains generous for relative orders',()=>{assert.ok(patienceLimit(stages[0])>patienceLimit(stages[5]));assert.ok(patienceLimit(stages[30])>patienceLimit(stages[0]));});
+
+ test('endless wrong answers retain the order and both timers, with no score or departure',()=>{
+ const s=createSession(endlessLevel);tickSession(s,20);const order=s.queue[0];
+ for(let i=0;i<50;i++)recordMistake(s);
+ assert.equal(s.queue[0],order);assert.equal(order.attended,20);assert.equal(s.elapsed,20);
+ assert.equal(s.lives,3);assert.equal(s.delivered,0);assert.equal(s.departed,0);assert.equal(s.processed,0);
+ tickSession(s,16);assert.equal(s.queue.length,2);assert.equal(order.attended,36);
+ completeOrder(s);assert.equal(s.delivered,1);assert.equal(s.queue[0].attended,0);
+ });
+ test('three endless timeouts end the run and retry restores three lives',()=>{
+ const s=createSession(endlessLevel,6);
+ for(let i=0;i<3;i++)recordMistake(s,'timeout');
+ assert.equal(s.lives,0);assert.equal(s.status,'over');assert.equal(s.departed,3);assert.equal(s.delivered,0);
+ recordMistake(s,'timeout');completeOrder(s);assert.equal(s.departed,3);assert.equal(s.delivered,0);
+ assert.equal(createSession(endlessLevel).lives,3);
+ });

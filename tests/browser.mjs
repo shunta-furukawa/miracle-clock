@@ -397,6 +397,33 @@ try {
     assert.equal(await page.getByRole('heading',{name:'おつかれさま、中央便！'}).isVisible(),true);
     const best=await page.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].endless.best);assert.equal(best,1);
     assert.deepEqual(errors,[],'no runtime errors including story and records');
+    // Endless: wrong answers cannot discard orders or freeze waiting/arrivals.
+    const central=await browser.newPage({viewport:{width:844,height:390},reducedMotion:'reduce'});
+    central.on('pageerror',e=>errors.push(e.message));
+    await central.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[0,1,2,3,4,5],stages:Array.from({length:36},(_,i)=>i),stars:{},endless:{best:7,total:9},introSeen:true},null,null]})));
+    await central.clock.install();await central.goto('http://127.0.0.1:4173');await central.locator('#start').click();await central.locator('[data-slot="0"]').click();await central.locator('#endless').click();
+    if(await central.locator('.story-skip').count())await central.locator('.story-skip').click();
+    assert.match(await central.locator('.start-rule').innerText(),/105秒.*行列5人/);
+    await central.locator('#open-shop').click();
+    assert.equal(await central.locator('.heart-vessel.full').count(),3);
+    const centralOrder=await central.locator('.customer.active').getAttribute('data-order');
+    for(let i=0;i<5;i++){await central.locator('#seal-button').click();await central.clock.runFor(4000);}
+    assert.equal(await central.locator('.customer.active').getAttribute('data-order'),centralOrder);
+    assert.equal(await central.locator('.heart-vessel.full').count(),3);
+    assert.ok(Number(await central.locator('.patience').getAttribute('aria-valuenow'))<90);
+    await central.clock.runFor(86000);
+    assert.equal(await central.locator('.heart-vessel.full').count(),2);
+    assert.notEqual(await central.locator('.customer.active').getAttribute('data-order'),centralOrder);
+    await central.screenshot({path:`artifacts/${name}-endless-timeout.png`});
+    await central.clock.runFor(80000);
+    assert.match(await central.locator('.result-modal').innerText(),/行列が5人/);
+    assert.equal(await central.locator('#retry-assisted').count(),0);
+    await central.locator('#result-main').click();assert.equal(await central.locator('.heart-vessel.full').count(),3);
+    for(let i=0;i<3;i++)await central.locator('#plus').click();
+    await central.locator('#seal-button').click();await central.clock.runFor(1000);
+    const savedCentral=await central.evaluate(()=>JSON.parse(localStorage.getItem('miracle-clock.records.v2')).slots[0].endless);
+    assert.deepEqual(savedCentral,{best:7,total:10});
+    await central.close();assert.deepEqual(errors,[]);
     await browser.close();console.log(`${name}: drag, delivery, pause, AM/PM, relative time, clearing, save, responsive layout PASS`);
   }
 } finally {server.kill();}
