@@ -86,3 +86,7 @@ body:has(.pause-modal) .walk-customer,body:has(.pause-modal) .resident-body,body
 .walk-customer.arriving .personal-order{transform:scale(.75)}
 .walk-customer[data-mood=tired]:not(.matching) .portrait{filter:saturate(.72)}
 @media(prefers-reduced-motion:reduce){.personal-order{transition:none}.walk-customer.arriving .personal-order{transform:none}}
+/* Keep people on the floor, with the illustrated reception above the horizon. */
+.customer-floor{background:repeating-linear-gradient(174deg,#8e714b 0px,#8e714b 25px,#755a3c 27px,#aa8860 29px,#92714a 54px)}
+.customer-backdrop{height:min(42%,90px);filter:brightness(.88);mask-image:linear-gradient(#000 75%,transparent);-webkit-mask-image:linear-gradient(#000 75%,transparent)}
+.customer-line{align-content:safe end}

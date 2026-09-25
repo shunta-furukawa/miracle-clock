@@ -275,5 +275,6 @@ function showResult(won){const l=session.level,r=session.rating,goal=l.endless?n
  const leaveResult=onDone=>{closeModal();if(won&&!l.endless&&l.number===6)showChapterCompletion(l,onDone);else onDone();};
  $('#result-main').onclick=()=>{if(won&&!l.endless)leaveResult(()=>{renderMap();if(l.stageId<35)chooseLevel(stages[l.stageId+1]);else renderPreparations();});else startLevel(l);};$('#retry-assisted')?.addEventListener('click',()=>startLevel(l,6));$('#result-map').onclick=()=>leaveResult(renderMap);$('#retry-stage')?.addEventListener('click',()=>startLevel(l));
 }
+window.addEventListener('resize',()=>document.querySelectorAll('.farewell-layer').forEach(el=>el.remove()));
 document.addEventListener('visibilitychange',()=>{soundtrack.visibility(document.hidden);lastTick=performance.now();if(document.hidden&&screen==='play'&&!paused&&!busy&&session?.status==='playing')pauseGame();});
 renderHome();
