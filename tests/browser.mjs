@@ -59,13 +59,22 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
+    await page.clock.install();
     await page.locator('#open-shop').click();
-    await page.waitForTimeout(600);
-    await page.screenshot({path:`artifacts/${name}-game-mobile.png`,animations:'disabled'});
-    assert.equal(await page.locator('.customer').first().evaluate(el=>getComputedStyle(el).opacity),'1','customer must remain visible after entering');
-    assert.equal(await overflow(),false,'mobile gameplay must fit');
-    assert.equal(await page.locator('.customer').count(),8,'crowd preview is bounded; board represents all ten');
-    assert.deepEqual(await page.locator('.order-group b').allTextContents(),['×4人','×3人','×3人']);
+    assert.equal(await page.locator('.walk-customer').count(),0,'shop opens empty');
+    assert.match(await page.locator('#empty-reception').innerText(),/開店/);
+    assert.equal(await page.locator('#seal-button').isEnabled(),false);
+    await page.clock.runFor(700);assert.equal(await page.locator('.walk-customer').count(),1);
+    assert.equal(await page.locator('.walk-customer.arriving').count(),1,'visitor walks in before ordering');
+    await page.clock.runFor(650);assert.equal(await page.locator('.walk-customer').first().evaluate(e=>e.classList.contains('arriving')),false,'first visitor finishes walking before later visitors');
+    await page.evaluate(()=>window.firstCustomer=document.querySelector('.walk-customer'));
+    await page.clock.runFor(12000);
+    assert.equal(await page.evaluate(()=>window.firstCustomer===document.querySelector('.walk-customer')),true,'arrivals preserve existing customer nodes');
+    assert.equal(await page.locator('.walk-customer').count(),10);
+    assert.equal(await page.locator('.personal-order').count(),10,'every customer has their own order');
+    assert.match(await page.locator('#queue').innerText(),/最後のお客さん/);
+    assert.equal(await overflow(),false);
+    await page.screenshot({path:`artifacts/${name}-living-opening.png`,animations:'disabled'});
     for(const hand of ['hour','minute'])assert.equal(await page.locator(`#${hand}-hand .hand-art image`).getAttribute('clip-path'),`url(#${hand}-art-crop)`,'atlas clipping must be explicit before glow filters');
     await page.locator('[data-select=minute]').click();
     assert.equal(await page.locator('#minute-hand').getAttribute('class'),'selected-hand');
@@ -85,6 +94,7 @@ try {
     // On release the hand glides to the snapped mark rather than staying under the finger.
     await page.waitForFunction(()=>document.querySelector('#hour-hand').getAttribute('transform')==='rotate(90 150 150)',null,{timeout:2000});
     await page.locator('#seal-button').click();
+    assert.ok(await page.locator('.farewell').count()>0,'visible served customers celebrate in place');assert.ok(await page.locator('.farewell-spark').count()>0);assert.match(await page.locator('.farewell .personal-order').first().innerText(),/ありがとう|助かった|また来る|やった|お願い/);
     assert.match(await page.locator('#score').innerText(),/4 \/ 10/);
     assert.match(await page.locator('#rush-combo').innerText(),/1 COMBO/);
     assert.equal(await page.locator('#skip-delivery').isVisible(),false);
@@ -97,7 +107,7 @@ try {
     assert.match(await page.locator('#score').innerText(),/4 \/ 10/);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820}]){
       await page.setViewportSize(size);
-      for(const selector of ['#clock','#plus','#seal-button','.order-groups','#pause']){
+      for(const selector of ['#clock','#plus','#seal-button','#customer-floor','#pause']){
         const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>20,selector+' has usable size');
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
@@ -107,31 +117,30 @@ try {
     for(let i=0;i<2;i++)await page.locator('#plus').click();
     await page.locator('#seal-button').click();assert.match(await page.locator('#score').innerText(),/7 \/ 10/);
     for(let i=0;i<3;i++)await page.locator('#plus').click();
-    await page.locator('#seal-button').click();await page.locator('#result-main').waitFor();
+    await page.locator('#seal-button').click();assert.equal(await page.locator('#result-main').count(),0,'final customer farewell precedes results');await page.clock.runFor(1400);await page.locator('#result-main').waitFor();
     assert.match(await page.locator('.rush-result').innerText(),/最大 2 COMBO · 最大 4件同時/);
     assert.equal(await page.locator('.chapter-ending').count(),0,'stage result precedes chapter ending');
-    await page.locator('#retry-stage').click();assert.match(await page.locator('#queue-count').innerText(),/10/);
+    await page.locator('#retry-stage').click();assert.equal(await page.locator('.walk-customer').count(),0);assert.equal(await page.locator('.farewell').count(),0,'retry cleans up celebration');
     await page.locator('#pause').click();await page.locator('#quit').click();
-    await page.clock.install();
     await page.locator('[data-stage="1"]').click();await skipDialogue();await page.locator('#open-shop').click();
     assert.match(await page.locator('#score').innerText(),/0 \/ 15/);
-    await page.clock.runFor(6500);
-    assert.match(await page.locator('#queue-count').innerText(),/12/,'next wave adds three customers');
+    await page.clock.runFor(700);assert.equal(await page.locator('.walk-customer').count(),1);
+    await page.clock.runFor(900);assert.equal(await page.locator('.walk-customer').count(),2,'arrivals are individual');
     await page.locator('#pause').click();const count=await page.locator('#queue-count').innerText();await page.clock.runFor(20000);assert.equal(await page.locator('#queue-count').innerText(),count,'pause freezes arrivals');await page.locator('#resume').click();
     // Exercise later chapter boards with the same public controls.
     await page.locator('#pause').click();await page.locator('#quit').click();
     await page.locator('[data-stage="26"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    assert.equal(await page.locator('#period-toggle').isVisible(),true);
-    assert.match((await page.locator('.order-group strong').allTextContents()).join(' '),/午前/);
-    assert.match((await page.locator('.order-group strong').allTextContents()).join(' '),/午後/);
+    await page.clock.runFor(9000);assert.equal(await page.locator('#period-toggle').isVisible(),true);
+    assert.match((await page.locator('#customer-line .personal-order').allTextContents()).join(' '),/午前/);
+    assert.match((await page.locator('#customer-line .personal-order').allTextContents()).join(' '),/午後/);
     await page.locator('#pause').click();await page.locator('#quit').click();
     await page.locator('[data-stage="35"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    assert.equal(await page.locator('.reference-time').isVisible(),true);
-    assert.equal(await page.locator('.order-group').count(),5,'equal calculated times merge into one group');
+    await page.clock.runFor(50000);assert.equal(await page.locator('.reference-time').isVisible(),true);
+    assert.equal(await page.locator('#customer-line .personal-order').count(),30,'each visitor retains their own order');
     await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-rush-relative.png`});
     await page.setViewportSize({width:390,height:844});
     // Drive chapter-final result routing through the real stamp button.
-    async function finishCurrent(){for(let i=0;i<40&&!await page.locator('#result-main').count();i++){await page.evaluate(()=>{dial=session.queue[0].target;updateDial();});await page.locator('#seal-button').click();}await page.locator('#result-main').waitFor();}
+    async function finishCurrent(){for(let i=0;i<150&&await page.evaluate(()=>session.status==='playing');i++){await page.clock.runFor(800);if(await page.locator('#seal-button').isEnabled()){await page.evaluate(()=>{dial=session.queue.find(o=>o.arriving<=0).target;updateDial();});await page.locator('#seal-button').click();}}await page.clock.runFor(1400);await page.locator('#result-main').waitFor();}
     await finishCurrent();assert.equal(await page.locator('.story-dialog').count(),0,'results appear before chapter ending');
     await page.locator('#retry-stage').click();assert.equal(await page.locator('.story-dialog').count(),0,'retry goes straight back to the stage');
     await finishCurrent();await page.locator('#result-main').click();await page.locator('.story-dialog').waitFor();
@@ -198,8 +207,8 @@ try {
     await beginner.clock.install();await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
     assert.equal(await beginner.locator('[data-stage="1"]').isDisabled(),true);assert.equal(await beginner.locator('#endless').isDisabled(),true);
     await beginner.locator('[data-stage="0"]').click();await beginner.locator('#chapter-begin').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
-    await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();
-    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await beginner.locator('#plus').click();await beginner.locator('#seal-button').click();await beginner.clock.runFor(1000);}
+    await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();await beginner.clock.runFor(12000);
+    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await beginner.locator('#plus').click();await beginner.locator('#seal-button').click();await beginner.clock.runFor(1400);}
     assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','pause time is excluded');
     await beginner.locator('#result-map').click();assert.equal(await beginner.locator('[data-stage="1"]').isEnabled(),true);assert.equal(await beginner.locator('[data-stage="2"]').isDisabled(),true);
     assert.match(await beginner.locator('[data-stage="0"]').innerText(),/★★★/);await beginner.screenshot({path:`artifacts/${name}-campaign-stars.png`});await beginner.close();

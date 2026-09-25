@@ -1,4 +1,4 @@
-import {rushLevel,rushSession,rushInterval,rushLimit,rushGroups,rushKey,rushMatches,rushStep,rushTick,rushStamp,rushTimeout} from './rush.js';
+import {rushLevel,rushRemaining,rushSession,rushInterval,rushLimit,rushGroups,rushKey,rushMatches,rushStep,rushTick,rushStamp,rushTimeout} from './rush.js';
 import {parcelSeal} from './stamp.js';
 import {Soundtrack,creditsHTML,gameMusicScene} from './soundtrack.js';
 import {mod, normalizeTime, clockAngles, angleDelta, dragMinutes, freeMinutes, settleDelta, matchesTime, timeText, orderHint} from './time.js';
@@ -12,7 +12,7 @@ import {DialDetents} from './detent.js';
 import {victoryEffects} from './celebration.js';
 import {showOpening,closeOpening} from './opening.js';
 
-let rushSelected=null;
+let rushSelected=null,closingTimer=null;
 const app=document.querySelector('#app');
 const $=selector=>app.querySelector(selector);
 let screen='home', session=null, dial=720, selectedHand='hour', paused=false, busy=false, drag=null, timer=null, flightTimer=null;
@@ -41,14 +41,14 @@ function audioSettingsDialog(){
  dialog.addEventListener('input',e=>{const key=e.target.dataset.audio;if(!key)return;const volume=e.target.type==='range',value=volume?Number(e.target.value)/100:e.target.checked;const ok=soundtrack.configure({[key]:value});soundtrack.unlock();if(volume)dialog.querySelector('#'+key+'-value').textContent=Math.round(value*100)+'%';dialog.querySelector('.audio-save-status').textContent=ok?'音の設定を保存しました。':'この端末では音の設定を保存できません。';if(key==='sound'||key==='soundVolume')soundtrack.play('select');});
  dialog.querySelector('#audio-done').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();if(fromPlay){paused=wasPaused;lastTick=performance.now();}});document.body.append(dialog);dialog.showModal();
 }
-function cleanup(){clearTimeout(stampImpactTimer);stampImpactTimer=null;skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
+function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySelectorAll('.farewell-layer').forEach(e=>e.remove());clearTimeout(stampImpactTimer);stampImpactTimer=null;skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.5.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.5.1</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
-  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>お客さんの注文を見て、短い針と長い針を合わせよう。針は指で動かすか、選んで＋・−で動かせます。</p><p>注文ボードで全員の時刻と人数を確認。同じ時刻の人を、1回の刻印でまとめて配達できます。配達中も次の操作ができます。</p><p>連続成功でコンボ！ 不正解は注文を残してコンボが0に戻ります。先頭のお客さんの待ちゲージがなくなるとハートが1つ減ります。ハートを残して全員の荷物を届けよう。</p>');
+  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>お客さんの注文を見て、短い針と長い針を合わせよう。針は指で動かすか、選んで＋・−で動かせます。</p><p>一人ずつ来店するお客さんの吹き出しで時刻を確認。同じ時刻の人を、1回の刻印でまとめて配達できます。配達中も次の操作ができます。</p><p>連続成功でコンボ！ 不正解は注文を残してコンボが0に戻ります。先頭のお客さんの待ちゲージがなくなるとハートが1つ減ります。ハートを残して全員の荷物を届けよう。</p>');
   $('#home-share').onclick=async()=>{const data={title:'Miracle Clock',text:'ルカと空のとけい便。魔法の時計で、浮遊島へ荷物を届けよう。',url:'https://miracle-clock.vercel.app/'};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(data.url);$('#home-share').textContent='リンクをコピーしました';}}catch(e){if(e.name!=='AbortError')openModal('<h2>友だちに教える</h2><p><a href="https://miracle-clock.vercel.app/">miracle-clock.vercel.app</a></p><p>このリンクをコピーして教えてね。</p>');}};
 }
 function bindSound(){const b=$('.sound');if(b){b.title='音の設定';b.addEventListener('click',audioSettingsDialog);}}
@@ -107,7 +107,7 @@ function renderPreparations(){
  app.querySelectorAll('[data-shop-emblem]').forEach(b=>b.onclick=()=>{record.shopEmblem=Number(b.dataset.shopEmblem);record.updated=Date.now();const saved=persistRecords();$('.central-picture .shop-emblem').dataset.emblem=record.shopEmblem;app.querySelectorAll('[data-shop-emblem]').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.shopEmblem)===record.shopEmblem)));$('.shop-save').textContent=saved?'この配達日誌に保存しました。':saveNotice;playSound('assemble');});$('#back-map').onclick=renderMap;$('#central-open')?.addEventListener('click',()=>chooseLevel(endlessLevel));bindSound();app.querySelectorAll('[data-reward]').forEach(b=>b.onclick=()=>showDepotReward(Number(b.dataset.reward),()=>{}));window.scrollTo(0,0);
 }
 
-function levelDetails(input){const level=rushLevel(input),goal=level.endless?null:starGoal(level);openModal(`<p class="eyebrow">${level.endless?'SPECIAL · ENDLESS':`${level.id+1}-${level.number} · ${depotNames[level.id]}`}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'10人から始まる配送ラッシュ':`${level.count}人の荷物を届けよう`} · ♥♥♥</p><p class="start-tip">注文ボードの時刻に合わせて刻印。同じ時刻の人をまとめて配達！</p><p class="start-rule">連続成功でコンボ。不正解はやり直し。先頭で${rushLimit(level)}秒待つと ♥ −1。${level.endless?'行列24人でも終了。':''}</p>${goal?`<p class="start-stars">★★★ ${goal.time}秒以内・ミスなし</p>`:''}<button class="primary" id="open-shop">受付をはじめる</button>`);$('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startLevel(level);};}
+function levelDetails(input){const level=rushLevel(input),goal=level.endless?null:starGoal(level);openModal(`<p class="eyebrow">${level.endless?'SPECIAL · ENDLESS':`${level.id+1}-${level.number} · ${depotNames[level.id]}`}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'次々やってくる配送ラッシュ':`今日の目標：${level.count}人に届けたら営業完了！`} · ♥♥♥</p><p class="start-tip">お客さんは一人ずつ来店。吹き出しの時刻に合わせて、同じ時刻の人をまとめて配達！</p><p class="start-rule">連続成功でコンボ。不正解はやり直し。先頭で${rushLimit(level)}秒待つと ♥ −1。${level.endless?'行列24人でも終了。':''}</p>${goal?`<p class="start-stars">★★★ ${goal.time}秒以内・ミスなし</p>`:''}<button class="primary" id="open-shop">受付をはじめる</button>`);$('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startLevel(level);};}
 function openModal(content,closable=true){closeModal();soundtrack.duck('dialog',true);const wrapper=document.createElement('div');wrapper.className='modal-backdrop';wrapper.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="${screen==='play'?'配達のお知らせ':'お知らせ'}">${closable?'<button class="modal-close" aria-label="閉じる">×</button>':''}${content}</section>`;const panel=wrapper.querySelector('.modal');const actions=document.createElement('div');actions.className='dialog-actions';[...panel.children].filter(el=>el.tagName==='BUTTON'&&!el.classList.contains('modal-close')).forEach(el=>actions.append(el));if(actions.children.length)panel.append(actions);app.append(wrapper);$('.modal-close')?.addEventListener('click',()=>{closeModal();if(screen==='play'){paused=false;lastTick=performance.now();}});if(panel.querySelector('.result-character'))panel.classList.add('result-modal');wrapper.querySelector('button')?.focus({preventScroll:true});panel.scrollTop=0;wrapper.addEventListener('keydown',e=>{if(e.key==='Escape'&&closable){e.preventDefault();$('.modal-close')?.click();}if(e.key==='Tab'){const items=[...wrapper.querySelectorAll('button:not(:disabled)')];const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});}
 function closeModal(){soundtrack.duck('dialog',false);$('.modal-backdrop')?.remove();}
 function spellMarkup(){return `<div class="spell-burst" aria-hidden="true"><svg class="spell-circle" viewBox="0 0 300 300"><circle cx="150" cy="150" r="105"/><circle cx="150" cy="150" r="91"/><path d="M150 45 241 202 59 202ZM150 255 59 98 241 98Z"/>${Array.from({length:12},(_,i)=>`<path transform="rotate(${i*30} 150 150)" d="M150 39l4 8-4 8-4-8Z"/>`).join('')}</svg><span class="spell-core"></span>${Array.from({length:36},(_,i)=>`<i class="spell-spark" style="--spark-delay:${i%6*18}ms;--spark-color:${['#fff0a8','#9cfbea','#ffeac5'][i%3]}" ></i>`).join('')}</div>`;}
@@ -120,7 +120,7 @@ function clockMarkup(){
 }
 function startLevel(level,lives=3){
  level=rushLevel(level);rushSelected=null;
- cleanup();screen='play';soundtrack.setScene(gameMusicScene(level.endless?'sky':'story',level.id));playSound('intro');document.body.dataset.depot=level.id;session=rushSession(level,lives);selectedHand=level.id===0||level.endless&&rushStep(session)===60?'hour':'minute';dial=prepareDial(session.queue[0]);
+ cleanup();screen='play';soundtrack.setScene(gameMusicScene(level.endless?'sky':'story',level.id));playSound('intro');document.body.dataset.depot=level.id;session=rushSession(level,lives);selectedHand=level.id===0||level.endless&&rushStep(session)===60?'hour':'minute';dial=720;
  app.innerHTML=`<main class="game scene rush-game" style="--depot-image:url(assets/depots/${level.endless?5:level.id===5?6:level.id}.webp)"><header class="topbar game-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${level.endless?'特別ステージ · エンドレス':`${level.id+1}-${level.number} · ${depotNames[level.id]}`}</span><strong>${level.stageTitle}</strong></div><div class="score-stack"><span id="score" class="score"></span><span id="lives" class="lives" role="status" aria-live="polite"></span></div></header><div class="game-workspace"><section class="queue-area ${!level.endless?'batch-queue':''} ${!level.endless&&level.count>5?'batch-large':''}" aria-label="待っているお客さん"><div class="queue-heading"><span>${level.endless?'荷物の受付':'この便のお客さん'}</span><span id="queue-count"></span></div><div class="queue-track" id="queue"></div><div class="queue-counter"><span>LUCA & TOTO</span><b>空のとけい便</b></div><div class="arrival-track" ><span id="arrival-fill"></span></div></section><div class="play-layout"><aside class="companion-side"><div class="luka-frame">${portrait(0)}<span class="magic-ring"></span></div><div class="luka-note"><b>ルカの 魔法時計</b><p>針を合わせて刻印。<br>次のお客さんを迎えよう。</p></div><div class="plane-dock"><img src="assets/delivery-plane.webp" alt="出発を待つ配送飛行機"></div></aside><section class="clock-station"><div class="order-ticket" id="order"></div><div class="clock-bay"><div class="clock-housing">${clockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}<div class="clock-status" id="clock-status">お届け時刻を合わせよう</div></div></div><div class="station-controls"><div class="period-toggle" id="period-toggle" hidden><button data-period="0">☀ 午前</button><button data-period="1">☾ 午後</button></div><div class="hand-controls"><button class="hand-select" data-select="hour"><i class="short-swatch"></i><span>短い針<small class="selection-label">えらぶ</small></span></button><button class="adjust" id="minus" aria-label="選んだ針を戻す">−</button><button class="adjust" id="plus" aria-label="選んだ針を進める">＋</button><button class="hand-select" data-select="minute"><i class="long-swatch"></i><span>長い針<small class="selection-label">えらぶ</small></span></button></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></div></section><aside class="toto-side"><div class="toto-advice">${toto()}<div><b>トトじい</b><p id="advice">${level.lesson}</p></div></div><div class="delivery-log"><span class="eyebrow">TODAY'S FLIGHTS</span><h2>今日のお届け</h2><ol id="flight-log"><li>最初の便を待っています</li></ol></div></aside></div></div><button id="skip-delivery" class="skip-delivery" hidden><span>タップして次のお客さんへ ▸</span></button><div class="flight-layer" aria-hidden="true"><div class="flight-window"><div class="flight-sky"></div><div id="flight-viewport"></div><img class="flight-fallback" src="assets/delivery-plane.webp" alt=""><div class="flight-caption"><small>空のとけい便</small><strong id="flight-destination"></strong><span id="flight-time"></span></div><span class="flight-postmark">時刻の刻印で、約束の空へ</span></div></div><div class="feedback" id="feedback" role="status" aria-live="polite">針を合わせて、時計の真ん中の刻印をおそう。</div></main>`;
  $('#clock').classList.toggle('show-guide',!!level.guide);$('#pause').onclick=()=>pauseGame();$('#seal-button').onclick=dispatch;$('#skip-delivery').onclick=()=>skipDelivery?.();$('#elements').onclick=showElements;
  $('.game-workspace').insertAdjacentHTML('beforeend','<div class="rush-effects" aria-hidden="true"></div>');
@@ -128,44 +128,88 @@ function startLevel(level,lives=3){
  $('#minus').onclick=()=>adjust(-1);$('#plus').onclick=()=>adjust(1);
  document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{if(busy||paused)return;dial=mod(dial,720)+Number(b.dataset.period)*720;updateDial();});
  $('#guide').onclick=e=>{const on=$('#clock').classList.toggle('show-guide');e.currentTarget.textContent=`分のめもり ${on?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',on);};
- $('#hint').onclick=()=>{if(busy||paused)return;$('#advice').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);$('#feedback').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);};
+ $('#hint').onclick=()=>{if(busy||paused)return;if(!session.queue.length){$('#feedback').textContent='お客さんが来たら、吹き出しの時刻に針を合わせよう。';return;}$('#advice').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);$('#feedback').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);};
  const waitingArt=new Image();waitingArt.src='assets/residents-waiting.webp';
  bindDial();updateOrder();updateQueue();updateDial();lastTick=performance.now();timer=setInterval(tick,100);window.scrollTo(0,0);
 }
 function updateLives(){const el=$('#lives');if(!el)return;el.innerHTML=Array.from({length:session.maxLives},(_,i)=>`<svg class="heart-vessel ${i<session.lives?'full':'empty'}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-3A5 5 0 0 1 22 8c0 7-10 13-10 13Z"/>${i<session.lives?'':'<path class="heart-crack" d="m13 4-3 5 4 3-4 5 2 4"/>'}</svg>`).join('');el.setAttribute('aria-label',`ライフ 残り${session.lives}、最大${session.maxLives}${session.maxLives===6?' おてつだい':''}`);el.classList.toggle('last-life',session.lives===1);}
 function updateOrder(){
  updateLives();
- const groups=rushGroups(session);if(!groups.length)return;
- const selected=session.queue.find(o=>o.orderId===rushSelected)||session.queue[0];rushSelected=selected.orderId;
- $('.game').classList.toggle('relative-order',!!selected.duration);
- $('#order').innerHTML=`<div class="rush-heading"><span>注文ボード · ${session.queue.length}人</span><b id="rush-combo">${session.combo} COMBO</b></div><div class="order-groups">${groups.map((g,i)=>`<button class="order-group" data-group="${g.order.orderId}" style="--order-color:${['#337c72','#af633b','#636fa5','#9b603c','#845d99','#387d93'][i%6]}" aria-pressed="${rushKey(selected)===g.key}"><span class="group-symbol" aria-hidden="true">${['●','◆','▲','■','★','✦'][i%6]}</span><strong>${timeText(g.order.target,g.order.period?'period':'12')}</strong><b>×${g.orders.length}人</b></button>`).join('')}</div><div class="rush-detail"><p class="request"><strong>${selected.label}</strong><span>${selected.duration?'のお届け':'にお届け'}</span></p>${selected.duration?`<span class="reference-time">受付 ${timeText(selected.base,'period')}${selected.nextDay?' · 翌日':''}</span>`:''}<span class="rush-ready" id="rush-ready"></span></div>`;
- $('#order').querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{if(paused)return;rushSelected=Number(b.dataset.group);updateOrder();updateRushMatches();});
+ const selected=session.queue.find(o=>o.orderId===rushSelected)||session.queue[0];rushSelected=selected?.orderId??null;
+ $('.game').classList.toggle('relative-order',!!selected?.duration);
+ if(!$('#customer-floor')){
+  const place=session.level.endless?6:session.level.id;
+  $('#order').innerHTML=`<div class="rush-heading"><span id="daily-goal"></span><b id="rush-combo"></b></div><div class="customer-floor" id="customer-floor"><svg class="customer-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div id="customer-line" class="customer-line" aria-label="お客さんと一人ずつの注文"></div><p class="empty-reception" id="empty-reception"></p></div><div class="rush-detail" id="rush-detail"></div>`;
+ }
+ $('#daily-goal').textContent=session.level.endless?'空の中央便 · 満員24人で終了':`今日の目標 ${session.level.count}人に届けよう`;
+ $('#rush-combo').textContent=`${session.combo} COMBO`;
+ $('#rush-detail').innerHTML=selected?`<p class="request"><strong>${selected.label}</strong><span>${selected.duration?'のお届け':'にお届け'}</span></p>${selected.duration?`<span class="reference-time">受付 ${timeText(selected.base,'period')}${selected.nextDay?' · 翌日':''}</span>`:''}<span class="rush-ready" id="rush-ready"></span>`:'<span class="rush-ready" id="rush-ready"></span>';
  $('#period-toggle').hidden=!session.queue.some(o=>o.period);
- $('#score').textContent=session.level.endless?`${session.delivered}便 · BEST ${records.slots[activeSlot].endless.best}`:`${session.delivered} / ${session.level.count} 便`;
+ $('#score').textContent=session.level.endless?`お届け ${session.delivered}人`:`お届け ${session.delivered} / ${session.level.count}人`;
  $('.clock-status').textContent='同じ時刻をまとめて刻印！';
- updateRushMatches();
+ updateReception();updateRushMatches();
+}
+function updateReception(){
+ const remaining=rushRemaining(session),empty=!session.queue.length;
+ $('#queue-count').innerHTML=`受付中 <strong>${session.queue.length}</strong> 人`;
+ $('#queue').textContent=session.level.endless?'一人ずつ、次々来店！':session.status==='cleared'?'本日のお届け完了！':remaining?`これから ${remaining}人が来店`:'これで最後のお客さん！';
+ $('#empty-reception').hidden=!empty;
+ $('#empty-reception').textContent=session.status==='cleared'?'本日のお届け完了！':session.generated?'次のお客さんがやってきます…':'開店！ お客さんがやってきます…';
 }
 function updateRushMatches(){
  if(!session||screen!=='play')return;
  const ready=rushMatches(session,dial),ids=new Set(ready.map(o=>o.orderId));
- document.querySelectorAll('.order-group').forEach(b=>{const o=session.queue.find(o=>o.orderId===Number(b.dataset.group));b.classList.toggle('matching',!!o&&matchesTime(dial,o.target,o.period));});
- document.querySelectorAll('.customer[data-order]').forEach(el=>el.classList.toggle('matching',ids.has(Number(el.dataset.order))));
- if($('#rush-ready'))$('#rush-ready').textContent=ready.length?`${ready.length}人まとめて送れる！`:'針を合わせて刻印';
+ document.querySelectorAll('.walk-customer[data-order]').forEach(el=>el.classList.toggle('matching',ids.has(Number(el.dataset.order))));
+ if($('#rush-ready'))$('#rush-ready').textContent=ready.length?`${ready.length}人まとめて送れる！`:session.queue.length?'吹き出しの時刻に合わせて刻印':'お客さんを迎えよう';
+ if($('#seal-button'))$('#seal-button').disabled=session.status!=='playing'||!session.queue.some(o=>o.arriving<=0);
 }
 function residentPortrait(order){const rows=[0,270,500,735,970,1210,1536],x=(order.variant+1)*256,y=rows[order.region],height=rows[order.region+1]-y;return `<svg class="portrait queue-resident" role="img" aria-label="${order.name}" data-facing="left" viewBox="${x} ${y} 256 ${height}" preserveAspectRatio="xMidYMax meet"><image href="assets/queue-residents.webp" width="1024" height="1536"/></svg>`;}
 function updateQueue(){
- const q=session.queue;$('#queue').style.setProperty('--queue-size',q.length);$('#queue-count').innerHTML=`あと <strong>${q.length}</strong> 人`;
- const place=session.level.endless?6:session.level.id;
- const backdrop=`<svg class="queue-backdrop" aria-hidden="true" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg>`;
- $('#queue').innerHTML=backdrop+q.slice(0,8).map((o,i)=>`<div class="customer ${i===0?'active':''}" data-order="${o.orderId}" data-region="${o.region}" data-mood="${customerMood(o)}" style="--queue-index:${i};--idle-delay:-${(o.orderId*1.7)%7}s;z-index:${20-i}"><div class="customer-bubble">${i===0?timeText(o.target,o.period?'period':'12'):''}</div>${residentPortrait(o)}${i===0?`<span class="customer-name">${o.name}</span>`:''}<i class="waiting-dot" aria-hidden="true"></i></div>`).join('');
- $('#queue').classList.toggle('crowded',q.length>=4);
- let lead=$('#queue-lead');if(!lead){lead=document.createElement('div');lead.id='queue-lead';$('.queue-area').append(lead);}lead.innerHTML=`<strong>${q[0]?.name||''}</strong><span>お待ちの時間</span><div class="patience" role="progressbar" aria-label="先頭のお客さんの待ち時間" aria-valuemin="0" aria-valuemax="100"><i></i></div>`;updateWaiting();updateRushMatches();
+ const line=$('#customer-line'),q=session.queue,ids=new Set(q.map(o=>String(o.orderId)));
+ const positions=new Map([...line.children].map(el=>[el,el.getBoundingClientRect()]));
+ for(const el of line.querySelectorAll('[data-order]'))if(!ids.has(el.dataset.order))el.remove();
+ for(const o of q){
+  let node=line.querySelector(`[data-order="${o.orderId}"]`);
+  if(!node){
+   node=document.createElement('button');node.className='walk-customer entering';node.dataset.order=o.orderId;node.dataset.region=o.region;
+   const key=Number(rushKey(o).split(':')[1]),color=['#27796d','#ad6638','#7660a0','#427da2'][Math.floor(key/60)%4];
+   node.style.setProperty('--customer-color',color);node.style.setProperty('--idle-delay',`-${o.orderId%5}s`);
+   node.innerHTML=`<span class="personal-order">${timeText(o.target,o.period?'period':'12')}</span><span class="resident-body">${residentPortrait(o)}</span><span class="resident-name">${o.name}</span>`;
+   node.setAttribute('aria-label',`${o.name}のお届け ${timeText(o.target,o.period?'period':'12')}`);
+   node.onclick=()=>{if(paused||o.arriving>0)return;rushSelected=o.orderId;updateOrder();updateQueue();};
+   line.append(node);node.addEventListener('animationend',e=>{if(e.target===node)node.classList.remove('entering');});
+  }
+  node.setAttribute('aria-pressed',String(o.orderId===rushSelected));node.classList.toggle('arriving',o.arriving>0);
+ }
+ if(!matchMedia('(prefers-reduced-motion:reduce)').matches)for(const [el,before] of positions){if(!el.isConnected||el.classList.contains('entering'))continue;const after=el.getBoundingClientRect(),x=before.x-after.x,y=before.y-after.y;if(Math.abs(x)+Math.abs(y)>1)el.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:280,easing:'ease-out'});}
+ updateReception();updateWaiting();updateRushMatches();
 }
-function updateWaiting(){for(const o of session.queue){const node=$(`[data-order="${o.orderId}"]`),mood=customerMood(o);if(node&&!node.classList.contains('leaving'))node.dataset.mood=mood;}const order=session.queue[0],bar=$('.patience');if(order&&bar){const remaining=Math.max(0,1-order.attended/rushLimit(session.level));bar.style.setProperty('--remaining',remaining);bar.setAttribute('aria-valuenow',Math.round(remaining*100));bar.classList.toggle('urgent',remaining<.25);}}
+function updateWaiting(){
+ for(const o of session.queue){const node=$(`.walk-customer[data-order="${o.orderId}"]`);if(node){node.dataset.mood=customerMood(o);node.classList.toggle('arriving',o.arriving>0);}}
+ const order=session.queue[0];let lead=$('#queue-lead');if(!lead){lead=document.createElement('div');lead.id='queue-lead';$('.queue-area').append(lead);}
+ lead.innerHTML=order?`<strong>${order.name}</strong><div class="patience ${order.attended>rushLimit(session.level)*.75?'urgent':''}" role="progressbar" aria-label="先頭のお客さんの待ち時間" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(Math.max(0,1-order.attended/rushLimit(session.level))*100)}"><i style="--remaining:${Math.max(0,1-order.attended/rushLimit(session.level))}"></i></div>`:'<strong>開店中</strong>';
+ updateRushMatches();
+}
+function celebrateCustomers(orders){
+ const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ const layer=document.createElement('div');layer.className='farewell-layer';layer.setAttribute('aria-hidden','true');document.body.append(layer);
+ const sayings=['ありがとう！','助かった！','また来るね！','やったー！','お願いね！'];
+ for(const [i,o] of orders.entries()){
+  const source=$(`.walk-customer[data-order="${o.orderId}"]`);if(!source)continue;
+  const box=source.getBoundingClientRect(),floor=$('#customer-floor').getBoundingClientRect();
+  if(box.bottom<floor.top||box.top>floor.bottom)continue;
+  const ghost=source.cloneNode(true);ghost.removeAttribute('data-order');ghost.removeAttribute('aria-label');ghost.removeAttribute('aria-pressed');ghost.disabled=true;ghost.className='walk-customer farewell';
+  Object.assign(ghost.style,{left:box.x+'px',top:box.y+'px',width:box.width+'px',height:box.height+'px'});
+  ghost.querySelector('.personal-order').textContent=sayings[o.orderId%sayings.length];
+  if(!reduced)ghost.insertAdjacentHTML('beforeend',Array.from({length:Math.min(20,10+orders.length)},(_,j)=>`<i class="farewell-spark" style="--dx:${Math.sin(j*2.4)*40}px;--dy:${-35-j%5*13}px;--delay:${j%4*.04}s"></i>`).join(''));
+  layer.append(ghost);
+ }
+ setTimeout(()=>layer.remove(),reduced?650:1300);
+}
 function customerLeaves(reason){
  if(paused||session.status!=='playing')return;
  const name=session.queue[0].name;rushTimeout(session);playSound('wrong');
- $('#feedback').textContent=`${name}は待ちきれず帰ってしまった。コンボをもう一度つなごう。`;
+ $('#feedback').textContent=`${name}は待ちきれず帰ってしまった。次のお客さんを迎えよう！`;
  updateLives();if(session.status!=='playing'){finish(session.status==='cleared');return;}
  updateOrder();updateQueue();updateDial();
 }
@@ -183,22 +227,22 @@ function bindDial(){const clock=$('#clock');const angle=e=>{const b=clock.getBou
  document.querySelectorAll('[data-hand]').forEach(h=>h.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp'].includes(e.key)){e.preventDefault();selectedHand=h.dataset.hand;adjust(['ArrowLeft','ArrowDown'].includes(e.key)?-1:1);}}));
 }
 function tick(){
- const now=performance.now(),seconds=(now-lastTick)/1000;lastTick=now;
+ const now=performance.now(),seconds=Math.min(.25,(now-lastTick)/1000);lastTick=now;
  if(paused||document.hidden||session.status!=='playing')return;
  const before=session.generated;rushTick(session,seconds);
- if(before!==session.generated){updateQueue();updateOrder();}
+ if(before!==session.generated){updateOrder();updateQueue();}
  updateWaiting();
  if(session.status==='playing'&&session.queue[0]?.attended>=rushLimit(session.level)){customerLeaves('timeout');return;}
- $('#arrival-fill').style.width=`${!rushInterval(session)||session.generated>=session.level.count?0:session.elapsed/rushInterval(session)*100}%`;
+ $('#arrival-fill').style.width=`${!rushInterval(session)||!rushRemaining(session)?0:session.elapsed/rushInterval(session)*100}%`;
  if(session.status==='over')finish(false);
 }
 function dispatch(){
- if(paused||session.status!=='playing')return;drag=null;settleId++;
+ if(paused||session.status!=='playing'||!session.queue.some(o=>o.arriving<=0))return;drag=null;settleId++;
  const orders=rushStamp(session,dial);updateDial();
  if(!orders.length){
   playSound('wrong');$('#feedback').textContent='この時刻の注文はないよ。コンボをもう一度つなごう。';updateOrder();return;
  }
- playSound('imprint');if(session.combo===3||session.combo%5===0)playSound('success');
+ celebrateCustomers(orders);playSound('imprint');if(orders.length>=3||session.combo===3||session.combo%5===0)playSound('success');
  const message=`${orders.length}件同時配達！ ${session.combo} COMBO`;
  $('#feedback').textContent=message;
  if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
@@ -209,7 +253,7 @@ function dispatch(){
  }
  if(session.level.endless){const r=records.slots[activeSlot];r.endless.best=Math.max(r.endless.best,session.delivered);r.endless.total+=orders.length;r.updated=Date.now();persistRecords();}
  const log=$('#flight-log');if(session.combo===1)log.innerHTML='';const li=document.createElement('li');li.innerHTML=`<span>✓ ${orders.length}件まとめて</span><b>${timeText(dial)}</b>`;log.prepend(li);if(log.children.length>5)log.lastChild.remove();
- if(session.status==='cleared'){finish(true);return;}
+ if(session.status==='cleared'){updateOrder();updateQueue();$('#feedback').textContent='本日のお届け完了！ 全員に届けられたよ！';clearInterval(timer);timer=null;closingTimer=setTimeout(()=>{closingTimer=null;finish(true);},matchMedia('(prefers-reduced-motion:reduce)').matches?650:1300);return;}
  // Keep the dial where the player left it. The next stamp is immediately available.
  updateOrder();updateQueue();updateDial();
 }
