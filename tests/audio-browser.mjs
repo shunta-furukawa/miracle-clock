@@ -24,14 +24,14 @@ try{
   await page.locator('[data-select="hour"]').click();
   const spellTarget=Number((await page.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12,spellCurrent=Number(await page.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
   for(let i=0;i<(spellTarget-spellCurrent+12)%12;i++)await page.locator('#plus').click();
-  await page.locator('#seal-button').click();assert.equal(await page.evaluate(()=>soundtrack.lastEffect.has('spell')),true,'correct seal plays its dedicated magic recording');assert.equal(await page.evaluate(()=>soundtrack.lastEffect.has('assemble')),true,'reduced motion plays the original pop immediately on imprint');await page.locator('#skip-delivery').click();assert.equal(await page.evaluate(()=>document.body.classList.contains('stamping')),false);
+  await page.locator('#seal-button').click();assert.equal(await page.evaluate(()=>soundtrack.lastEffect.has('assemble')),true,'reduced motion plays the original pop immediately on imprint');assert.equal(await page.evaluate(()=>document.body.classList.contains('stamping')),false);
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>soundtrack.lastEffect.delete('assemble'));
   const nextTarget=Number((await page.locator('.order-ticket .request').innerText()).match(/(\d+)時/)[1])%12,nextCurrent=Number(await page.locator('#hour-hand').getAttribute('aria-valuenow'))%12;
   for(let i=0;i<(nextTarget-nextCurrent+12)%12;i++)await page.locator('#plus').click();
   await page.locator('#seal-button').click();await page.waitForFunction(()=>soundtrack.lastEffect.has('assemble'));
-  assert.ok(await page.evaluate(()=>soundtrack.lastEffect.get('assemble')-soundtrack.lastEffect.get('spell')>=150),'normal motion plays the pop on impact, after the spell starts');
-  await page.locator('#skip-delivery').click();
+  assert.equal(await page.locator('#plus').isEnabled(),true,'pop and dispatch do not block controls');
+
   await page.locator('#pause').click();await page.locator('.sound').click();await page.locator('[data-audio="music"]').uncheck();
   assert.equal(await page.evaluate(()=>soundtrack.track),null);
   await page.locator('#audio-done').click();assert.equal(await page.locator('#resume').isVisible(),true);

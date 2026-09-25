@@ -1,0 +1,50 @@
+/* Compact order board stays beside the clock in landscape. */
+.game.rush-game .order-ticket{padding:10px;min-width:0;text-align:left}
+.rush-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:700;margin-bottom:7px}
+.rush-heading b{color:#a05024;white-space:nowrap;font-variant-numeric:tabular-nums}
+.order-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-height:190px;overflow:auto;padding:2px}
+.order-group{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:3px;padding:7px 3px;min-height:44px;border:1px solid #b9a881;border-bottom:3px solid var(--order-color);border-radius:7px;background:#fff9e9;color:#352918;font-family:inherit;cursor:pointer}
+.order-group strong{font-size:14px;white-space:nowrap}.order-group b{font-size:12px;color:var(--order-color)}
+.group-symbol{font-size:10px;color:var(--order-color)}
+.order-group[aria-pressed=true]{outline:2px solid #866037;outline-offset:-2px}
+.order-group.matching{background:#dcf5db;box-shadow:inset 0 0 0 2px #44844e;border-color:#44844e}
+.order-group:focus-visible{outline:3px solid #126ba5;outline-offset:1px}
+.game.rush-game .rush-detail{display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px;margin-top:7px}
+.game.rush-game .rush-detail .request{display:flex;gap:4px;line-height:1.3;margin:0;min-height:0;font-size:11px}
+.game.rush-game .rush-detail .request strong{font-size:16px;line-height:1.3}
+.rush-detail .reference-time{font-size:10px}.rush-ready{font-size:11px;font-weight:700;color:#2e6750;margin-left:auto}
+.game.rush-game .customer.matching .portrait{filter:drop-shadow(0 0 5px #fcffb0)}
+.game.rush-game .queue-track .customer{flex:0 0 22%;width:22%;margin-right:-11%}
+.game.rush-game .queue-track{overflow:hidden}
+.rush-effects{position:absolute;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.rush-burst{position:absolute;left:35%;top:30%;display:grid;justify-items:center;color:#fff9c2;text-shadow:0 2px 2px #53331f,0 0 10px #804b19;animation:rush-burst 1s ease-out both}
+.rush-burst>strong{font-size:clamp(24px,4vw,46px)}.rush-burst>span{font-size:20px;font-weight:900}
+.rush-parcels{display:flex;gap:5px}.rush-parcel{display:block;width:44px;height:44px;background:#f2d6a0;border:2px solid #aa763c;border-radius:5px;transform:rotate(calc((var(--parcel) - 2)*9deg));box-shadow:0 2px 5px #4228}
+.rush-parcel .parcel-seal{position:static!important;width:100%!important;height:100%!important;transform:none!important;opacity:1!important}
+.rush-burst>img{position:absolute;width:130px;left:-140px;top:45px;animation:rush-plane .95s ease-in both}
+.rush-result{font-weight:700;color:#8b4e25}
+@keyframes rush-burst{0%{opacity:0;transform:translateY(15px) scale(.65)}18%{opacity:1;transform:translateY(0) scale(1.08)}35%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-40px)}}
+@keyframes rush-plane{0%{transform:translate(-80px,40px) rotate(-8deg);opacity:0}20%{opacity:1}100%{transform:translate(500px,-130px) rotate(-10deg);opacity:0}}
+@media(orientation:portrait){
+ .game.rush-game .order-groups{max-height:125px}.game.rush-game .order-group{padding:5px 2px}
+ .game.rush-game .queue-area{margin-bottom:6px}.game.rush-game .clock-status{display:none}
+ .game.rush-game .order-ticket{margin-bottom:5px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .game.rush-game .game-workspace{grid-template-rows:68px minmax(0,1fr) auto;gap:5px 10px}
+ .game.rush-game .order-ticket{padding:5px;align-self:stretch;overflow:auto}
+ .rush-heading{font-size:10px;margin-bottom:2px}.order-groups{gap:3px;max-height:100px}
+ .order-group{min-height:34px;padding:3px 1px}.order-group strong{font-size:12px}.order-group b{font-size:10px}.group-symbol{font-size:8px}
+ .game.rush-game .rush-detail{margin-top:3px}.game.rush-game .rush-detail .request strong{font-size:12px}.rush-ready{font-size:10px}
+ .game.rush-game .station-controls{gap:2px}
+}
+@media(orientation:landscape) and (min-height:601px){
+ .game.rush-game .game-workspace{grid-template-rows:clamp(115px,20dvh,185px) minmax(0,1fr) auto}
+ .game.rush-game .order-ticket{align-self:stretch;overflow:auto}.game.rush-game .order-groups{max-height:none}
+ .game.rush-game .order-group{min-height:58px}.game.rush-game .order-group strong{font-size:18px}.game.rush-game .order-group b{font-size:15px}
+ .game.rush-game .station-controls{align-self:end}
+}
+@media(prefers-reduced-motion:reduce){.rush-burst,.rush-burst>img{animation:none}}
+
+@media(orientation:landscape) and (max-height:600px){.game.rush-game .game-top{padding:0 8px;height:40px;min-height:40px}.game.rush-game .game-top .subtle{min-height:32px;padding:2px 4px}.game.rush-game{grid-template-rows:40px minmax(0,1fr) auto}}
+.rush-parcel .stamp-clock{width:100%;height:100%}
