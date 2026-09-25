@@ -165,12 +165,12 @@ try {
     await diary.locator('.opening-skip').click();
     await diary.locator('.story-dialog:not(.story-from-black)').waitFor();
     assert.equal(await diary.locator('.story-dialog').isVisible(),true);
-    if(await diary.locator('.story-dialog.is-typing').count())await diary.locator('.story-next').click(); // reveal the first line
+    await diary.locator('.story-next').filter({hasText:'次へ'}).waitFor(); // wait for typewriter completion, including the opening crossfade
     assert.match(await diary.locator('.story-words').innerText(),/小さな配送機/);
     await diary.locator('.story-next').click();
     assert.equal(await diary.locator('.story-speaker').innerText(),'トトじい');
     assert.equal(await diary.locator('.story-right.speaking').count(),1);
-    if(await diary.locator('.story-dialog.is-typing').count())await diary.locator('.story-next').click();
+    await diary.locator('.story-next').filter({hasText:'次へ'}).waitFor();
     for(const [width,height] of [[393,852],[852,393],[568,320]]){
       await diary.setViewportSize({width,height});
       await diary.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
