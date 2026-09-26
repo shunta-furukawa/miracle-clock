@@ -1,4 +1,4 @@
-import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,visitors,nextSlot} from './route.js';
+import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,visitors,nextSlot,winding} from './route.js';
 import {dayLevel} from './day.js';
 import {parcelSeal} from './stamp.js';
 import {Soundtrack,creditsHTML,gameMusicScene} from './soundtrack.js';
@@ -46,7 +46,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.6.1</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.6.2</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>配送所の一日がはじまると、時計の「いま」はどんどん進みます。お客さんの注文の時刻が来る前に、針を合わせて真ん中の刻印をおそう。</p><p>文字盤をなぞると長い針が回り、短い針もついてきます。顔のピンは、注文の時刻に短い針が来る場所。同じ時刻の注文は、1回の刻印でまとめて届けられます。お客さんは「午後2時半」「2時間後」などいろいろな言い方をするけれど、注文票はいつも「2時30分」のように書いてあるよ。</p><p>間に合わなかった人や、列がいっぱいで帰った人は取りこぼし。閉店までに、たくさんのお客さんに届けよう！</p>');
@@ -262,6 +262,7 @@ function dayLoop(t){
  const seconds=Math.min(.25,Math.max(0,(t-lastTick)/1000));lastTick=t;
  if(paused||document.hidden||!session||session.status!=='playing')return;
  for(const e of routeTick(session,seconds))handleEvent(e);
+ if(!session.windingShown&&session.status==='playing'&&winding(session)){session.windingShown=true;toast('今日のお客さんはここまで。閉店まで時計を進めるよ。');}
  // "Now" pushes the hands forward when it catches up with them.
  if(drag)freeHand=Math.max(freeHand,session.now);else if(hand<nextSlot(session))hand=nextSlot(session);
  renderDay();

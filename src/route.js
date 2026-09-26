@@ -48,13 +48,15 @@ function expire(s,events){
  s.queue=s.queue.filter(o=>o.target>s.now+1e-9);s.missed+=late.length;s.combo=0;
  for(const order of late)events.push({type:'missed',order});
 }
+// Once nobody can order before closing and the line is empty, the last stretch of the day fast-forwards.
+export const winding=s=>earliestSlot(s)>s.level.close&&!s.queue.length;
 // Advances the day and returns what happened, so the page can animate arrivals and walk-outs.
 export function routeTick(s,seconds){
  const events=[];
  if(s.status!=='playing'||!(seconds>=0))return events;
  let left=seconds;
  while(left>1e-9&&s.status==='playing'){
-  const rate=60/(s.level.hourSeconds*routePace(s));
+  const rate=60/(s.level.hourSeconds*routePace(s))*(winding(s)?6:1);
   const step=Math.min(left,Math.max(0,s.untilArrival),(s.level.close-s.now)/rate);
   s.now+=step*rate;s.activeTime+=step;s.untilArrival-=step;left-=step;
   expire(s,events);
@@ -67,9 +69,9 @@ export function routeTick(s,seconds){
     else{s.queue.push(order);events.push({type:'arrive',order});}
    }
   }
-  // The shop closes at closing time, earlier once nobody can order and the line is empty,
+  // The shop closes only when the clock reaches closing time,
   // or, on an endless day, once too many customers have gone without their parcel.
-  if(s.now>=s.level.close-1e-9||earliestSlot(s)>s.level.close&&!s.queue.length||s.missed+s.gaveUp>=(s.level.maxLost??Infinity)){s.status='closed';events.push({type:'closed'});}
+  if(s.now>=s.level.close-1e-9||s.missed+s.gaveUp>=(s.level.maxLost??Infinity)){s.status='closed';events.push({type:'closed'});}
  }
  return events;
 }

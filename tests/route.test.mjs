@@ -60,6 +60,14 @@ test('a day left alone ends at closing time with everyone missed or turned away'
 test('every order carries one plain ticket time',()=>{
  for(const level of routeLevels){const s=routeSession(level,{rng:seeded(9)});routeTick(s,20);for(const o of s.queue)assert.match(o.card,/^\d{1,2}時(\d+分)?$/);}
 });
+test('the shop closes when the clock reaches closing time, fast-forwarding an empty last stretch',()=>{
+ for(const level of routeLevels){const s=routeSession(level,{rng:seeded(4)});let closedAt=null;
+  while(s.status==='playing'){for(const e of routeTick(s,.1))if(e.type==='closed')closedAt=s.now;if(s.queue.length)routeStamp(s,routePins(s)[0].target);}
+  assert.ok(Math.abs(closedAt-level.close)<1e-6,`${level.id} closes at ${closedAt}, not before ${level.close}`);
+ }
+ const s=routeSession(forest,{rng:seeded()});s.now=forest.close-30;s.untilArrival=Infinity;routeTick(s,1);
+ assert.ok(s.now-(forest.close-30)>6*.9,'the empty last stretch runs six times faster');
+});
 test('labels read the same time in every notation, including tomorrow',()=>{
  assert.equal(routeLabel('period',870,0),'午後2時30分');assert.equal(routeLabel('period',870,0,true),'午後2時半');
  assert.equal(routeLabel('24',870,0),'14時30分');assert.equal(routeLabel('relative',870,720),'2時間半後');
