@@ -1,55 +1,61 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {routeLevels,routeSession,routeTick,routeStamp,routePins,routeLabel,batchPoints} from '../src/route.js';
+import {routeLevels,routeSession,routeTick,routeStamp,routePins,routeLabel,routeStars,batchPoints,earliestSlot,nextSlot,visitors} from '../src/route.js';
 
 const seeded=(seed=7)=>()=>((seed=(seed*16807)%2147483647)-1)/2147483646;
-const fixed=(level,orders)=>{const s=routeSession(level,{rng:seeded()});s.queue=orders.map((o,i)=>({id:i,kind:'period',base:level.open,label:'',...o}));s.generated=orders.length;return s;};
+const fixed=(level,orders)=>{const s=routeSession(level,{rng:seeded()});s.untilArrival=Infinity;s.queue=orders.map((o,i)=>({id:i,kind:'period',base:level.open,label:'',...o}));s.generated=orders.length;return s;};
 const forest=routeLevels[0];
 
-test('shop opens empty at the opening time and customers walk in over time',()=>{
- const s=routeSession(forest,{rng:seeded()});assert.equal(s.floor,forest.open);assert.equal(s.queue.length,0);
+test('the day starts at opening time and runs by itself',()=>{
+ const s=routeSession(forest,{rng:seeded()});assert.equal(s.now,forest.open);assert.equal(s.queue.length,0);
  routeTick(s,.59);assert.equal(s.queue.length,0);routeTick(s,.02);assert.equal(s.queue.length,1);
+ routeTick(s,forest.hourSeconds);assert.ok(Math.abs(s.now-forest.open-60-.61*6)<1e-6,'one hour per hourSeconds');
 });
-test('every order is in the future, on the step and inside opening hours',()=>{
- for(const level of routeLevels)for(let seed=1;seed<40;seed++){
+test('new orders leave enough real time, sit on the step and stay inside opening hours',()=>{
+ for(const level of routeLevels)for(let seed=1;seed<30;seed++){
   const s=routeSession(level,{rng:seeded(seed)});
-  for(let i=0;i<200&&s.status==='playing';i++){
-   for(const e of routeTick(s,.7))if(e.type==='arrive'){const o=e.order;assert.ok(o.target>s.floor||o.target===level.close);assert.ok(o.target<=level.close);assert.equal((o.target-level.open)%level.step,0);if(o.kind==='relative')assert.equal(o.base,s.floor);}
-   if(i%3===2&&s.queue.length)routeStamp(s,routePins(s)[0].target);
+  while(s.status==='playing')for(const e of routeTick(s,.3))if(e.type==='arrive'){
+   const o=e.order;assert.ok((o.target-s.now)*level.hourSeconds/60>=level.lead-.3-1e-6);assert.ok(o.target<=level.close);assert.equal(o.target%level.step,0);
+   if(o.kind==='relative'){assert.equal(o.base%level.step,0);assert.ok(o.base<=s.now);}
   }
  }
 });
-test('one stamp serves every notation of the same time together',()=>{
+test('one stamp serves every notation of the same time and never moves time',()=>{
  const s=fixed(forest,[{target:600,kind:'period'},{target:600,kind:'relative'},{target:660}]);
- const r=routeStamp(s,600);assert.equal(r.served.length,2);assert.equal(s.floor,600);assert.deepEqual(s.queue.map(o=>o.target),[660]);
+ const r=routeStamp(s,600);assert.equal(r.served.length,2);assert.equal(s.now,forest.open);assert.deepEqual(s.queue.map(o=>o.target),[660]);
  assert.equal(r.points,batchPoints(2));assert.equal(s.maxBatch,2);
+ assert.equal(routeStamp(s,660).served.length,1,'going back or forward between flights is free');
 });
-test('the dial never goes back: jumping ahead leaves earlier customers behind',()=>{
- const s=fixed(forest,[{target:540},{target:600},{target:660}]);
- const r=routeStamp(s,600);assert.deepEqual(r.missed.map(o=>o.target),[540]);assert.equal(s.hearts,2);assert.equal(s.missed,1);
- assert.equal(routeStamp(s,540),null,'earlier than now is refused');assert.equal(s.floor,600);
+test('an order is missed only when its time arrives unstamped',()=>{
+ const s=fixed(forest,[{target:480},{target:540}]);
+ const events=routeTick(s,forest.hourSeconds*.99);assert.equal(events.length,0);
+ const late=routeTick(s,forest.hourSeconds*.02);assert.deepEqual(late.map(e=>[e.type,e.order.target]),[['missed',480]]);
+ assert.equal(s.missed,1);assert.equal(s.combo,0);assert.equal(routeStamp(s,480),null,'past times cannot be stamped');
 });
-test('an empty stamp only breaks the combo and never moves the clock',()=>{
+test('an empty stamp only breaks the combo',()=>{
  const s=fixed(forest,[{target:600},{target:660}]);routeStamp(s,600);assert.equal(s.combo,1);
- const r=routeStamp(s,720);assert.equal(r.served.length,0);assert.equal(s.floor,600);assert.equal(s.combo,0);assert.equal(s.mistakes,1);assert.equal(s.hearts,3);
+ const r=routeStamp(s,720);assert.equal(r.served.length,0);assert.equal(s.combo,0);assert.equal(s.mistakes,1);assert.equal(s.queue.length,1);
 });
-test('a full line turns new visitors away and costs a heart',()=>{
- const s=routeSession(forest,{rng:seeded()});routeTick(s,60);
- assert.equal(s.queue.length,forest.capacity);assert.equal(s.gaveUp,s.generated-forest.capacity);assert.equal(s.hearts,Math.max(0,3-s.gaveUp));
- assert.equal(s.status,s.hearts?'playing':'over');
+test('a full line turns new visitors away without ending the day',()=>{
+ const s=routeSession(forest,{rng:seeded()});const events=routeTick(s,40).filter(e=>e.type==='gaveUp');
+ assert.ok(events.length>0);assert.equal(s.gaveUp,events.length);assert.equal(s.status,'playing');
 });
-test('brute force — always the earliest pin — clears every course',()=>{
+test('the dial may point anywhere after now, and the next slot follows the clock',()=>{
+ const s=routeSession(forest,{rng:seeded()});assert.equal(nextSlot(s),480);routeTick(s,forest.hourSeconds);assert.equal(nextSlot(s),540);
+ assert.ok(earliestSlot(s)>=nextSlot(s));
+});
+test('fast play — stamping the earliest pin each second — delivers everyone',()=>{
  for(const level of routeLevels)for(let seed=1;seed<20;seed++){
-  const s=routeSession(level,{rng:seeded(seed)});let n=0;
-  while(s.status==='playing'&&n++<2000){routeTick(s,.5);if(s.queue.length)routeStamp(s,routePins(s)[0].target);}
-  assert.equal(s.status,'cleared',`${level.id} seed ${seed}`);assert.equal(s.missed,0);assert.equal(s.hearts,3);
-  assert.equal(s.delivered,level.count);
+  const s=routeSession(level,{rng:seeded(seed)});
+  while(s.status==='playing'){routeTick(s,1);if(s.queue.length)routeStamp(s,routePins(s)[0].target);}
+  assert.equal(s.status,'closed');assert.equal(s.missed+s.gaveUp,0,`${level.id} seed ${seed}`);assert.equal(routeStars(s),3);
+  assert.ok(s.delivered>20);assert.equal(visitors(s),s.delivered);
  }
 });
-test('at closing time late visitors crowd onto the last flight instead of being cancelled',()=>{
- const s=routeSession(forest,{rng:seeded()});s.floor=forest.close;routeTick(s,20);
- assert.ok(s.queue.length>1);for(const o of s.queue){assert.equal(o.target,forest.close);assert.notEqual(o.kind,'relative');}
- assert.equal(routeStamp(s,forest.close).served.length,s.delivered);
+test('a day left alone ends at closing time with everyone missed or turned away',()=>{
+ const s=routeSession(forest,{rng:seeded()});while(s.status==='playing')routeTick(s,.5);
+ assert.equal(s.delivered,0);assert.ok(s.now>=forest.close-1e-6);assert.equal(s.queue.length,0);assert.equal(routeStars(s),1);
+ assert.ok(s.missed>0&&s.gaveUp>0);
 });
 test('labels read the same time in every notation, including tomorrow',()=>{
  assert.equal(routeLabel('period',870,0),'午後2時30分');assert.equal(routeLabel('period',870,0,true),'午後2時半');

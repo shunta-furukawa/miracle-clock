@@ -12,7 +12,7 @@
  <header class="bar">
   <button class="ghost" id="back" type="button">コース</button>
   <div class="bar-title"><small id="course-skill"></small><b id="course-title">一日便 試作</b></div>
-  <div class="bar-stats"><span id="hearts"></span><span class="count"><b id="delivered">0</b>/<span id="goal">0</span>人</span></div>
+  <div class="bar-stats"><span class="count">お届け <b id="delivered">0</b>人</span><span class="lost" id="lost">取りこぼし 0</span></div>
  </header>
  <section class="day" aria-label="今日の運行表">
   <div class="day-track" id="day-track"></div>
@@ -27,7 +27,7 @@
  <section class="rail" id="rail" aria-label="注文票"></section>
  <section class="station">
   <div class="dial-wrap">
-   <svg id="clock" viewBox="-172 -188 344 360" role="slider" aria-label="お届け時刻" tabindex="0">
+   <svg id="clock" viewBox="-190 -190 380 380" role="slider" aria-label="お届け時刻" tabindex="0">
     <circle r="156" class="rim"/>
     <path id="remaining" class="remaining"/>
     <circle r="132" class="face"/>
@@ -55,10 +55,10 @@
   <p class="eyebrow">RULE PROTOTYPE</p>
   <h1>一日便</h1>
   <ul class="rules">
-   <li>時計は<b>今日という一日</b>。針は<b>前にしか進まない</b>（刻印するまでは戻せる）。</li>
-   <li>刻印すると、その時刻の注文は<b>書き方がちがっても全員まとめて</b>配達。</li>
-   <li>刻印より前の時刻の人は<b>乗り遅れ</b>、列があふれると<b>帰ってしまう</b>（どちらも♥−1）。</li>
-   <li>文字盤をなぞると<b>長い針</b>が回り、短い針はついてくる。</li>
+   <li><b>「いま」は勝手に進む。</b>閉店までに何人届けられるかの勝負。</li>
+   <li>注文の時刻が来る<b>前に</b>、その時刻に針を合わせて刻印する。間に合わないと乗り遅れ。</li>
+   <li>同じ時刻なら<b>書き方がちがっても全員まとめて</b>配達。刻印しても時間は進まない。</li>
+   <li>文字盤をなぞると<b>長い針</b>が回り、短い針はついてくる。針は「いま」より前には行けない。</li>
    <li>ピンは待っている人の短い針の場所。注文票をタップすると正解の針が見える。</li>
   </ul>
   <div class="speed" id="speed">
@@ -72,6 +72,7 @@
  <div class="card">
   <p class="eyebrow" id="result-kind"></p>
   <h1 id="result-title"></h1>
+  <p class="stars" id="result-stars"></p>
   <dl class="result-stats" id="result-stats"></dl>
   <div class="result-actions"><button type="button" id="retry" class="primary">もう一度</button><button type="button" id="to-menu">コースをえらぶ</button></div>
  </div>

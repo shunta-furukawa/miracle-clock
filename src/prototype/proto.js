@@ -1,7 +1,7 @@
-import {routeLevels,routeSession,routeTick,routeStamp,routePins} from '../route.js';
+import {routeLevels,routeSession,routeTick,routeStamp,routePins,routeStars,visitors,nextSlot} from '../route.js';
 import {angleDelta,timeText} from '../time.js';
 
-// Rule prototype for the one-way day clock. Plain shapes and emoji only; the real art comes after the rules settle.
+// Rule prototype for the day clock. Plain shapes and emoji only; the real art comes after the rules settle.
 const $=id=>document.getElementById(id);
 const faces=['🦊','🐰','🐻','🐱','🐭','🐸','🦉','🐹','🐧','🐿️','🦔','🐨'];
 const colors=['#e0823d','#d86a8f','#8b6b3d','#c9a227','#7c8fa6','#4c9a57','#7a5ea8','#d4a373','#3f7cac','#b5652b','#8e7d5a','#6c9a8b'];
@@ -9,12 +9,13 @@ const look=o=>({face:faces[o.id*5%faces.length],color:colors[o.id*7%colors.lengt
 const people=new Map(),tickets=new Map();
 let s=null,course=null,speed=1,hand=0,free=null,drag=null,picked=null,pickTimer=0,last=0,paused=true,audio=null;
 
-const clamp=v=>Math.min(s.level.close,Math.max(s.floor,v));
-const snap=v=>clamp(Math.round(v/s.level.step)*s.level.step);
+const snap=v=>Math.min(s.level.close,Math.max(nextSlot(s),Math.round(v/s.level.step)*s.level.step));
 const shown=()=>free??hand;
 const aimed=()=>snap(shown());
+const secondsLeft=o=>(o.target-s.now)*s.level.hourSeconds/60;
 const periodText=t=>(t>=1440?'あした ':'')+(t%1440<720?'☀ 午前':'☾ 午後');
 const dayText=t=>(t>=1440?'あした':'')+timeText(t,'period');
+const restart=(el,cls)=>{el.classList.remove(cls);void el.getBoundingClientRect();el.classList.add(cls);};
 
 // ---------- sound ----------
 function tone(freq,dur=.12,type='triangle',gain=.1,slide=0){
@@ -40,27 +41,32 @@ function arc(from,to,r){
  return `M${x1} ${y1} A${r} ${r} 0 ${span>180?1:0} 1 ${x2} ${y2}`;
 }
 
-// ---------- rendering ----------
+// ---------- rendering (every frame: "now" is always moving) ----------
 function renderClock(){
  const v=shown(),target=aimed();
  $('hour').setAttribute('transform',`rotate(${hourAngle(v)})`);
  $('minute').setAttribute('transform',`rotate(${(v%60)*6})`);
  $('period').textContent=periodText(target);
- $('remaining').setAttribute('d',arc(s.floor,Math.min(s.level.close,s.floor+719),144));
- $('now-mark').setAttribute('transform',`rotate(${hourAngle(s.floor)})`);
- const [nx,ny]=polar(hourAngle(s.floor),180);$('now-label').setAttribute('x',nx);$('now-label').setAttribute('y',ny);
- const pins=$('pins');pins.innerHTML='';
+ $('remaining').setAttribute('d',arc(s.now,Math.min(s.level.close,s.now+719),144));
+ $('now-mark').setAttribute('transform',`rotate(${hourAngle(s.now)})`);
+ const [nx,ny]=polar(hourAngle(s.now),180);$('now-label').setAttribute('x',nx);$('now-label').setAttribute('y',ny);
+ let html='';
  for(const pin of routePins(s)){
-  const first=look(pin.orders[0]),later=pin.target-s.floor>=720,[x,y]=polar(hourAngle(pin.target),144);
-  const cls=['pin',pin.target===target&&'lit',pin.target===picked&&'picked',later&&'later'].filter(Boolean).join(' ');
-  pins.insertAdjacentHTML('beforeend',`<g class="${cls}" data-target="${pin.target}" transform="translate(${x} ${y})"><circle class="body" r="13" fill="${first.color}"/><text>${first.face}</text>${pin.orders.length>1?`<circle class="badge" cx="11" cy="-11" r="8"/><text class="badge-text" x="11" y="-11">${pin.orders.length}</text>`:''}</g>`);
+  const first=look(pin.orders[0]),[x,y]=polar(hourAngle(pin.target),144),urgent=secondsLeft(pin.orders[0])<=4;
+  const cls=['pin',pin.target===target&&'lit',pin.target===picked&&'picked',urgent&&'urgent'].filter(Boolean).join(' ');
+  html+=`<g class="${cls}" data-target="${pin.target}" transform="translate(${x} ${y})"><circle class="body" r="13" fill="${first.color}"/><text>${first.face}</text>${pin.orders.length>1?`<circle class="badge" cx="11" cy="-11" r="8"/><text class="badge-text" x="11" y="-11">${pin.orders.length}</text>`:''}</g>`;
  }
- const ghost=$('ghost');ghost.classList.toggle('show',picked!==null);
+ $('pins').innerHTML=html;
+ $('ghost').classList.toggle('show',picked!==null);
  if(picked!==null){$('ghost-hour').setAttribute('transform',`rotate(${hourAngle(picked)})`);$('ghost-minute').setAttribute('transform',`rotate(${(picked%60)*6})`);}
- const ready=s.queue.some(o=>o.target===target);
- $('seal').classList.toggle('ready',ready);
- for(const o of s.queue){people.get(o.id)?.classList.toggle('lit',o.target===target);tickets.get(o.id)?.classList.toggle('lit',o.target===target);
-  people.get(o.id)?.classList.toggle('picked',o.target===picked);tickets.get(o.id)?.classList.toggle('picked',o.target===picked);}
+ $('seal').classList.toggle('ready',s.queue.some(o=>o.target===target));
+ for(const o of s.queue){
+  const p=people.get(o.id),t=tickets.get(o.id),left=secondsLeft(o),urgent=left<=4;
+  p?.classList.toggle('lit',o.target===target);t?.classList.toggle('lit',o.target===target);
+  p?.classList.toggle('picked',o.target===picked);t?.classList.toggle('picked',o.target===picked);
+  p?.classList.toggle('urgent',urgent);t?.classList.toggle('urgent',urgent);
+  const bar=t?.querySelector('.timer');if(bar)bar.style.width=`${Math.max(0,Math.min(1,left/o.lead))*100}%`;
+ }
  $('clock').setAttribute('aria-valuetext',dayText(target));
 }
 function skyColor(t){
@@ -70,16 +76,14 @@ function skyColor(t){
 function renderDay(){
  const {open,close}=s.level,span=close-open,pct=t=>`${(t-open)/span*100}%`,track=$('day-track');
  const stops=[];for(let t=open;t<=close;t+=30)stops.push(`${skyColor(t)} ${pct(t)}`);
- let html=`<div class="sky" style="background:linear-gradient(90deg,${stops.join(',')})"></div><div class="past" style="width:${pct(s.floor)}"></div>`;
+ let html=`<div class="sky" style="background:linear-gradient(90deg,${stops.join(',')})"></div><div class="past" style="width:${pct(s.now)}"></div>`;
  for(const [t,label] of [[720,'正午'],[1440,'0時']])if(t>open&&t<close)html+=`<span class="mark" style="left:${pct(t)}">${label}</span>`;
  for(const pin of routePins(s))html+=`<span class="dot" style="left:${pct(pin.target)};background:${look(pin.orders[0]).color}"></span>`;
- html+=`<span class="cursor" style="left:${pct(aimed())}"></span><span class="plane" style="left:${pct(s.floor)}">✈️</span>`;
+ html+=`<span class="cursor" style="left:${pct(aimed())}"></span><span class="plane" style="left:${pct(s.now)}">${s.now%1440<360||s.now%1440>=1110?'🌙':'☀️'}</span>`;
  track.innerHTML=html;
- $('day-open').textContent=dayText(open)+' 開店';$('day-close').textContent=dayText(close)+' 閉店';
 }
 function renderStats(){
- $('hearts').textContent='♥'.repeat(s.hearts)+'♡'.repeat(s.maxHearts-s.hearts);
- $('delivered').textContent=s.delivered;$('goal').textContent=s.level.count;
+ $('delivered').textContent=s.delivered;$('lost').textContent=`取りこぼし ${s.missed+s.gaveUp}`;
  $('combo').textContent=s.combo>1?`${s.combo} COMBO`:'';
  const n=s.queue.length,cap=s.level.capacity,note=$('line-note');
  note.textContent=n>=cap?'満員！ これ以上は帰っちゃう':n>=cap-1?'もうすぐ満員！':`${n}/${cap}人`;
@@ -99,17 +103,17 @@ function makePerson(o,cls=''){
  $('line').append(el);return el;
 }
 function arrive(o){
+ o.lead=secondsLeft(o);
  const el=makePerson(o,'walking');people.set(o.id,el);
  requestAnimationFrame(()=>requestAnimationFrame(()=>{layoutLine();setTimeout(()=>el.classList.remove('walking'),480);}));
  const {face,color}=look(o),t=document.createElement('button');
  t.type='button';t.className='ticket';t.style.borderLeftColor=color;
- t.innerHTML=`<span class="who">${face}のちゅうもん</span><strong>${o.label}</strong>${o.kind==='relative'?`<span class="base">受付 ${dayText(o.base)}</span>`:''}`;
+ t.innerHTML=`<span class="who">${face}のちゅうもん</span><strong>${o.label}</strong>${o.kind==='relative'?`<span class="base">受付 ${dayText(o.base)}</span>`:''}<span class="timer"></span>`;
  t.addEventListener('click',()=>pick(o.target));
  $('rail').append(t);tickets.set(o.id,t);tone(1200,.05,'sine',.04);
 }
 function turnAway(o){
- const el=makePerson(o,'angry');tone(180,.25,'sawtooth',.06,.7);
- $('hearts').classList.remove('hurt');void $('hearts').offsetWidth;$('hearts').classList.add('hurt');
+ const el=makePerson(o,'angry');tone(180,.25,'sawtooth',.06,.7);restart($('lost'),'hurt');
  setTimeout(()=>{el.style.transform='translateX(-40px)';el.classList.add('leaving');},700);setTimeout(()=>el.remove(),1200);
 }
 function leave(o,how,delay){
@@ -122,31 +126,25 @@ function leave(o,how,delay){
   setTimeout(()=>{el?.remove();t?.remove();},800);
  },delay);
 }
+function missed(o){leave(o,'missed',0);tone(330,.4,'sine',.07,.5);restart($('lost'),'hurt');setTimeout(layoutLine,700);}
 
 // ---------- actions ----------
 function pick(target){
- picked=target;clearTimeout(pickTimer);pickTimer=setTimeout(()=>{picked=null;if(s)renderClock();},2600);renderClock();
+ picked=target;clearTimeout(pickTimer);pickTimer=setTimeout(()=>{picked=null;},2600);
 }
 function popText(text,big){const p=$('pop');p.textContent=text;p.className='pop';void p.offsetWidth;p.className=`pop show${big?' big':''}`;}
 function stamp(){
  if(!s||s.status!=='playing'||drag)return;
  const r=routeStamp(s,aimed());if(!r)return;
- if(!r.served.length){
-  tone(140,.22,'sawtooth',.07);const c=$('clock');c.classList.remove('shake');void c.getBoundingClientRect();c.classList.add('shake');
-  popText('その時刻のお客さんはいないよ');render();return;
- }
+ if(!r.served.length){tone(140,.22,'sawtooth',.07);restart($('clock'),'shake');popText('その時刻のお客さんはいないよ');return;}
  const n=r.served.length;
  r.served.forEach((o,i)=>{leave(o,'served',i*120);setTimeout(()=>tone(note(i),.16,'triangle',.11),i*120);});
- r.missed.forEach(o=>leave(o,'missed',0));
- if(r.missed.length){tone(330,.4,'sine',.08,.5);$('hearts').classList.remove('hurt');void $('hearts').offsetWidth;$('hearts').classList.add('hurt');}
  setTimeout(()=>{tone(note(n+1),.3,'sine',.08);layoutLine();},n*120+320);
  popText(n>1?`${n}人まとめて！ +${r.points}`:`+${r.points}`,n>=3);
- const count=$('delivered');count.classList.remove('bump');void count.offsetWidth;count.classList.add('bump');
- const combo=$('combo');combo.classList.remove('bump');void combo.offsetWidth;combo.classList.add('bump');
- hand=s.floor;if(r.served.some(o=>o.target===picked))picked=null;
- render();if(s.status!=='playing')setTimeout(finish,n*120+900);
+ restart($('delivered'),'bump');restart($('combo'),'bump');
+ if(r.served.some(o=>o.target===picked))picked=null;
 }
-function move(minutes){if(!s||s.status!=='playing')return;hand=snap(hand+minutes);tone(900,.03,'square',.03);render();}
+function move(minutes){if(!s||s.status!=='playing')return;hand=snap(hand+minutes);tone(900,.03,'square',.03);}
 
 // ---------- input ----------
 const clock=$('clock');
@@ -156,15 +154,15 @@ clock.addEventListener('pointerdown',e=>{
  if(!s||s.status!=='playing')return;
  const pin=e.target.closest('.pin');if(pin){pick(Number(pin.dataset.target));return;}
  if(e.target.closest('#seal')){stamp();return;}
- const p=point(e);drag={angle:bearing(p)};free=hand;clock.setPointerCapture(e.pointerId);
+ drag={angle:bearing(point(e))};free=hand;clock.setPointerCapture(e.pointerId);
 });
 clock.addEventListener('pointermove',e=>{
- if(!drag)return;const a=bearing(point(e));free=clamp(free+angleDelta(drag.angle,a)/6);drag.angle=a;
+ if(!drag)return;const a=bearing(point(e));
  // Only the long hand is dragged; the short hand follows, and each new hour rings a little higher.
- const before=aimed();render();const after=aimed();
+ const before=aimed();free=Math.min(s.level.close,Math.max(s.now,free+angleDelta(drag.angle,a)/6));drag.angle=a;const after=aimed();
  if(Math.floor(after/60)!==Math.floor(before/60))tone(1320,.08,'triangle',.06);else if(after!==before)tone(1000,.025,'square',.025);
 });
-const release=()=>{if(!drag)return;hand=aimed();free=null;drag=null;render();};
+const release=()=>{if(!drag)return;hand=aimed();free=null;drag=null;};
 clock.addEventListener('pointerup',release);clock.addEventListener('pointercancel',release);
 for(const b of document.querySelectorAll('[data-move]'))b.addEventListener('click',()=>{const m=Number(b.dataset.move);move(Math.abs(m)===1?m*s.level.step:m);});
 addEventListener('keydown',e=>{
@@ -179,25 +177,31 @@ addEventListener('resize',()=>{if(s)layoutLine();});
 function start(level){
  audio??=new (window.AudioContext||window.webkitAudioContext)();audio.resume?.();
  course=level;people.clear();tickets.clear();$('line').innerHTML='';$('rail').innerHTML='';picked=null;
- s=routeSession({...level,arrive:level.arrive.map(x=>x*speed)});hand=s.floor;free=null;drag=null;
+ s=routeSession({...level,hourSeconds:level.hourSeconds*speed,lead:level.lead*speed,arrive:level.arrive.map(x=>x*speed)});
+ hand=nextSlot(s);free=null;drag=null;
  $('course-title').textContent=level.title;$('course-skill').textContent=level.skill;
+ $('day-open').textContent=dayText(level.open)+' 開店';$('day-close').textContent=dayText(level.close)+' 閉店';
  $('menu').hidden=true;$('result').hidden=true;paused=false;last=performance.now();render();
 }
 function finish(){
- paused=true;const cleared=s.status==='cleared';
- $('result-kind').textContent=cleared?'CLEAR':'CLOSED';
- $('result-title').textContent=cleared?'今日の営業おしまい！':'今日はここまで…';
- const rows=[['お届け',`${s.delivered} / ${s.level.count}人`],['いちばん大きなまとめ便',`${s.maxBatch}人`],['最大コンボ',s.maxCombo],['飛ばした便',s.flights],['1便あたり',s.flights?(s.delivered/s.flights).toFixed(1)+'人':'-'],['乗り遅れ',`${s.missed}人`],['列があふれて帰った',`${s.gaveUp}人`],['空振りの刻印',s.mistakes],['スコア',s.points],['かかった時間',`${Math.round(s.activeTime)}秒`]];
- $('result-stats').innerHTML=rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+ paused=true;const stars=routeStars(s),n=visitors(s);
+ $('result-kind').textContent='CLOSED';
+ $('result-title').textContent=stars===3?'大繁盛の一日！':stars===2?'いい一日だった！':'おつかれさま！';
+ $('result-stars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+ const rows=[['お届け',`${s.delivered} / ${n}人`],['いちばん大きなまとめ便',`${s.maxBatch}人`],['最大コンボ',s.maxCombo],['飛ばした便',s.flights],['1便あたり',s.flights?(s.delivered/s.flights).toFixed(1)+'人':'-'],['乗り遅れ',`${s.missed}人`],['列があふれて帰った',`${s.gaveUp}人`],['空振りの刻印',s.mistakes],['スコア',s.points]];
+ $('result-stats').innerHTML=rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')+'<dt>星の目安</dt><dd>★★★ 9割 / ★★ 7割</dd>';
  $('result').hidden=false;
 }
 function frame(t){
  const dt=Math.min(.1,Math.max(0,(t-last)/1000));last=t;
  if(s&&!paused&&!document.hidden&&s.status==='playing'){
-  const events=routeTick(s,dt);
-  for(const e of events)e.type==='arrive'?arrive(e.order):turnAway(e.order);
-  if(events.length)render();
-  if(s.status==='over'){paused=true;setTimeout(finish,900);}
+  for(const e of routeTick(s,dt)){
+   if(e.type==='arrive')arrive(e.order);else if(e.type==='gaveUp')turnAway(e.order);else if(e.type==='missed')missed(e.order);
+   else if(e.type==='closed'){paused=true;popText('閉店！',true);tone(523,.5,'sine',.1);setTimeout(finish,1400);}
+  }
+  // "Now" pushes the hands forward when it catches up with them.
+  if(drag)free=Math.max(free,s.now);else if(hand<nextSlot(s)&&s.status==='playing')hand=nextSlot(s);
+  render();
  }
  requestAnimationFrame(frame);
 }
@@ -205,7 +209,7 @@ function frame(t){
 const list=$('courses');
 routeLevels.forEach(level=>{
  const b=document.createElement('button');b.type='button';
- b.innerHTML=`${level.title}<small>${level.skill}・${dayText(level.open)}〜${dayText(level.close)}・${level.count}人</small>`;
+ b.innerHTML=`${level.title}<small>${level.skill}・${dayText(level.open)}〜${dayText(level.close)}・約${Math.round((level.close-level.open)/60*level.hourSeconds/10)*10}秒</small>`;
  b.addEventListener('click',()=>start(level));list.append(b);
 });
 for(const b of document.querySelectorAll('[data-speed]'))b.addEventListener('click',()=>{speed=Number(b.dataset.speed);for(const x of document.querySelectorAll('[data-speed]'))x.setAttribute('aria-pressed',String(x===b));});

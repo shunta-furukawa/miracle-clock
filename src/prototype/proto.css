@@ -6,7 +6,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webk
 .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--paper);border-radius:12px;padding:5px 8px}
 .bar-title{display:flex;flex-direction:column;align-items:center;line-height:1.2}.bar-title small{font-size:10px;color:#647a76}.bar-title b{font-size:14px}
 .bar-stats{display:flex;flex-direction:column;align-items:flex-end;font-size:12px;line-height:1.2}
-#hearts{color:#c2413b;letter-spacing:1px}#hearts.hurt{animation:shake .35s}
+.lost{color:#8b3a22;font-size:11px}.lost.hurt{animation:shake .35s}
 .count b{font-size:18px;display:inline-block}.count b.bump{animation:bump .35s}
 .ghost{border:1px solid #d2b581;background:#f5ebd3;border-radius:20px;padding:6px 10px;font-size:12px}
 
@@ -42,6 +42,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webk
 .ticket .who{font-size:9px;color:#647a76}
 .ticket strong{font-size:13px;line-height:1.15;letter-spacing:-.02em}
 .ticket .base{font-size:8px;color:var(--red)}
+.ticket .timer{position:absolute;left:0;bottom:0;height:3px;background:#4c9a57;transition:background .3s}
+.ticket.urgent .timer{background:#c0392b}.ticket.urgent{animation:tremble .25s infinite alternate}
 .ticket.lit{background:#fff1b8;transform:translateY(-2px);box-shadow:0 0 0 2px #e9b53c}
 .ticket.picked{box-shadow:0 0 0 2px var(--teal)}
 .ticket.served{animation:stamp-out .55s ease-in forwards}
@@ -50,7 +52,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webk
 
 .station{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center}
 .dial-wrap{position:relative;flex:1;min-height:0;width:100%;display:flex;justify-content:center}
-#clock{height:100%;max-width:100%;aspect-ratio:344/360;touch-action:none;cursor:grab;overflow:visible}
+#clock{height:100%;max-width:100%;aspect-ratio:1;touch-action:none;cursor:grab;overflow:visible}
 #clock.shake{animation:shake .3s}
 .rim{fill:var(--wood)}
 .face{fill:var(--paper);stroke:#704e24;stroke-width:2}
@@ -69,6 +71,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webk
 .pin.lit circle.body{stroke:#ffd35a;stroke-width:4;animation:pulse .7s infinite alternate}
 .pin.picked circle.body{stroke:var(--teal);stroke-width:4}
 .pin.later{opacity:.35}
+.pin.urgent circle.body{stroke:#c0392b;stroke-width:4;animation:pulse .3s infinite alternate}
+.person.urgent{animation:tremble .25s infinite alternate}
+.stars{font-size:30px;color:#d59a1c;letter-spacing:4px;margin:0 0 8px}
 .now-mark path{fill:#1b565b;transition:transform .45s}.now-label{font-size:12px;font-weight:800;text-anchor:middle;dominant-baseline:central;fill:#fff8de}
 #clock:focus,.seal:focus{outline:none}#clock:focus-visible{outline:3px solid #bf6436}
 .seal{cursor:pointer}
@@ -115,5 +120,6 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webk
 @keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-90%)}}
 @keyframes bump{50%{transform:scale(1.45)}}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes tremble{from{translate:-1px 0}to{translate:1px 0}}
 @keyframes blink{to{opacity:.4}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
