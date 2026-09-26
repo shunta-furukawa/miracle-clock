@@ -91,8 +91,7 @@
 .day-pin.urgent .pin-body{stroke:#d23b2a;stroke-width:3.5;animation:day-pulse .3s infinite alternate}
 .day-game .seal-button.ready{box-shadow:0 0 0 3px #ffe78f,0 0 18px 6px #ffe38acc,0 3px 0 #694522;animation:day-ready 1s ease-in-out infinite alternate}
 .day-controls{display:flex;gap:6px;justify-content:center}
-.day-controls .adjust{width:auto;height:42px;min-height:42px;min-width:46px;padding:0 8px;font-size:22px;line-height:1;white-space:nowrap}
-.day-controls .adjust.wide{font-size:12px;padding:0 10px}
+.day-controls .adjust{width:auto;height:42px;min-height:42px;min-width:64px;padding:0 8px;font-size:22px;line-height:1;white-space:nowrap}
 .day-station .clock-tools{position:static;margin:0;gap:14px;padding:0 10px;width:auto;height:auto}
 .day-station .clock-tools button{min-height:32px;font-size:11px;padding:4px 6px}
 
@@ -150,7 +149,7 @@
  .day-top{padding-top:max(3px,env(safe-area-inset-top,0px));padding-bottom:3px}.day-top .subtle{min-height:34px}.day-top .stage-heading strong{font-size:12px}
  .day-game{row-gap:4px}.day-strip{padding:3px 8px 0}.day-labels{margin-top:7px;font-size:9px}
  .ticket-rail{grid-auto-rows:40px;height:84px}.resident-face{width:22px;height:22px}.ticket-text strong{font-size:12px}
- .day-controls .adjust{height:34px;min-height:34px}.day-controls .adjust.wide{font-size:11px}
+ .day-controls .adjust{height:34px;min-height:34px}
  .day-station{gap:3px}.day-station .clock-tools button{min-height:26px;font-size:10px}
 }
 @media(orientation:landscape) and (min-height:700px){
