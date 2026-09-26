@@ -92,7 +92,7 @@ try {
     assert.ok(await page.locator('.shop-person.served').count()>0,'served customers celebrate in the line');assert.ok(await page.locator('.day-ticket.served').count()>0,'tickets get stamped');
     assert.match(await page.locator('#feedback').innerText(),/便で/);
     await page.screenshot({path:`artifacts/${name}-day-batch.png`});
-    await page.locator('#plus').click();
+    await page.locator('#minute-hand').focus();await page.keyboard.press('ArrowRight');
     assert.notEqual(await aimedText(),null,'controls respond during the celebration');
     // A stamp on a time nobody asked for changes nothing but the combo.
     await page.evaluate(()=>{const taken=new Set(session.queue.map(o=>o.target));let t=nextSlot(session);while(taken.has(t))t+=session.level.step;hand=t;renderDay();});
@@ -100,7 +100,7 @@ try {
     assert.equal(await page.locator('#delivered').innerText(),delivered);assert.match(await page.locator('#feedback').innerText(),/注文はない/);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
-      for(const selector of ['#clock','#plus','#seal-button','.shop-floor','#tickets','#pause','#day-track']){
+      for(const selector of ['#clock','#seal-button','.shop-floor','#tickets','#pause','#day-track']){
         const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
