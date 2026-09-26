@@ -29,14 +29,16 @@
 .shop-floor{position:relative;isolation:isolate;height:clamp(96px,17dvh,160px);border:2px solid #9c7847;border-radius:12px;overflow:hidden;background:#8e714b;box-shadow:0 4px 0 #563e2f70}
 .shop-backdrop{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
 .shop-line{position:absolute;inset:0}
-.shop-person{position:absolute;left:0;bottom:calc(5% + var(--depth,0)*2.2%);height:min(64%,118px);aspect-ratio:1;transform:translateX(calc(var(--x) - 50%)) scale(calc(1 - var(--depth,0)*.055));transform-origin:50% 100%;transition:transform .6s cubic-bezier(.3,1.2,.5,1),opacity .6s,filter .3s;pointer-events:none}
+.shop-person{position:absolute;left:0;bottom:calc(5% + var(--depth,0)*1.6% + var(--lift,0%));height:var(--size,min(64%,118px));aspect-ratio:1;transform:translateX(calc(var(--x) - 50%)) scale(calc(1 - var(--depth,0)*.055));transform-origin:50% 100%;transition:transform .6s cubic-bezier(.3,1.2,.5,1),opacity .6s,filter .3s;pointer-events:none}
 .shop-person .portrait{width:100%;height:100%;background:none;animation:resident-idle 3s ease-in-out infinite;animation-delay:var(--idle)}
 .shop-person::after{content:'';position:absolute;left:18%;right:18%;bottom:0;height:8%;background:#2a1f1480;border-radius:50%;filter:blur(2px);z-index:-1}
 .person-name{display:none}
 .person-say{position:absolute;left:50%;bottom:92%;transform:translateX(-50%);white-space:nowrap;background:#fffbe8;border:1px solid #b99b64;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:800;color:#6d4321;box-shadow:0 2px 3px #35261366}
 .person-say:empty{display:none}
-.person-say.order-say{background:#fff;color:#1f4a4b;border-color:var(--tint);font-size:11px;animation:day-say 2.4s ease-out both}
-@keyframes day-say{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}12%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.shop-says{position:absolute;inset:0;pointer-events:none;z-index:25}
+.order-bubble{position:absolute;left:0;bottom:calc(5% + var(--depth,0)*1.6% + var(--lift,0%) + var(--size,90px)*.88);transform:translateX(calc(var(--x) - 50%));transition:transform .6s cubic-bezier(.3,1.2,.5,1),bottom .6s;white-space:nowrap;background:#fff;border:1.5px solid var(--tint);border-radius:9px;padding:1px 7px;font-size:11px;font-weight:800;color:#1f4a4b;box-shadow:0 2px 4px #35261366;animation:day-say 2.4s ease-out both}
+.order-bubble::after{content:'';position:absolute;left:calc(50% - 4px);bottom:-6px;border-top:6px solid var(--tint);border-left:4px solid transparent;border-right:4px solid transparent}
+@keyframes day-say{0%{opacity:0;scale:.8}12%,80%{opacity:1;scale:1}100%{opacity:0}}
 .shop-person.walking .portrait{animation:day-steps .16s ease-in-out infinite alternate}
 .shop-person.matching{filter:drop-shadow(0 0 5px #ffe98a) drop-shadow(0 0 2px #fff)}
 .shop-person.urgent .portrait{animation:day-tremble .22s ease-in-out infinite alternate}
@@ -150,12 +152,12 @@
  .day-station{gap:3px}.day-station .clock-tools button{min-height:26px;font-size:10px}
 }
 @media(orientation:landscape) and (min-height:700px){
- .shop-floor{max-height:none}.shop-person{height:min(58%,170px)}
+ .shop-floor{max-height:none}
  .day-game{padding-left:max(24px,calc((100vw - 1180px)/2));padding-right:max(24px,calc((100vw - 1180px)/2))}
  .ticket-rail{grid-auto-rows:58px;height:122px}
 }
 body:has(.pause-modal) .shop-person .portrait,body:has(.pause-modal) .day-ticket{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){
- .shop-person,.day-ticket,.shop-person .portrait,.day-pin .pin-body,.day-game .seal-button.ready,.now-sun,.person-say.order-say{animation:none!important;transition:none!important}
+ .shop-person,.day-ticket,.shop-person .portrait,.day-pin .pin-body,.day-game .seal-button.ready,.now-sun,.order-bubble{animation:none!important;transition:none!important}
  .day-burst{animation:day-toast 1s ease-out both}
 }

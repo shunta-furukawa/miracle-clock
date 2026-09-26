@@ -68,7 +68,7 @@ try {
     assert.equal(await aimedText(),'8時','the dial starts at the first flight after opening');
     await page.clock.runFor(700);
     assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
-    assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.person-say').first().innerText(),/午前|午後/,'the customer says it their own way');
+    assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.order-bubble').first().innerText(),/午前|午後/,'the customer says it their own way');
     assert.equal(await page.locator('.day-pin').count(),1,'waiting orders are pinned on the dial');
     await page.clock.runFor(6000);
     await page.evaluate(()=>window.firstCustomer=document.querySelector('.shop-person'));
