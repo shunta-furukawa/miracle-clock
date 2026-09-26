@@ -156,11 +156,13 @@ clock.addEventListener('pointerdown',e=>{
  if(!s||s.status!=='playing')return;
  const pin=e.target.closest('.pin');if(pin){pick(Number(pin.dataset.target));return;}
  if(e.target.closest('#seal')){stamp();return;}
- const p=point(e);drag={hand:Math.hypot(p.x,p.y)<82?'hour':'minute',angle:bearing(p)};free=hand;clock.setPointerCapture(e.pointerId);
+ const p=point(e);drag={angle:bearing(p)};free=hand;clock.setPointerCapture(e.pointerId);
 });
 clock.addEventListener('pointermove',e=>{
- if(!drag)return;const a=bearing(point(e));free=clamp(free+angleDelta(drag.angle,a)*(drag.hand==='hour'?2:1/6));drag.angle=a;
- const before=aimed();render();if(aimed()!==before)tone(drag.hand==='hour'?700:1000,.025,'square',.025);
+ if(!drag)return;const a=bearing(point(e));free=clamp(free+angleDelta(drag.angle,a)/6);drag.angle=a;
+ // Only the long hand is dragged; the short hand follows, and each new hour rings a little higher.
+ const before=aimed();render();const after=aimed();
+ if(Math.floor(after/60)!==Math.floor(before/60))tone(1320,.08,'triangle',.06);else if(after!==before)tone(1000,.025,'square',.025);
 });
 const release=()=>{if(!drag)return;hand=aimed();free=null;drag=null;render();};
 clock.addEventListener('pointerup',release);clock.addEventListener('pointercancel',release);
