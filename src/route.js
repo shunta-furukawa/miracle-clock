@@ -10,11 +10,14 @@ export const routeLevels=[
  {id:'night',title:'真夜中の空便',skill:'5分・日付またぎ',open:1080,close:1560,step:5,hourSeconds:16,lead:8,horizon:120,capacity:8,arrive:[1.8,2.6],kinds:['period','24','relative'],same:.45}
 ];
 
+// "Tomorrow" is relative to the day the order was taken, so an endless day can roll over.
 export function routeLabel(kind,target,base,half=false){
  if(kind==='relative')return durationText(target-base);
  const text=timeText(target,kind==='24'?'24':'period');
- return (target>=1440?'あした':'')+(half?text.replace('30分','半'):text);
+ return (Math.floor(target/1440)>Math.floor(base/1440)?'あした':'')+(half?text.replace('30分','半'):text);
 }
+// Endless days speed up as deliveries grow; normal days keep one pace.
+export function routePace(s){const up=s.level.speedUp;return up?Math.max(up.min,1-Math.floor(s.delivered/up.every)*up.step):1;}
 export function routeSession(level,{rng=Math.random}={}){
  return {level,rng,now:level.open,queue:[],generated:0,delivered:0,missed:0,gaveUp:0,
   mistakes:0,combo:0,maxCombo:0,maxBatch:0,flights:0,points:0,activeTime:0,untilArrival:.6,status:'playing'};
@@ -22,7 +25,7 @@ export function routeSession(level,{rng=Math.random}={}){
 const pick=(s,list)=>list[Math.min(list.length-1,Math.floor(s.rng()*list.length))];
 const ceilTo=(v,step)=>Math.ceil(v/step-1e-9)*step;
 // The earliest flight a new customer may ask for: at least `lead` real seconds away.
-export const earliestSlot=s=>ceilTo(s.now+Math.max(s.level.step,s.level.lead*60/s.level.hourSeconds),s.level.step);
+export const earliestSlot=s=>ceilTo(s.now+Math.max(s.level.step,s.level.lead*60/(s.level.hourSeconds*routePace(s))),s.level.step);
 // The earliest time the dial may point at: strictly after now.
 export const nextSlot=s=>ceilTo(s.now+1e-6,s.level.step);
 // Orders favour the near future, and often repeat a waiting time in another notation.
@@ -48,13 +51,14 @@ function expire(s,events){
 export function routeTick(s,seconds){
  const events=[];
  if(s.status!=='playing'||!(seconds>=0))return events;
- const rate=60/s.level.hourSeconds;let left=seconds;
+ let left=seconds;
  while(left>1e-9&&s.status==='playing'){
+  const rate=60/(s.level.hourSeconds*routePace(s));
   const step=Math.min(left,Math.max(0,s.untilArrival),(s.level.close-s.now)/rate);
   s.now+=step*rate;s.activeTime+=step;s.untilArrival-=step;left-=step;
   expire(s,events);
   if(s.untilArrival<=1e-9){
-   const [a,b]=s.level.arrive;s.untilArrival+=a+(b-a)*s.rng();
+   const [a,b]=s.level.arrive;s.untilArrival+=(a+(b-a)*s.rng())*routePace(s);
    const order=routeOrder(s);
    if(order){
     s.generated++;
@@ -62,8 +66,9 @@ export function routeTick(s,seconds){
     else{s.queue.push(order);events.push({type:'arrive',order});}
    }
   }
-  // The shop closes at closing time, or earlier once nobody can order and the line is empty.
-  if(s.now>=s.level.close-1e-9||earliestSlot(s)>s.level.close&&!s.queue.length){s.status='closed';events.push({type:'closed'});}
+  // The shop closes at closing time, earlier once nobody can order and the line is empty,
+  // or, on an endless day, once too many customers have gone without their parcel.
+  if(s.now>=s.level.close-1e-9||earliestSlot(s)>s.level.close&&!s.queue.length||s.missed+s.gaveUp>=(s.level.maxLost??Infinity)){s.status='closed';events.push({type:'closed'});}
  }
  return events;
 }
@@ -83,5 +88,6 @@ export function routeStamp(s,time){
  return {served,points};
 }
 export const visitors=s=>s.delivered+s.missed+s.gaveUp+s.queue.length;
-// Stars count the share of today's visitors who got their parcel off.
-export function routeStars(s){const n=visitors(s),r=n?s.delivered/n:0;return r>=.9?3:r>=.7?2:1;}
+// Stars count the share of today's visitors who got their parcel off. Under half is not yet a clear.
+export const starShares=[.5,.7,.9];
+export function routeStars(s){const n=visitors(s),r=n?s.delivered/n:0;return starShares.filter(x=>r>=x-1e-9).length;}

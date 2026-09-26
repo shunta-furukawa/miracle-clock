@@ -1,0 +1,160 @@
+/* The day clock: a sky strip for the day, an illustrated reception line, an order rail and the dial.
+   Portrait stacks them; landscape puts the dial on the left. Never let gameplay scroll. */
+.day-game{--safe-l:env(safe-area-inset-left,0px);--safe-r:env(safe-area-inset-right,0px);--safe-b:env(safe-area-inset-bottom,0px);
+ position:relative;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;
+ padding:0 max(10px,var(--safe-r)) max(8px,var(--safe-b)) max(10px,var(--safe-l));
+ background:linear-gradient(#173c3530,#143e4250),var(--depot-image) center/cover no-repeat,#173e44}
+.day-game>*{flex-shrink:0}
+.day-top{margin:0 calc(-1*max(10px,var(--safe-r))) 0 calc(-1*max(10px,var(--safe-l)));padding:max(6px,env(safe-area-inset-top,0px)) max(10px,var(--safe-r)) 6px max(10px,var(--safe-l));gap:8px;border-radius:0 0 12px 12px;background:linear-gradient(110deg,#fff8e9f5,#ecdbb8ed);border-bottom:2px solid #b69255}
+.day-top .subtle{min-height:40px;font-size:12px;padding:4px 8px;white-space:nowrap}
+.day-top .stage-heading{min-width:0;text-align:center}.day-top .stage-heading strong{font-size:14px}.day-top .stage-heading .eyebrow{font-size:9px;letter-spacing:.06em}
+.day-score{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.day-score .score{font-size:12px;padding:3px 10px;white-space:nowrap}.day-score .score b{font-size:17px;display:inline-block;font-variant-numeric:tabular-nums}
+.day-score .score b.bump{animation:day-bump .4s ease-out}
+.lost{font-size:10px;font-weight:800;color:#8d3c32;white-space:nowrap}
+
+/* The day, from opening to closing. */
+.day-strip{background:#fff8e9e8;border:1px solid #c9a86a;border-radius:10px;padding:6px 10px 2px}
+.day-track{position:relative;height:14px}
+.day-track .sky{position:absolute;inset:0;border-radius:7px}
+.day-track .past{position:absolute;left:0;top:0;bottom:0;background:#0d2b2fa6;border-radius:7px 0 0 7px}
+.day-track .dot{position:absolute;top:3px;width:8px;height:8px;margin-left:-4px;border-radius:50%;border:1.5px solid #fff}
+.day-track .cursor{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#b85732;border-radius:1px}
+.day-track .sun{position:absolute;top:-4px;font-size:16px;line-height:1;transform:translateX(-50%);filter:drop-shadow(0 1px 1px #0006)}
+.day-track .mark{position:absolute;top:15px;font-size:8px;transform:translateX(-50%);color:#6b6552}
+.day-labels{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#5d523b;margin-top:9px;min-height:15px;font-weight:700}
+.day-combo{color:#a24e22;font-size:12px;font-variant-numeric:tabular-nums}
+
+/* Reception: the counter is on the left of every illustrated place; people queue toward the right. */
+.shop-floor{position:relative;isolation:isolate;height:clamp(96px,17dvh,160px);border:2px solid #9c7847;border-radius:12px;overflow:hidden;background:#8e714b;box-shadow:0 4px 0 #563e2f70}
+.shop-backdrop{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.shop-line{position:absolute;inset:0}
+.shop-person{position:absolute;left:0;bottom:calc(5% + var(--depth,0)*2.2%);height:min(64%,118px);aspect-ratio:1;transform:translateX(calc(var(--x) - 50%)) scale(calc(1 - var(--depth,0)*.055));transform-origin:50% 100%;transition:transform .6s cubic-bezier(.3,1.2,.5,1),opacity .6s,filter .3s;pointer-events:none}
+.shop-person .portrait{width:100%;height:100%;background:none;animation:resident-idle 3s ease-in-out infinite;animation-delay:var(--idle)}
+.shop-person::after{content:'';position:absolute;left:18%;right:18%;bottom:0;height:8%;background:#2a1f1480;border-radius:50%;filter:blur(2px);z-index:-1}
+.person-name{display:none}
+.person-say{position:absolute;left:50%;bottom:92%;transform:translateX(-50%);white-space:nowrap;background:#fffbe8;border:1px solid #b99b64;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:800;color:#6d4321;box-shadow:0 2px 3px #35261366}
+.person-say:empty{display:none}
+.shop-person.walking .portrait{animation:day-steps .16s ease-in-out infinite alternate}
+.shop-person.matching{filter:drop-shadow(0 0 5px #ffe98a) drop-shadow(0 0 2px #fff)}
+.shop-person.urgent .portrait{animation:day-tremble .22s ease-in-out infinite alternate}
+.shop-person.served{filter:brightness(1.35) drop-shadow(0 0 10px #ffe17a);z-index:30!important}
+.shop-person.served .portrait{animation:day-hop .45s ease-out}
+.shop-person.sad{filter:grayscale(.75) brightness(.9)}
+.shop-person.angry{--x:calc(100% - 30px);filter:saturate(.8)}
+.shop-person.leaving{opacity:0}
+.shop-note{position:absolute;right:8px;top:6px;margin:0;font-size:10px;font-weight:800;color:#fff8d4;text-shadow:0 1px 3px #201b12,0 0 6px #201b12;pointer-events:none}
+.shop-note.full{color:#ffd6c2;animation:day-blink .6s infinite alternate}
+
+/* Order tickets pinned under the counter. */
+.ticket-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:48px;gap:4px;height:100px;align-content:start;padding:0;background:none}
+.day-ticket{position:relative;display:flex;align-items:center;gap:4px;min-width:0;padding:3px 4px 5px 3px;border:1px solid #b28d50;border-left:5px solid var(--tint);border-radius:7px;background:linear-gradient(115deg,#fffbea,#f2e1b9);color:#2d3a33;text-align:left;box-shadow:0 2px 0 #5c402e55;overflow:hidden;font:inherit;transition:transform .15s,box-shadow .15s}
+.day-ticket.entering{animation:day-ticket-in .35s ease-out}
+.resident-face{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:#fff3d6;border:1px solid #d8bf8a}
+.ticket-text{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.ticket-text strong{font-family:var(--storybook-font);font-size:clamp(11px,3.3vw,14px);color:#1f4a4b;overflow-wrap:anywhere}
+.ticket-text small{font-size:8px;color:#8b4e25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-timer{position:absolute;left:0;bottom:0;height:3px;width:calc(var(--left,1)*100%);background:#4c9a57;transition:background .3s}
+.day-ticket.urgent .ticket-timer{background:#c0392b}
+.day-ticket.urgent{animation:day-tremble .22s ease-in-out infinite alternate}
+.day-ticket.matching{background:linear-gradient(115deg,#fff6c4,#ffe28a);box-shadow:0 0 0 2px #e9b53c,0 0 10px #ffe38a;transform:translateY(-2px)}
+.day-ticket.picked{box-shadow:0 0 0 2px #1f6b6b}
+.day-ticket.served{animation:day-stamp-out .6s ease-in forwards}
+.day-ticket.served::after{content:'済';position:absolute;right:4px;top:50%;margin-top:-13px;width:26px;height:26px;border:2px solid #c0392b;border-radius:50%;color:#c0392b;font-weight:900;display:grid;place-items:center;transform:rotate(-14deg);animation:day-ink .18s ease-out}
+.day-ticket.missed{animation:day-missed .8s forwards;filter:grayscale(1)}
+
+/* The dial. The magic clock housing keeps its artwork; pins and the remaining day are drawn inside. */
+.day-station{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.day-station .clock-bay{display:grid;place-items:center;flex:1;min-height:0;width:100%;container-type:size}
+.day-game .clock-housing{position:relative;width:min(100cqw,100cqh,440px);height:auto;aspect-ratio:1;margin:0;padding:0}
+.day-game #clock{overflow:visible;cursor:grab;touch-action:none}
+.day-game #clock.dragging{cursor:grabbing}
+.day-remaining{fill:none;stroke:#ffe39a;stroke-width:4;stroke-linecap:round;opacity:.95;filter:drop-shadow(0 0 2px #fff6c9)}
+.now-mark path{fill:#fff4c0;stroke:#5a3b16;stroke-width:1}
+.ghost-hands line{stroke-linecap:round;stroke-dasharray:3 4;opacity:0;transition:opacity .3s;pointer-events:none}
+#ghost-hour{stroke:#1f6f72;stroke-width:6}#ghost-minute{stroke:#b3582f;stroke-width:3.5}
+.ghost-hands.show line{opacity:.75}
+.day-pin{cursor:pointer}
+.day-pin .pin-body{fill:var(--tint);stroke:#fff8e0;stroke-width:2}
+.day-pin image{pointer-events:none}
+.day-pin .pin-badge{fill:#b83b2a;stroke:#fff8e0;stroke-width:1}
+.day-pin .pin-count{fill:#fff;font-size:8px;font-weight:900;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.day-pin.matching .pin-body{stroke:#ffd84a;stroke-width:3.5;filter:drop-shadow(0 0 4px #fff2a0)}
+.day-pin.picked .pin-body{stroke:#1f6b6b;stroke-width:3.5}
+.day-pin.urgent .pin-body{stroke:#d23b2a;stroke-width:3.5;animation:day-pulse .3s infinite alternate}
+.day-game .seal-button.ready{box-shadow:0 0 0 3px #ffe78f,0 0 18px 6px #ffe38acc,0 3px 0 #694522;animation:day-ready 1s ease-in-out infinite alternate}
+.period-badge{position:absolute;left:50%;top:67%;transform:translateX(-50%);z-index:2;pointer-events:none;background:#fff3d8e6;border:1px solid #c9a86a;border-radius:20px;padding:1px 8px;font-size:clamp(9px,2.6cqw,12px);font-weight:800;color:#7a5a1e;white-space:nowrap}
+.period-badge.night{background:#26356ae6;color:#fff3c9;border-color:#6d7bc0}
+.day-controls{display:flex;gap:6px;justify-content:center}
+.day-controls .adjust{width:auto;height:42px;min-height:42px;min-width:46px;padding:0 8px;font-size:22px;line-height:1;white-space:nowrap}
+.day-controls .adjust.wide{font-size:12px;padding:0 10px}
+.day-station .clock-tools{position:static;margin:0;gap:14px;padding:0 10px;width:auto;height:auto}
+.day-station .clock-tools button{min-height:32px;font-size:11px;padding:4px 6px}
+
+/* Feedback floats briefly; it never pushes the dial around. */
+.day-toast{position:absolute;left:50%;bottom:calc(var(--safe-b) + 92px);transform:translateX(-50%);z-index:40;margin:0;width:max-content;max-width:min(92vw,520px);padding:7px 14px;border-radius:12px;background:#173f44f2;color:#fff8df;border:1px solid #dac185;font-size:12px;line-height:1.5;text-align:center;pointer-events:none;opacity:0}
+.day-toast.show{animation:day-toast 3s ease-out both}
+.day-effects{position:absolute;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.day-burst{position:absolute;left:50%;top:58%;display:grid;justify-items:center;gap:2px;color:#fff9c2;text-shadow:0 2px 2px #53331f,0 0 10px #804b19;animation:day-burst 1.1s ease-out both;transform:translate(-50%,-50%)}
+.day-burst>strong{font-size:clamp(22px,6vw,34px);white-space:nowrap}
+.day-burst.big>strong{font-size:clamp(30px,8.5vw,48px);color:#fff3a0}
+.day-burst>span{font-size:16px;font-weight:900}
+.rush-parcels{display:flex;gap:4px}.rush-parcel{width:30px;height:30px;background:#f2d6a0;border:1px solid #aa763c;border-radius:4px;transform:rotate(calc((var(--parcel) - 2)*9deg))}.rush-parcel .stamp-clock{width:100%;height:100%}
+.rush-result{font-weight:700;color:#8b4e25}
+.day-result-main b{font-size:1.4em}.day-result-lost{font-size:12px;color:#7a4a32}
+
+@keyframes day-bump{50%{transform:scale(1.5)}}
+@keyframes day-steps{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-4%) rotate(3deg)}}
+@keyframes day-tremble{from{translate:-1px 0}to{translate:1px 0}}
+@keyframes day-hop{0%{transform:none}40%{transform:translateY(-22%) scale(1.12)}100%{transform:none}}
+@keyframes day-blink{to{opacity:.45}}
+@keyframes day-ticket-in{from{transform:translateY(-10px);opacity:0}}
+@keyframes day-stamp-out{0%{transform:scale(1)}25%{transform:scale(1.08)}60%{opacity:1;transform:scale(1.02)}100%{opacity:0;transform:translateY(-30px) scale(.75)}}
+@keyframes day-ink{from{transform:rotate(-14deg) scale(2.2);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+@keyframes day-missed{0%,30%{transform:translateX(-3px)}15%,45%{transform:translateX(3px)}100%{opacity:0;transform:translateY(8px)}}
+@keyframes day-pulse{to{opacity:.6}}
+@keyframes day-ready{to{box-shadow:0 0 0 3px #fff4c0,0 0 26px 10px #ffe38a,0 3px 0 #694522}}
+@keyframes day-toast{0%{opacity:0;transform:translate(-50%,8px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+@keyframes day-burst{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}30%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-95%)}}
+
+@media(orientation:portrait) and (max-height:740px){
+ .day-game{gap:4px}.shop-floor{height:clamp(84px,14dvh,120px)}
+ .ticket-rail{grid-auto-rows:44px;height:92px}.day-strip{padding:4px 8px 1px}.day-labels{margin-top:8px}
+ .day-controls .adjust{height:38px;min-height:38px}.day-station .clock-tools button{min-height:28px}
+}
+@media(orientation:portrait) and (min-width:700px){
+ .day-game{padding-left:max(24px,calc((100vw - 640px)/2));padding-right:max(24px,calc((100vw - 640px)/2))}
+ .day-top{margin-left:calc(-1*max(24px,calc((100vw - 640px)/2)));margin-right:calc(-1*max(24px,calc((100vw - 640px)/2)));padding-left:max(24px,calc((100vw - 640px)/2));padding-right:max(24px,calc((100vw - 640px)/2))}
+ .shop-floor{height:190px}.ticket-rail{grid-auto-rows:56px;height:116px}
+}
+/* Landscape: dial on the left, the day and the line on the right. */
+@media(orientation:landscape){
+ .day-game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto auto;column-gap:14px;row-gap:6px}
+ .day-top{grid-column:1/-1}
+ .day-station{display:contents}
+ .day-station .clock-bay{grid-column:1;grid-row:2/-1;height:100%}
+ .day-strip{grid-column:2;grid-row:2}
+ .shop-floor{grid-column:2;grid-row:3;height:auto;min-height:64px;max-height:220px}
+ .ticket-rail{grid-column:2;grid-row:4}
+ .day-controls{grid-column:2;grid-row:5}
+ .day-station .clock-tools{grid-column:2;grid-row:6;justify-self:center}
+ .day-toast{left:25%;bottom:auto;top:52px}
+ .day-burst{left:25%;top:50%}
+}
+@media(orientation:landscape) and (max-height:500px){
+ .day-top{padding-top:max(3px,env(safe-area-inset-top,0px));padding-bottom:3px}.day-top .subtle{min-height:34px}.day-top .stage-heading strong{font-size:12px}
+ .day-game{row-gap:4px}.day-strip{padding:3px 8px 0}.day-labels{margin-top:7px;font-size:9px}
+ .ticket-rail{grid-auto-rows:40px;height:84px}.resident-face{width:22px;height:22px}.ticket-text strong{font-size:12px}
+ .day-controls .adjust{height:34px;min-height:34px}.day-controls .adjust.wide{font-size:11px}
+ .day-station{gap:3px}.day-station .clock-tools button{min-height:26px;font-size:10px}
+}
+@media(orientation:landscape) and (min-height:700px){
+ .shop-floor{max-height:none}.shop-person{height:min(58%,170px)}
+ .day-game{padding-left:max(24px,calc((100vw - 1180px)/2));padding-right:max(24px,calc((100vw - 1180px)/2))}
+ .ticket-rail{grid-auto-rows:58px;height:122px}
+}
+body:has(.pause-modal) .shop-person .portrait,body:has(.pause-modal) .day-ticket{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){
+ .shop-person,.day-ticket,.shop-person .portrait,.day-pin .pin-body,.day-game .seal-button.ready{animation:none!important;transition:none!important}
+ .day-burst{animation:day-toast 1s ease-out both}
+}

@@ -35,8 +35,8 @@ try{
  assert.equal(await page.evaluate(()=>getComputedStyle(document.body).touchAction),'manipulation');
  await page.locator('#start').click();await page.locator('[data-slot="0"]').click();await page.locator('.opening-skip').click();await page.locator('.story-skip').click();
  await page.locator('[data-stage="0"]').click();await page.locator('#chapter-begin').click();await page.locator('.story-skip').click();await page.locator('#open-shop').click();
- await page.waitForFunction(()=>document.querySelectorAll('.walk-customer:not(.arriving)').length===10);
- assert.equal(await page.locator('.gem-art').count(),12);await page.locator('#plus').click();await page.locator('#plus').click();await page.locator('#plus').click();await page.locator('#seal-button').click();await page.locator('#score').filter({hasText:'4 / 10'}).waitFor();
+ await page.locator('.day-pin').first().waitFor();
+ assert.equal(await page.locator('.gem-art').count(),12);await page.evaluate(()=>{hand=routePins(session)[0].target;renderDay();});await page.locator('#seal-button').click();await page.waitForFunction(()=>document.querySelector('#delivered').textContent!=='0');
  assert.deepEqual(errors,[]);console.log(name+': install help, home layout, offline reload and delivery PASS');await browser.close();server=spawn(process.execPath,['scripts/serve.mjs']);await new Promise(r=>setTimeout(r,300));
  }
 }finally{server.kill();await writeFile('dist/sw.js',workerSource);}

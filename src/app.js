@@ -1,8 +1,9 @@
-import {rushLevel,rushRemaining,rushSession,rushInterval,rushLimit,rushGroups,rushKey,rushMatches,rushStep,rushTick,rushStamp,rushTimeout} from './rush.js';
+import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,visitors,nextSlot} from './route.js';
+import {dayLevel} from './day.js';
 import {parcelSeal} from './stamp.js';
 import {Soundtrack,creditsHTML,gameMusicScene} from './soundtrack.js';
-import {mod, normalizeTime, clockAngles, angleDelta, dragMinutes, freeMinutes, settleDelta, matchesTime, timeText, orderHint} from './time.js';
-import {levels, makeOrder, createSession, tickSession, completeOrder, depotNames, customerMood, stages, endlessLevel, stageUnlocked, endlessUnlocked, arrivalInterval, starGoal, rateRun, betterRecord, starText, totalStars, prepareDial, recordMistake, patienceLimit} from './levels.js';
+import {mod, clockAngles, angleDelta, timeText, durationText, orderHint} from './time.js';
+import {levels, depotNames, customerFor, stages, endlessLevel, stageUnlocked, endlessUnlocked, betterRecord, starText, totalStars} from './levels.js';
 import {elements, elementMark, elementalNumbers} from './elements.js';
 import {freshRecord,loadRecords,saveRecords} from './save.js';
 import {showDialogue,closeDialogue} from './dialogue.js';
@@ -12,13 +13,13 @@ import {DialDetents} from './detent.js';
 import {victoryEffects} from './celebration.js';
 import {showOpening,closeOpening} from './opening.js';
 
-let rushSelected=null,closingTimer=null;
+let closingTimer=null;
 const app=document.querySelector('#app');
 const $=selector=>app.querySelector(selector);
-let screen='home', session=null, dial=720, selectedHand='hour', paused=false, busy=false, drag=null, timer=null, flightTimer=null;
+let screen='home', session=null, paused=false, busy=false, drag=null, timer=null, flightTimer=null;
 let skipDelivery=null,chapterMusic=null,stampImpactTimer=null;
 let flightView=null, flightLoading=null, launchToken=0;
-let shown=720, settleId=0; // shown: fractional dial position drawn while dragging or settling
+let settleId=0;
 const soundtrack=new Soundtrack(false);
 new Image().src='assets/luka-victory.webp';
 let lastTick=0, soundOn=soundtrack.settings.music||soundtrack.settings.sound;
@@ -41,14 +42,14 @@ function audioSettingsDialog(){
  dialog.addEventListener('input',e=>{const key=e.target.dataset.audio;if(!key)return;const volume=e.target.type==='range',value=volume?Number(e.target.value)/100:e.target.checked;const ok=soundtrack.configure({[key]:value});soundtrack.unlock();if(volume)dialog.querySelector('#'+key+'-value').textContent=Math.round(value*100)+'%';dialog.querySelector('.audio-save-status').textContent=ok?'音の設定を保存しました。':'この端末では音の設定を保存できません。';if(key==='sound'||key==='soundVolume')soundtrack.play('select');});
  dialog.querySelector('#audio-done').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();if(fromPlay){paused=wasPaused;lastTick=performance.now();}});document.body.append(dialog);dialog.showModal();
 }
-function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySelectorAll('.farewell-layer').forEach(e=>e.remove());clearTimeout(stampImpactTimer);stampImpactTimer=null;skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
+function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySelectorAll('.farewell-layer').forEach(e=>e.remove());clearTimeout(stampImpactTimer);stampImpactTimer=null;skipDelivery=null;soundtrack.stopEffects();soundtrack.duck('dialog',false);soundtrack.duck('story',false);closeOpening();closeDialogue();launchToken++;settleId++;flightView?.dispose();flightView=null;flightLoading=null;clearInterval(timer);clearTimeout(flightTimer);timer=null;drag=null;cancelAnimationFrame(dayFrame);clearTimeout(pickTimer);picked=null;busy=false;paused=false;document.body.classList.remove('flying','stamping','loading-parcel');delete document.body.dataset.depot;}
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.5.1</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.6.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
-  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>お客さんの注文を見て、短い針と長い針を合わせよう。針は指で動かすか、選んで＋・−で動かせます。</p><p>一人ずつ来店するお客さんの吹き出しで時刻を確認。同じ時刻の人を、1回の刻印でまとめて配達できます。配達中も次の操作ができます。</p><p>連続成功でコンボ！ 不正解は注文を残してコンボが0に戻ります。先頭のお客さんの待ちゲージがなくなるとハートが1つ減ります。ハートを残して全員の荷物を届けよう。</p>');
+  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>配送所の一日がはじまると、時計の「いま」はどんどん進みます。お客さんの注文の時刻が来る前に、針を合わせて真ん中の刻印をおそう。</p><p>文字盤をなぞると長い針が回り、短い針もついてきます。顔のピンは、注文の時刻に短い針が来る場所。同じ時刻なら「午後2時半」「14時30分」「2時間半後」のように書き方がちがっても、1回の刻印でまとめて届けられます。</p><p>間に合わなかった人や、列がいっぱいで帰った人は取りこぼし。閉店までに、たくさんのお客さんに届けよう！</p>');
   $('#home-share').onclick=async()=>{const data={title:'Miracle Clock',text:'ルカと空のとけい便。魔法の時計で、浮遊島へ荷物を届けよう。',url:'https://miracle-clock.vercel.app/'};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(data.url);$('#home-share').textContent='リンクをコピーしました';}}catch(e){if(e.name!=='AbortError')openModal('<h2>友だちに教える</h2><p><a href="https://miracle-clock.vercel.app/">miracle-clock.vercel.app</a></p><p>このリンクをコピーして教えてね。</p>');}};
 }
 function bindSound(){const b=$('.sound');if(b){b.title='音の設定';b.addEventListener('click',audioSettingsDialog);}}
@@ -76,13 +77,13 @@ function deleteSlot(index){
 function renderMap(){
  const preparationImage=new Image();preparationImage.src='assets/central-construction.webp';
  cleanup();screen='map';soundtrack.setScene(chapterMusic===null?'map':gameMusicScene(chapterMusic===6?'sky':'story',chapterMusic));const record=records.slots[activeSlot];
- app.innerHTML=`<main class="map scene campaign-map"><header class="topbar"><button class="subtle" id="records">← 配達日誌</button><span class="wordmark">配達日誌 ${activeSlot+1}</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading depot-map-heading"><div><p class="eyebrow">THE JOURNEY TO CENTRAL AIR POST</p><h1>約束をあつめて、中央便へ。</h1></div><div class="map-heading-actions"><button class="subtle" id="replay-story">はじまりの物語</button><button class="primary" id="preparations">中央配送所のしたく <small>${earnedRewards(record).length} / 6</small></button></div></section><div class="chapter-list">${levels.map(ch=>{const list=stages.filter(t=>t.id===ch.id),stars=list.reduce((n,t)=>n+(record.stars[t.stageId]?.stars||0),0),theme=depotThemes[ch.id],done=chapterDeliveries(record,ch.id);return `<article class="chapter parchment compact-chapter" style="--chapter-color:${theme.color}"><div class="chapter-info">${depotIcon(ch.id)}<div><p class="eyebrow">CHAPTER ${ch.id+1} / ${theme.tag}</p><h2>${depotNames[ch.id]}</h2><p class="chapter-reward">${theme.reward} · ${done===6?'獲得済み':'章クリアで獲得'}</p><p class="chapter-star-count">★ ${stars} / 18 ${done===6?'<span class="stamp">配達ずみ</span>':''}</p><small class="shop-reputation">${shopReputation(done)} <span aria-label="繁盛度 ${done} / 6">${'●'.repeat(done)}${'○'.repeat(6-done)}</span></small></div></div><div class="stage-list">${list.map(t=>{const cleared=record.stages.includes(t.stageId),open=stageUnlocked(record,t.stageId),r=record.stars[t.stageId];return `<button class="stage ${cleared?'cleared':open?'next':''}" data-stage="${t.stageId}" ${open?'':'disabled'} aria-label="${ch.id+1}-${t.number} ${t.stageTitle} ${open?'':'未解放'}"><b>${ch.id+1}-${t.number}</b><small>${r?starText(r.stars):cleared?'✓':open?'☆☆☆':'—'}</small></button>`;}).join('')}</div></article>`;}).join('')}</div><section class="special-depot parchment"><div>${toto()}<p class="eyebrow">SPECIAL · ENDLESS</p><h2>トトじいと空の中央便</h2><p>みんなの配送所をつなぐ、新しい受付。<br>全ての島のお客さんと、全ての時計の注文がやってくるぞ。</p><p>最高 ${record.endless.best} 便 · 累計 ${record.endless.total} 便</p><button class="primary" id="endless" ${endlessUnlocked(record)?'':'disabled'}>${endlessUnlocked(record)?'トトじいと中央便をひらく':'全36ステージをクリアすると開店'}</button><small>ライフ3つ。時間切れで ♥ が減り、♥ が0か行列24人で終了。配達するほど来客が速くなります。</small></div></section><p class="save-note">${record.stages.length} / 36 ステージ · ★ ${totalStars(record)} / 108</p><p class="save-warning" role="status">${saveNotice}</p></main>`;
+ app.innerHTML=`<main class="map scene campaign-map"><header class="topbar"><button class="subtle" id="records">← 配達日誌</button><span class="wordmark">配達日誌 ${activeSlot+1}</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading depot-map-heading"><div><p class="eyebrow">THE JOURNEY TO CENTRAL AIR POST</p><h1>約束をあつめて、中央便へ。</h1></div><div class="map-heading-actions"><button class="subtle" id="replay-story">はじまりの物語</button><button class="primary" id="preparations">中央配送所のしたく <small>${earnedRewards(record).length} / 6</small></button></div></section><div class="chapter-list">${levels.map(ch=>{const list=stages.filter(t=>t.id===ch.id),stars=list.reduce((n,t)=>n+(record.stars[t.stageId]?.stars||0),0),theme=depotThemes[ch.id],done=chapterDeliveries(record,ch.id);return `<article class="chapter parchment compact-chapter" style="--chapter-color:${theme.color}"><div class="chapter-info">${depotIcon(ch.id)}<div><p class="eyebrow">CHAPTER ${ch.id+1} / ${theme.tag}</p><h2>${depotNames[ch.id]}</h2><p class="chapter-reward">${theme.reward} · ${done===6?'獲得済み':'章クリアで獲得'}</p><p class="chapter-star-count">★ ${stars} / 18 ${done===6?'<span class="stamp">配達ずみ</span>':''}</p><small class="shop-reputation">${shopReputation(done)} <span aria-label="繁盛度 ${done} / 6">${'●'.repeat(done)}${'○'.repeat(6-done)}</span></small></div></div><div class="stage-list">${list.map(t=>{const cleared=record.stages.includes(t.stageId),open=stageUnlocked(record,t.stageId),r=record.stars[t.stageId];return `<button class="stage ${cleared?'cleared':open?'next':''}" data-stage="${t.stageId}" ${open?'':'disabled'} aria-label="${ch.id+1}-${t.number} ${t.stageTitle} ${open?'':'未解放'}"><b>${ch.id+1}-${t.number}</b><small>${r?starText(r.stars):cleared?'✓':open?'☆☆☆':'—'}</small></button>`;}).join('')}</div></article>`;}).join('')}</div><section class="special-depot parchment"><div>${toto()}<p class="eyebrow">SPECIAL · ENDLESS</p><h2>トトじいと空の中央便</h2><p>みんなの配送所をつなぐ、新しい受付。<br>全ての島のお客さんと、全ての時計の注文がやってくるぞ。</p><p>最高 ${record.endless.best}人 · 累計 ${record.endless.total}人</p><button class="primary" id="endless" ${endlessUnlocked(record)?'':'disabled'}>${endlessUnlocked(record)?'トトじいと中央便をひらく':'全36ステージをクリアすると開店'}</button><small>閉店のない一日。取りこぼしが5人になったら店じまい。配達するほど時間が速くなります。</small></div></section><p class="save-note">${record.stages.length} / 36 ステージ · ★ ${totalStars(record)} / 108</p><p class="save-warning" role="status">${saveNotice}</p></main>`;
  $('#preparations').onclick=renderPreparations;$('#records').onclick=renderSlots;$('#replay-story').onclick=()=>showStory();bindSound();
  app.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.stage);if(stageUnlocked(record,id))chooseLevel(stages[id]);});
  $('#endless').onclick=()=>{if(endlessUnlocked(record))chooseLevel(endlessLevel);};
 }
 function chooseLevel(level){
- level=rushLevel(level);
+ level=dayLevel(level);
  chapterMusic=level.id;soundtrack.setScene(gameMusicScene(level.endless?'sky':'story',level.id));
  const begin=()=>showDialogue(stageStory(level),()=>levelDetails(level));
  if(level.number!==1||level.endless){begin();return;}
@@ -107,7 +108,6 @@ function renderPreparations(){
  app.querySelectorAll('[data-shop-emblem]').forEach(b=>b.onclick=()=>{record.shopEmblem=Number(b.dataset.shopEmblem);record.updated=Date.now();const saved=persistRecords();$('.central-picture .shop-emblem').dataset.emblem=record.shopEmblem;app.querySelectorAll('[data-shop-emblem]').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.shopEmblem)===record.shopEmblem)));$('.shop-save').textContent=saved?'この配達日誌に保存しました。':saveNotice;playSound('assemble');});$('#back-map').onclick=renderMap;$('#central-open')?.addEventListener('click',()=>chooseLevel(endlessLevel));bindSound();app.querySelectorAll('[data-reward]').forEach(b=>b.onclick=()=>showDepotReward(Number(b.dataset.reward),()=>{}));window.scrollTo(0,0);
 }
 
-function levelDetails(input){const level=rushLevel(input),goal=level.endless?null:starGoal(level);openModal(`<p class="eyebrow">${level.endless?'SPECIAL · ENDLESS':`${level.id+1}-${level.number} · ${depotNames[level.id]}`}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'次々やってくる配送ラッシュ':`今日の目標：${level.count}人に届けたら営業完了！`} · ♥♥♥</p><p class="start-tip">お客さんは一人ずつ来店。吹き出しの時刻に合わせて、同じ時刻の人をまとめて配達！</p><p class="start-rule">連続成功でコンボ。不正解はやり直し。先頭で${rushLimit(level)}秒待つと ♥ −1。${level.endless?'行列24人でも終了。':''}</p>${goal?`<p class="start-stars">★★★ ${goal.time}秒以内・ミスなし</p>`:''}<button class="primary" id="open-shop">受付をはじめる</button>`);$('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startLevel(level);};}
 function openModal(content,closable=true){closeModal();soundtrack.duck('dialog',true);const wrapper=document.createElement('div');wrapper.className='modal-backdrop';wrapper.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="${screen==='play'?'配達のお知らせ':'お知らせ'}">${closable?'<button class="modal-close" aria-label="閉じる">×</button>':''}${content}</section>`;const panel=wrapper.querySelector('.modal');const actions=document.createElement('div');actions.className='dialog-actions';[...panel.children].filter(el=>el.tagName==='BUTTON'&&!el.classList.contains('modal-close')).forEach(el=>actions.append(el));if(actions.children.length)panel.append(actions);app.append(wrapper);$('.modal-close')?.addEventListener('click',()=>{closeModal();if(screen==='play'){paused=false;lastTick=performance.now();}});if(panel.querySelector('.result-character'))panel.classList.add('result-modal');wrapper.querySelector('button')?.focus({preventScroll:true});panel.scrollTop=0;wrapper.addEventListener('keydown',e=>{if(e.key==='Escape'&&closable){e.preventDefault();$('.modal-close')?.click();}if(e.key==='Tab'){const items=[...wrapper.querySelectorAll('button:not(:disabled)')];const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});}
 function closeModal(){soundtrack.duck('dialog',false);$('.modal-backdrop')?.remove();}
 function spellMarkup(){return `<div class="spell-burst" aria-hidden="true"><svg class="spell-circle" viewBox="0 0 300 300"><circle cx="150" cy="150" r="105"/><circle cx="150" cy="150" r="91"/><path d="M150 45 241 202 59 202ZM150 255 59 98 241 98Z"/>${Array.from({length:12},(_,i)=>`<path transform="rotate(${i*30} 150 150)" d="M150 39l4 8-4 8-4-8Z"/>`).join('')}</svg><span class="spell-core"></span>${Array.from({length:36},(_,i)=>`<i class="spell-spark" style="--spark-delay:${i%6*18}ms;--spark-color:${['#fff0a8','#9cfbea','#ffeac5'][i%3]}" ></i>`).join('')}</div>`;}
@@ -118,150 +118,198 @@ function clockMarkup(){
  for(let i=1;i<=12;i++){const rad=i*Math.PI/6;minutes+=`<text x="${150+78*Math.sin(rad)}" y="${150-78*Math.cos(rad)}" class="minute-number">${i===12?'00':i*5}</text>`;}
  return `<svg id="clock" viewBox="0 0 300 300" aria-label="お届け時刻を合わせる時計"><circle class="dial-ring" cx="150" cy="150" r="96"/>${ticks}${numbers}<g class="minute-guide">${minutes}</g><text x="150" y="207" class="dial-brand">MIRACLE</text><text x="150" y="220" class="dial-caption">AIR POST</text><g id="hour-hand" data-hand="hour" role="slider" tabindex="0" aria-label="短い針・時" aria-valuemin="1" aria-valuemax="12"><line class="hand-hit" x1="150" y1="159" x2="150" y2="73"/><svg class="hand-art hour-art" x="138" y="70" width="24" height="98.3" viewBox="250 40 282 1170" preserveAspectRatio="none"><defs><clipPath id="hour-art-crop"><rect x="250" y="40" width="282" height="1170"/></clipPath></defs><image clip-path="url(#hour-art-crop)" href="assets/clock-hands.webp" width="1254" height="1254"/></svg></g><g id="minute-hand" data-hand="minute" role="slider" tabindex="0" aria-label="長い針・分" aria-valuemin="0" aria-valuemax="59"><line class="hand-hit" x1="150" y1="160" x2="150" y2="59"/><svg class="hand-art minute-art" x="142" y="56.4" width="16" height="115" viewBox="880 40 122 1170" preserveAspectRatio="none"><defs><clipPath id="minute-art-crop"><rect x="880" y="40" width="122" height="1170"/></clipPath></defs><image clip-path="url(#minute-art-crop)" href="assets/clock-hands.webp" width="1254" height="1254"/></svg></g><circle class="pivot-outer" cx="150" cy="150" r="11"/><circle class="pivot" cx="150" cy="150" r="5"/></svg>`;
 }
-function startLevel(level,lives=3){
- level=rushLevel(level);rushSelected=null;
- cleanup();screen='play';soundtrack.setScene(gameMusicScene(level.endless?'sky':'story',level.id));playSound('intro');document.body.dataset.depot=level.id;session=rushSession(level,lives);selectedHand=level.id===0||level.endless&&rushStep(session)===60?'hour':'minute';dial=720;
- app.innerHTML=`<main class="game scene rush-game" style="--depot-image:url(assets/depots/${level.endless?5:level.id===5?6:level.id}.webp)"><header class="topbar game-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${level.endless?'特別ステージ · エンドレス':`${level.id+1}-${level.number} · ${depotNames[level.id]}`}</span><strong>${level.stageTitle}</strong></div><div class="score-stack"><span id="score" class="score"></span><span id="lives" class="lives" role="status" aria-live="polite"></span></div></header><div class="game-workspace"><section class="queue-area ${!level.endless?'batch-queue':''} ${!level.endless&&level.count>5?'batch-large':''}" aria-label="待っているお客さん"><div class="queue-heading"><span>${level.endless?'荷物の受付':'この便のお客さん'}</span><span id="queue-count"></span></div><div class="queue-track" id="queue"></div><div class="queue-counter"><span>LUCA & TOTO</span><b>空のとけい便</b></div><div class="arrival-track" ><span id="arrival-fill"></span></div></section><div class="play-layout"><aside class="companion-side"><div class="luka-frame">${portrait(0)}<span class="magic-ring"></span></div><div class="luka-note"><b>ルカの 魔法時計</b><p>針を合わせて刻印。<br>次のお客さんを迎えよう。</p></div><div class="plane-dock"><img src="assets/delivery-plane.webp" alt="出発を待つ配送飛行機"></div></aside><section class="clock-station"><div class="order-ticket" id="order"></div><div class="clock-bay"><div class="clock-housing">${clockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}<div class="clock-status" id="clock-status">お届け時刻を合わせよう</div></div></div><div class="station-controls"><div class="period-toggle" id="period-toggle" hidden><button data-period="0">☀ 午前</button><button data-period="1">☾ 午後</button></div><div class="hand-controls"><button class="hand-select" data-select="hour"><i class="short-swatch"></i><span>短い針<small class="selection-label">えらぶ</small></span></button><button class="adjust" id="minus" aria-label="選んだ針を戻す">−</button><button class="adjust" id="plus" aria-label="選んだ針を進める">＋</button><button class="hand-select" data-select="minute"><i class="long-swatch"></i><span>長い針<small class="selection-label">えらぶ</small></span></button></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></div></section><aside class="toto-side"><div class="toto-advice">${toto()}<div><b>トトじい</b><p id="advice">${level.lesson}</p></div></div><div class="delivery-log"><span class="eyebrow">TODAY'S FLIGHTS</span><h2>今日のお届け</h2><ol id="flight-log"><li>最初の便を待っています</li></ol></div></aside></div></div><button id="skip-delivery" class="skip-delivery" hidden><span>タップして次のお客さんへ ▸</span></button><div class="flight-layer" aria-hidden="true"><div class="flight-window"><div class="flight-sky"></div><div id="flight-viewport"></div><img class="flight-fallback" src="assets/delivery-plane.webp" alt=""><div class="flight-caption"><small>空のとけい便</small><strong id="flight-destination"></strong><span id="flight-time"></span></div><span class="flight-postmark">時刻の刻印で、約束の空へ</span></div></div><div class="feedback" id="feedback" role="status" aria-live="polite">針を合わせて、時計の真ん中の刻印をおそう。</div></main>`;
- $('#clock').classList.toggle('show-guide',!!level.guide);$('#pause').onclick=()=>pauseGame();$('#seal-button').onclick=dispatch;$('#skip-delivery').onclick=()=>skipDelivery?.();$('#elements').onclick=showElements;
- $('.game-workspace').insertAdjacentHTML('beforeend','<div class="rush-effects" aria-hidden="true"></div>');
- document.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{if(busy||paused)return;selectedHand=b.dataset.select;updateDial();});
- $('#minus').onclick=()=>adjust(-1);$('#plus').onclick=()=>adjust(1);
- document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{if(busy||paused)return;dial=mod(dial,720)+Number(b.dataset.period)*720;updateDial();});
- $('#guide').onclick=e=>{const on=$('#clock').classList.toggle('show-guide');e.currentTarget.textContent=`分のめもり ${on?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',on);};
- $('#hint').onclick=()=>{if(busy||paused)return;if(!session.queue.length){$('#feedback').textContent='お客さんが来たら、吹き出しの時刻に針を合わせよう。';return;}$('#advice').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);$('#feedback').textContent=orderHint(session.queue.find(o=>o.orderId===rushSelected)||session.queue[0],dial);};
- const waitingArt=new Image();waitingArt.src='assets/residents-waiting.webp';
- bindDial();updateOrder();updateQueue();updateDial();lastTick=performance.now();timer=setInterval(tick,100);window.scrollTo(0,0);
-}
-function updateLives(){const el=$('#lives');if(!el)return;el.innerHTML=Array.from({length:session.maxLives},(_,i)=>`<svg class="heart-vessel ${i<session.lives?'full':'empty'}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21S2 15 2 8a5 5 0 0 1 10-3A5 5 0 0 1 22 8c0 7-10 13-10 13Z"/>${i<session.lives?'':'<path class="heart-crack" d="m13 4-3 5 4 3-4 5 2 4"/>'}</svg>`).join('');el.setAttribute('aria-label',`ライフ 残り${session.lives}、最大${session.maxLives}${session.maxLives===6?' おてつだい':''}`);el.classList.toggle('last-life',session.lives===1);}
-function updateOrder(){
- updateLives();
- const selected=session.queue.find(o=>o.orderId===rushSelected)||session.queue[0];rushSelected=selected?.orderId??null;
- $('.game').classList.toggle('relative-order',!!selected?.duration);
- if(!$('#customer-floor')){
-  const place=session.level.endless?6:session.level.id;
-  $('#order').innerHTML=`<div class="rush-heading"><span id="daily-goal"></span><b id="rush-combo"></b></div><div class="customer-floor" id="customer-floor"><svg class="customer-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div id="customer-line" class="customer-line" aria-label="お客さんと一人ずつの注文"></div><p class="empty-reception" id="empty-reception"></p></div><div class="rush-detail" id="rush-detail"></div>`;
- }
- $('#daily-goal').textContent=session.level.endless?'空の中央便 · 満員24人で終了':`今日の目標 ${session.level.count}人に届けよう`;
- $('#rush-combo').textContent=`${session.combo} COMBO`;
- $('#rush-detail').innerHTML=selected?`<p class="request"><strong>${selected.label}</strong><span>${selected.duration?'のお届け':'にお届け'}</span></p>${selected.duration?`<span class="reference-time">受付 ${timeText(selected.base,'period')}${selected.nextDay?' · 翌日':''}</span>`:''}<span class="rush-ready" id="rush-ready"></span>`:'<span class="rush-ready" id="rush-ready"></span>';
- $('#period-toggle').hidden=!session.queue.some(o=>o.period);
- $('#score').textContent=session.level.endless?`お届け ${session.delivered}人`:`お届け ${session.delivered} / ${session.level.count}人`;
- $('.clock-status').textContent='同じ時刻をまとめて刻印！';
- updateReception();updateRushMatches();
-}
-function updateReception(){
- const remaining=rushRemaining(session),empty=!session.queue.length;
- $('#queue-count').innerHTML=`受付中 <strong>${session.queue.length}</strong> 人`;
- $('#queue').textContent=session.level.endless?'一人ずつ、次々来店！':session.status==='cleared'?'本日のお届け完了！':remaining?`これから ${remaining}人が来店`:'これで最後のお客さん！';
- $('#empty-reception').hidden=!empty;
- $('#empty-reception').textContent=session.status==='cleared'?'本日のお届け完了！':session.generated?'次のお客さんがやってきます…':'開店！ お客さんがやってきます…';
-}
-function updateRushMatches(){
- if(!session||screen!=='play')return;
- const ready=rushMatches(session,dial),ids=new Set(ready.map(o=>o.orderId));
- document.querySelectorAll('.walk-customer[data-order]').forEach(el=>el.classList.toggle('matching',ids.has(Number(el.dataset.order))));
- if($('#rush-ready'))$('#rush-ready').textContent=ready.length?`${ready.length}人まとめて送れる！`:session.queue.length?'吹き出しの時刻に合わせて刻印':'お客さんを迎えよう';
- if($('#seal-button'))$('#seal-button').disabled=session.status!=='playing'||!session.queue.some(o=>o.arriving<=0);
-}
 function residentPortrait(order){const rows=[0,270,500,735,970,1210,1536],x=(order.variant+1)*256,y=rows[order.region],height=rows[order.region+1]-y;return `<svg class="portrait queue-resident" role="img" aria-label="${order.name}" data-facing="left" viewBox="${x} ${y} 256 ${height}" preserveAspectRatio="xMidYMax meet"><image href="assets/queue-residents.webp" width="1024" height="1536"/></svg>`;}
-function updateQueue(){
- const line=$('#customer-line'),q=session.queue,ids=new Set(q.map(o=>String(o.orderId)));
- const positions=new Map([...line.children].map(el=>[el,el.getBoundingClientRect()]));
- for(const el of line.querySelectorAll('[data-order]'))if(!ids.has(el.dataset.order))el.remove();
- for(const o of q){
-  let node=line.querySelector(`[data-order="${o.orderId}"]`);
-  if(!node){
-   node=document.createElement('button');node.className='walk-customer entering';node.dataset.order=o.orderId;node.dataset.region=o.region;
-   const key=Number(rushKey(o).split(':')[1]),color=['#27796d','#ad6638','#7660a0','#427da2'][Math.floor(key/60)%4];
-   node.style.setProperty('--customer-color',color);node.style.setProperty('--idle-delay',`-${o.orderId%5}s`);
-   node.innerHTML=`<span class="personal-order">${timeText(o.target,o.period?'period':'12')}</span><span class="resident-body">${residentPortrait(o)}</span><span class="resident-name">${o.name}</span>`;
-   node.setAttribute('aria-label',`${o.name}のお届け ${timeText(o.target,o.period?'period':'12')}`);
-   node.onclick=()=>{if(paused||o.arriving>0)return;rushSelected=o.orderId;updateOrder();updateQueue();};
-   line.append(node);node.addEventListener('animationend',e=>{if(e.target===node)node.classList.remove('entering');});
-  }
-  node.setAttribute('aria-pressed',String(o.orderId===rushSelected));node.classList.toggle('arriving',o.arriving>0);
- }
- if(!matchMedia('(prefers-reduced-motion:reduce)').matches)for(const [el,before] of positions){if(!el.isConnected||el.classList.contains('entering'))continue;const after=el.getBoundingClientRect(),x=before.x-after.x,y=before.y-after.y;if(Math.abs(x)+Math.abs(y)>1)el.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:280,easing:'ease-out'});}
- updateReception();updateWaiting();updateRushMatches();
-}
-function updateWaiting(){
- for(const o of session.queue){const node=$(`.walk-customer[data-order="${o.orderId}"]`);if(node){node.dataset.mood=customerMood(o);node.classList.toggle('arriving',o.arriving>0);}}
- const order=session.queue[0];let lead=$('#queue-lead');if(!lead){lead=document.createElement('div');lead.id='queue-lead';$('.queue-area').append(lead);}
- lead.innerHTML=order?`<strong>${order.name}</strong><div class="patience ${order.attended>rushLimit(session.level)*.75?'urgent':''}" role="progressbar" aria-label="先頭のお客さんの待ち時間" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(Math.max(0,1-order.attended/rushLimit(session.level))*100)}"><i style="--remaining:${Math.max(0,1-order.attended/rushLimit(session.level))}"></i></div>`:'<strong>開店中</strong>';
- updateRushMatches();
-}
-function celebrateCustomers(orders){
- const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
- const layer=document.createElement('div');layer.className='farewell-layer';layer.setAttribute('aria-hidden','true');document.body.append(layer);
- const sayings=['ありがとう！','助かった！','また来るね！','やったー！','お願いね！'];
- for(const [i,o] of orders.entries()){
-  const source=$(`.walk-customer[data-order="${o.orderId}"]`);if(!source)continue;
-  const box=source.getBoundingClientRect(),floor=$('#customer-floor').getBoundingClientRect();
-  if(box.bottom<floor.top||box.top>floor.bottom)continue;
-  const ghost=source.cloneNode(true);ghost.removeAttribute('data-order');ghost.removeAttribute('aria-label');ghost.removeAttribute('aria-pressed');ghost.disabled=true;ghost.className='walk-customer farewell';
-  Object.assign(ghost.style,{left:box.x+'px',top:box.y+'px',width:box.width+'px',height:box.height+'px'});
-  ghost.querySelector('.personal-order').textContent=sayings[o.orderId%sayings.length];
-  if(!reduced)ghost.insertAdjacentHTML('beforeend',Array.from({length:Math.min(20,10+orders.length)},(_,j)=>`<i class="farewell-spark" style="--dx:${Math.sin(j*2.4)*40}px;--dy:${-35-j%5*13}px;--delay:${j%4*.04}s"></i>`).join(''));
-  layer.append(ghost);
- }
- setTimeout(()=>layer.remove(),reduced?650:1300);
-}
-function customerLeaves(reason){
- if(paused||session.status!=='playing')return;
- const name=session.queue[0].name;rushTimeout(session);playSound('wrong');
- $('#feedback').textContent=`${name}は待ちきれず帰ってしまった。次のお客さんを迎えよう！`;
- updateLives();if(session.status!=='playing'){finish(session.status==='cleared');return;}
- updateOrder();updateQueue();updateDial();
-}
 function showElements(){if(busy||paused)return;paused=true;openModal(`<p class="eyebrow">MIRACLE MINE の鉱石</p><h2>12の鉱石と、時の魔法</h2><p>集めた鉱石が魔法時計になったよ。色と紋章に、それぞれの力が宿っている。</p><div class="element-legend">${elements.map((e,i)=>`<div style="--gem:${e.color};color:${e.ink}"><img src="assets/gems/${i===0?12:i}.webp" alt="${i===0?'12（0）':i}の鉱石"><span>${e.name}</span></div>`).join('')}</div><p>12の場所は、0の原石。一周してまた始まる場所だよ。時計の数字は12のまま。お昼の12時と夜中の0時は、午前・午後で見分けよう。</p><button class="primary" id="elements-close">時計にもどる</button>`);$('#elements-close').onclick=()=>{closeModal();paused=false;lastTick=performance.now();};}
-// Draw hands at `display` (fractional minutes) while ARIA and buttons reflect the snapped `dial`.
-function updateDial(display){if(display===undefined){display=dial;settleId++;}shown=display;const angles=clockAngles(display);document.querySelectorAll('.element-gem').forEach(g=>g.classList.toggle('resonating',Number(g.dataset.element)===Math.floor(mod(display,720)/60)));$('#hour-hand').setAttribute('transform',`rotate(${angles.hour} 150 150)`);$('#minute-hand').setAttribute('transform',`rotate(${angles.minute} 150 150)`);$('#hour-hand').setAttribute('aria-valuenow',Math.floor(mod(dial,720)/60)||12);$('#minute-hand').setAttribute('aria-valuenow',mod(dial,60));$('#hour-hand').setAttribute('aria-valuetext',timeText(dial));$('#minute-hand').setAttribute('aria-valuetext',`${mod(dial,60)}分`);document.querySelectorAll('[data-select]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.select===selectedHand);b.querySelector('.selection-label').textContent=b.dataset.select===selectedHand?'操作中':'えらぶ';});document.querySelectorAll('[data-hand]').forEach(h=>h.classList.toggle('selected-hand',h.dataset.hand===selectedHand));$('.hand-controls').dataset.selected=selectedHand;$('#minus').setAttribute('aria-label',`${selectedHand==='hour'?'短い針':'長い針'}を戻す`);$('#plus').setAttribute('aria-label',`${selectedHand==='hour'?'短い針':'長い針'}を進める`);document.querySelectorAll('[data-period]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.period)===Math.floor(dial/720)));updateRushMatches();}
-// After a drag the hands glide from under the finger to the snapped time.
-function settleDial(){const id=++settleId,from=shown,delta=settleDelta(from,dial);if(!delta||matchMedia('(prefers-reduced-motion:reduce)').matches){updateDial();return;}const started=performance.now(),duration=220;const frame=now=>{if(id!==settleId||drag||screen!=='play')return;const p=Math.min(1,(now-started)/duration);if(p===1){updateDial();return;}updateDial(mod(from+delta*(1-(1-p)**3),1440));requestAnimationFrame(frame);};requestAnimationFrame(frame);}
-function dialClick(mark,hand){playSound(hand==='hour'?'dial-hour':'dial-minute');const gem=$(`[data-element="${mark}"]`);if(gem&&!matchMedia('(prefers-reduced-motion:reduce)').matches)gem.animate([{filter:'drop-shadow(0 0 4px #fff2ac)'},{filter:'drop-shadow(0 0 0 transparent)'}],{duration:160});}
-function adjust(direction){if(paused||busy)return;const next=dial+direction*(selectedHand==='hour'?60:rushStep(session)),mark=new DialDetents(selectedHand,dial).move(next);dial=normalizeTime(next);updateDial();if(mark!==null)dialClick(mark,selectedHand);}
-function bindDial(){const clock=$('#clock');const angle=e=>{const b=clock.getBoundingClientRect();return mod(Math.atan2(e.clientX-b.left-b.width/2,-(e.clientY-b.top-b.height/2))*180/Math.PI,360);};
- clock.addEventListener('pointerdown',e=>{if(paused||busy||drag)return;e.preventDefault();let hand=e.target.closest('[data-hand]')?.dataset.hand||selectedHand;const bounds=clock.getBoundingClientRect(),radius=Math.hypot(e.clientX-bounds.left-bounds.width/2,e.clientY-bounds.top-bounds.height/2)*300/bounds.width;const a=clockAngles(dial);if(selectedHand==='hour'&&radius<95&&Math.abs(angleDelta(a.hour,a.minute))<14)hand='hour';selectedHand=hand;drag={pointer:e.pointerId,hand,start:dial,last:angle(e),delta:0,detents:new DialDetents(hand,dial)};clock.setPointerCapture(e.pointerId);clock.classList.add('dragging');updateDial();});
- clock.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pointer||busy||paused)return;e.preventDefault();const next=angle(e);drag.delta+=angleDelta(drag.last,next);drag.last=next;dial=dragMinutes(drag.start,drag.delta,drag.hand,rushStep(session));const continuous=freeMinutes(drag.start,drag.delta,drag.hand);const mark=drag.detents.move(drag.start+drag.delta*(drag.hand==='hour'?2:1/6));updateDial(continuous);if(mark!==null)dialClick(mark,drag.hand);});
- const end=e=>{if(!drag||e.pointerId!==drag.pointer)return;drag=null;clock.classList.remove('dragging');settleDial();};clock.addEventListener('pointerup',end);clock.addEventListener('pointercancel',end);clock.addEventListener('lostpointercapture',end);
- document.querySelectorAll('[data-hand]').forEach(h=>h.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp'].includes(e.key)){e.preventDefault();selectedHand=h.dataset.hand;adjust(['ArrowLeft','ArrowDown'].includes(e.key)?-1:1);}}));
+// ---------- The day clock: "now" runs by itself; the player only chooses the next flight time. ----------
+let hand=0,freeHand=null,dayFrame=0,picked=null,pickTimer=0;
+const people=new Map(),tickets=new Map();
+const regionColors=['#4f8a3c','#3b8db5','#8759c0','#c4572d','#5b9cc8','#c28a3f'];
+const reduceMotion=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+const snapHand=v=>Math.min(session.level.close,Math.max(nextSlot(session),Math.round(v/session.level.step)*session.level.step));
+const aimed=()=>snapHand(freeHand??hand);
+const secondsLeft=o=>(o.target-session.now)*session.level.hourSeconds*routePace(session)/60;
+const clockLabel=(t,open=session.level.open)=>(Math.floor(t/1440)>Math.floor(open/1440)?'あした':'')+timeText(t,'period');
+const stageHeading=level=>level.endless?'特別ステージ · エンドレス':`${level.id+1}-${level.number} · ${depotNames[level.id]}`;
+function levelDetails(input){
+ const level=dayLevel(input);
+ openModal(`<p class="eyebrow">${stageHeading(level)}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'閉店のない一日 · 5人取りこぼすと店じまい':`${timeText(level.open,'period')} 開店 → ${clockLabel(level.close,level.open)} 閉店`}</p><p class="start-tip">「いま」はどんどん進むよ。注文の時刻が来る前に、針を合わせて刻印しよう！ 同じ時刻なら、書き方がちがってもまとめて届けられる。</p><p class="start-rule">長い針をまわすと、短い針もついてくる。${level.endless?'配達するほど、時間が速くなるぞ。':`練習：${level.skill}`}</p>${level.endless?'':`<p class="start-stars">★ 5割 · ★★ 7割 · ★★★ 9割のお客さんに届けよう</p>`}<button class="primary" id="open-shop">開店する</button>`);
+ $('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startLevel(level);};
 }
-function tick(){
- const now=performance.now(),seconds=Math.min(.25,(now-lastTick)/1000);lastTick=now;
- if(paused||document.hidden||session.status!=='playing')return;
- const before=session.generated;rushTick(session,seconds);
- if(before!==session.generated){updateOrder();updateQueue();}
- updateWaiting();
- if(session.status==='playing'&&session.queue[0]?.attended>=rushLimit(session.level)){customerLeaves('timeout');return;}
- $('#arrival-fill').style.width=`${!rushInterval(session)||!rushRemaining(session)?0:session.elapsed/rushInterval(session)*100}%`;
- if(session.status==='over')finish(false);
+function dayClockMarkup(){
+ const overlay=`<path id="day-remaining" class="day-remaining"/><g id="now-mark" class="now-mark"><path d="M150 49l-5-8h10z"/></g><g id="ghost-hands" class="ghost-hands"><line id="ghost-hour" x1="150" y1="150" x2="150" y2="96"/><line id="ghost-minute" x1="150" y1="150" x2="150" y2="68"/></g><g id="day-pins" class="day-pins"></g>`;
+ return clockMarkup().replace('<g id="hour-hand"',overlay+'<g id="hour-hand"');
+}
+function startLevel(input,slow=false){
+ const level=dayLevel(input);
+ cleanup();screen='play';soundtrack.setScene(gameMusicScene(level.endless?'sky':'story',level.id));playSound('intro');document.body.dataset.depot=level.id;
+ const paced=slow?{...level,hourSeconds:level.hourSeconds*1.4,lead:level.lead*1.4,arrive:level.arrive.map(x=>x*1.4)}:level;
+ session=routeSession(paced);session.stage=level;session.slow=slow;
+ hand=nextSlot(session);freeHand=null;picked=null;people.clear();tickets.clear();
+ const place=level.endless?6:level.id,art=level.endless?5:level.id===5?6:level.id;
+ app.innerHTML=`<main class="day-game scene" style="--depot-image:url(assets/depots/${art}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span id="score" class="score">お届け <b id="delivered">0</b>人</span><span id="lost" class="lost">取りこぼし 0</span></div></header><section class="day-strip" aria-label="今日の営業時間"><div class="day-track" id="day-track"></div><div class="day-labels"><span>${timeText(level.open,'period')} 開店</span><b id="day-combo" class="day-combo"></b><span>${level.endless?'閉店なし':clockLabel(level.close)+' 閉店'}</span></div></section><section class="shop-floor" aria-label="受付に並ぶお客さん"><svg class="shop-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div class="shop-line" id="shop-line"></div><p class="shop-note" id="shop-note">開店！ お客さんがやってくるよ</p></section><section class="ticket-rail" id="tickets" aria-label="注文票"></section><section class="day-station"><div class="clock-bay"><div class="clock-housing">${dayClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}<span class="period-badge" id="period-badge"></span></div></div><div class="day-controls"><button class="adjust wide" data-move="-60">−1時間</button><button class="adjust" id="minus" data-move="-1" aria-label="長い針を戻す">−</button><button class="adjust" id="plus" data-move="1" aria-label="長い針を進める">＋</button><button class="adjust wide" data-move="60">＋1時間</button></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></section><div class="day-effects" aria-hidden="true"></div><p class="day-toast" id="feedback" role="status" aria-live="polite"></p></main>`;
+ $('#clock').classList.toggle('show-guide',!!level.guide);$('#pause').onclick=()=>pauseGame();$('#seal-button').onclick=dispatch;$('#elements').onclick=showElements;
+ app.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{const m=Number(b.dataset.move);moveHand(Math.abs(m)===1?m*session.level.step:m);});
+ $('#guide').onclick=e=>{const on=$('#clock').classList.toggle('show-guide');e.currentTarget.textContent=`分のめもり ${on?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',on);};
+ $('#hint').onclick=showHint;
+ bindDayDial();renderDay();lastTick=performance.now();dayFrame=requestAnimationFrame(dayLoop);window.scrollTo(0,0);
+}
+function toast(text){const el=$('#feedback');if(!el)return;el.textContent=text;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');}
+function pickTarget(target){picked=target;clearTimeout(pickTimer);pickTimer=setTimeout(()=>{picked=null;},2600);}
+function showHint(){
+ if(paused||session.status!=='playing')return;
+ const o=session.queue.find(x=>x.target===picked)||[...session.queue].sort((a,b)=>a.target-b.target)[0];
+ if(!o){toast('お客さんが来たら、注文の時刻に針を合わせよう。');return;}
+ pickTarget(o.target);
+ toast(o.kind==='relative'?`${o.name}の受付は${timeText(o.base,'period')}。そこから${durationText(o.target-o.base).replace('後','')}進めた時刻だよ。点線の針を見てみよう。`:`${orderHint({...o,period:false,duration:0},aimed())} 点線の針が正解だよ。`);
+}
+function drawHands(){
+ const v=freeHand??hand,target=aimed(),angles=clockAngles(v);
+ $('#hour-hand').setAttribute('transform',`rotate(${angles.hour} 150 150)`);$('#minute-hand').setAttribute('transform',`rotate(${angles.minute} 150 150)`);
+ $('#hour-hand').setAttribute('aria-valuenow',Math.floor(mod(target,720)/60)||12);$('#minute-hand').setAttribute('aria-valuenow',mod(target,60));$('#minute-hand').setAttribute('aria-valuetext',clockLabel(target));
+ app.querySelectorAll('.element-gem').forEach(g=>g.classList.toggle('resonating',Number(g.dataset.element)===Math.floor(mod(v,720)/60)));
+ $('#period-badge').textContent=(Math.floor(target/1440)>Math.floor(session.level.open/1440)?'あした ':'')+(mod(target,1440)<720?'☀ 午前':'☾ 午後');
+ $('#period-badge').classList.toggle('night',mod(target,1440)>=1080||mod(target,1440)<360);
+}
+const polar=(deg,r)=>[150+Math.sin(deg*Math.PI/180)*r,150-Math.cos(deg*Math.PI/180)*r];
+const hourAngle=t=>mod(t,720)/2;
+function remainingArc(from,to,r){const span=Math.min(359.5,(to-from)/2);if(span<.5)return '';const a=hourAngle(from),[x1,y1]=polar(a,r),[x2,y2]=polar(a+span,r);return `M${x1} ${y1}A${r} ${r} 0 ${span>180?1:0} 1 ${x2} ${y2}`;}
+function residentFace(o,cls=''){const rows=[0,270,500,735,970,1210,1536],x=(o.variant+1)*256,y=rows[o.region];return `<svg class="resident-face ${cls}" viewBox="${x+28} ${y+10} 200 200" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><image href="assets/queue-residents.webp" width="1024" height="1536"/></svg>`;}
+function renderDay(){
+ if(!session||screen!=='play')return;
+ const target=aimed(),s=session;drawHands();
+ $('#day-remaining').setAttribute('d',remainingArc(s.now,Math.min(s.level.close,s.now+719),98));
+ $('#now-mark').setAttribute('transform',`rotate(${hourAngle(s.now)} 150 150)`);
+ $('#ghost-hands').classList.toggle('show',picked!==null);
+ if(picked!==null){const a=clockAngles(picked);$('#ghost-hour').setAttribute('transform',`rotate(${a.hour} 150 150)`);$('#ghost-minute').setAttribute('transform',`rotate(${a.minute} 150 150)`);}
+ // Pins sit where the short hand must point. Close neighbours step inward so none hide another.
+ // Pin elements persist between frames so their face images finish loading.
+ const layer=$('#day-pins'),seen=new Set();let lastAngle=-99,lane=0;
+ for(const pin of routePins(s)){
+  const angle=hourAngle(pin.target);lane=angle-lastAngle<16?(lane+1)%3:0;lastAngle=angle;seen.add(String(pin.target));
+  const [x,y]=polar(angle,[62,46,30][lane]),o=pin.orders[0];
+  let g=layer.querySelector(`[data-target="${pin.target}"]`);
+  if(!g){
+   g=document.createElementNS('http://www.w3.org/2000/svg','g');g.dataset.target=pin.target;g.style.setProperty('--tint',regionColors[o.region]);
+   g.innerHTML=`<circle class="pin-body" r="11.5"/><svg x="-10" y="-10" width="20" height="20" viewBox="${(o.variant+1)*256+28} ${[0,270,500,735,970,1210][o.region]+10} 200 200" preserveAspectRatio="xMidYMin slice"><image href="assets/queue-residents.webp" width="1024" height="1536"/></svg><g class="pin-badge-group"><circle class="pin-badge" cx="9" cy="-9" r="6.5"/><text class="pin-count" x="9" y="-9"></text></g>`;
+   layer.append(g);
+  }
+  g.setAttribute('transform',`translate(${x} ${y})`);
+  g.setAttribute('class',`day-pin${pin.target===target?' matching':''}${pin.target===picked?' picked':''}${secondsLeft(o)<=4?' urgent':''}`);
+  const count=String(pin.orders.length);if(g.querySelector('.pin-count').textContent!==count)g.querySelector('.pin-count').textContent=count;
+  g.querySelector('.pin-badge-group').style.display=pin.orders.length>1?'':'none';
+ }
+ for(const g of [...layer.children])if(!seen.has(g.dataset.target))g.remove();
+ let ready=0;
+ for(const o of s.queue){
+  const p=people.get(o.id),t=tickets.get(o.id),left=secondsLeft(o),match=o.target===target;ready+=match;
+  for(const el of [p,t]){if(!el)continue;el.classList.toggle('matching',match);el.classList.toggle('picked',o.target===picked);el.classList.toggle('urgent',left<=4);}
+  t?.style.setProperty('--left',Math.max(0,Math.min(1,left/o.lead)));
+ }
+ $('#seal-button').classList.toggle('ready',ready>0);$('#seal-button').setAttribute('aria-label',ready?`刻印をおす（${ready}人に届く）`:'時計の中心で刻印をおす');
+ const {open,close}=s.level,endless=!Number.isFinite(close),from=endless?Math.max(open,s.now-240):open,to=endless?from+720:close,pct=t=>`${Math.max(0,Math.min(100,(t-from)/(to-from)*100))}%`;
+ const sky=t=>{const h=mod(t,1440)/60;return h<5||h>=20?'#2d3f72':h<7?'#f0a878':h<16?'#8ecfee':h<18?'#f3c46e':'#df7a58';};
+ const stops=[];for(let t=from;t<=to;t+=30)stops.push(`${sky(t)} ${pct(t)}`);
+ let strip=`<span class="sky" style="background:linear-gradient(90deg,${stops.join(',')})"></span><span class="past" style="width:${pct(s.now)}"></span>`;
+ for(let d=Math.ceil(from/720)*720;d<to;d+=720)if(d>from)strip+=`<span class="mark" style="left:${pct(d)}">${mod(d,1440)?'正午':'0時'}</span>`;
+ for(const pin of routePins(s))strip+=`<span class="dot" style="left:${pct(pin.target)};background:${regionColors[pin.orders[0].region]}"></span>`;
+ strip+=`<span class="cursor" style="left:${pct(target)}"></span><span class="sun" style="left:${pct(s.now)}">${mod(s.now,1440)<360||mod(s.now,1440)>=1110?'🌙':'☀️'}</span>`;
+ $('#day-track').innerHTML=strip;
+}
+function renderScore(){
+ const s=session;$('#delivered').textContent=s.delivered;$('#lost').textContent=`取りこぼし ${s.missed+s.gaveUp}${s.level.maxLost?` / ${s.level.maxLost}`:''}`;
+ $('#day-combo').textContent=s.combo>1?`${s.combo} COMBO`:'';
+ const n=s.queue.length,cap=s.level.capacity,note=$('#shop-note');
+ note.textContent=n>=cap?'満員！ これ以上は帰っちゃう':n>=cap-1?'もうすぐ満員！':n?`${n} / ${cap}人 並んでいるよ`:s.generated?'次のお客さんを待っているよ':'開店！ お客さんがやってくるよ';
+ note.classList.toggle('full',n>=cap-1);
+}
+// The line runs from the counter on the left toward the door on the right.
+function lineSpot(i){const w=$('#shop-line').clientWidth,front=w*.27,gap=Math.min(62,(w*.7)/Math.max(1,session.level.capacity-1));return front+i*gap;}
+function layoutLine(){session.queue.forEach((o,i)=>{const el=people.get(o.id);if(!el||el.classList.contains('leaving'))return;el.style.setProperty('--x',`${lineSpot(i)}px`);el.style.setProperty('--depth',i);el.style.zIndex=20-i;});}
+function makePerson(o,cls){const el=document.createElement('div');el.className=`shop-person ${cls}`;el.style.setProperty('--tint',regionColors[o.region]);el.style.setProperty('--x',`${$('#shop-line').clientWidth+40}px`);el.style.setProperty('--idle',`-${o.id%5*.6}s`);el.innerHTML=`<span class="person-say"></span>${residentPortrait(o)}<span class="person-name">${o.name}</span>`;$('#shop-line').append(el);return el;}
+// Keep the order's own id: the guide character carries an id of its own.
+function dress(o){if(o.name)return;const {id,...person}=customerFor(session.stage,o.id);Object.assign(o,person);}
+function arrive(o){
+ dress(o);o.lead=Math.max(1,secondsLeft(o));
+ const p=makePerson(o,'walking');p.dataset.order=o.id;people.set(o.id,p);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{layoutLine();setTimeout(()=>p.classList.remove('walking'),650);}));
+ const t=document.createElement('button');t.className='day-ticket entering';t.dataset.order=o.id;t.style.setProperty('--tint',regionColors[o.region]);
+ t.innerHTML=`${residentFace(o)}<span class="ticket-text"><strong>${o.label}</strong><small>${o.kind==='relative'?`受付 ${timeText(o.base,'period')}`:o.name}</small></span><i class="ticket-timer" aria-hidden="true"></i>`;
+ t.setAttribute('aria-label',`${o.name}の注文 ${o.label}${o.kind==='relative'?`、受付 ${timeText(o.base,'period')}`:''}`);
+ t.onclick=()=>pickTarget(o.target);t.addEventListener('animationend',()=>t.classList.remove('entering'),{once:true});
+ $('#tickets').append(t);tickets.set(o.id,t);playSound('collect');renderScore();
+}
+function walkOut(o,how,delay=0){
+ const p=people.get(o.id),t=tickets.get(o.id);people.delete(o.id);tickets.delete(o.id);
+ setTimeout(()=>{
+  if(how==='served'){p?.classList.add('served');t?.classList.add('served');if(p)p.querySelector('.person-say').textContent=['ありがとう！','助かった！','また来るね！','やったー！','お願いね！'][o.id%5];
+   setTimeout(()=>{if(p){p.classList.add('leaving');p.style.setProperty('--x','4%');}},reduceMotion()?0:420);}
+  else{p?.classList.add('sad');t?.classList.add('missed');if(p)p.querySelector('.person-say').textContent='間に合わなかった…';
+   setTimeout(()=>{if(p){p.classList.add('leaving');p.style.setProperty('--x',`${$('#shop-line').clientWidth+60}px`);}},reduceMotion()?0:500);}
+  setTimeout(()=>{p?.remove();t?.remove();},reduceMotion()?500:1200);
+ },delay);
+}
+function handleEvent(e){
+ if(e.type==='arrive')arrive(e.order);
+ else if(e.type==='missed'){dress(e.order);walkOut(e.order,'missed');playSound('discard');toast(`${e.order.name}の便が出てしまった…（${e.order.label}）`);renderScore();setTimeout(layoutLine,900);}
+ else if(e.type==='gaveUp'){dress(e.order);const p=makePerson(e.order,'angry');p.querySelector('.person-say').textContent='いっぱいだ…';playSound('wrong');toast(`列がいっぱいで、${e.order.name}が帰ってしまった。`);renderScore();setTimeout(()=>{p.classList.add('leaving');},900);setTimeout(()=>p.remove(),1600);}
+ else if(e.type==='closed'){renderScore();toast(session.level.endless?'お客さんが帰りすぎて、今日は店じまい。':'閉店の時間！ 今日の営業おしまい。');playSound('chapter');closingTimer=setTimeout(()=>{closingTimer=null;finish();},reduceMotion()?600:1500);}
+}
+function dayLoop(t){
+ dayFrame=requestAnimationFrame(dayLoop);
+ const seconds=Math.min(.25,Math.max(0,(t-lastTick)/1000));lastTick=t;
+ if(paused||document.hidden||!session||session.status!=='playing')return;
+ for(const e of routeTick(session,seconds))handleEvent(e);
+ // "Now" pushes the hands forward when it catches up with them.
+ if(drag)freeHand=Math.max(freeHand,session.now);else if(hand<nextSlot(session))hand=nextSlot(session);
+ renderDay();
+}
+function moveHand(minutes){if(paused||session.status!=='playing')return;const before=hand;hand=snapHand(hand+minutes);if(hand!==before)playSound(Math.floor(hand/60)!==Math.floor(before/60)?'dial-hour':'dial-minute');renderDay();}
+function bindDayDial(){
+ const clock=$('#clock'),angle=e=>{const b=clock.getBoundingClientRect();return mod(Math.atan2(e.clientX-b.left-b.width/2,-(e.clientY-b.top-b.height/2))*180/Math.PI,360);};
+ clock.addEventListener('pointerdown',e=>{
+  if(paused||drag||session.status!=='playing')return;
+  const pin=e.target.closest('.day-pin');if(pin){pickTarget(Number(pin.dataset.target));return;}
+  e.preventDefault();freeHand=hand;drag={pointer:e.pointerId,last:angle(e),detents:new DialDetents('minute',hand)};clock.setPointerCapture(e.pointerId);clock.classList.add('dragging');
+ });
+ // Only the long hand is turned. The short hand follows, one hour per lap.
+ clock.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.pointer||paused)return;e.preventDefault();
+  const next=angle(e),before=aimed();freeHand=Math.min(session.level.close,Math.max(session.now,freeHand+angleDelta(drag.last,next)/6));drag.last=next;
+  const after=aimed(),mark=drag.detents.move(freeHand);
+  if(Math.floor(after/60)!==Math.floor(before/60))playSound('dial-hour');else if(mark!==null||after!==before&&session.level.step<5)playSound('dial-minute');
+  renderDay();
+ });
+ const end=e=>{if(!drag||e.pointerId!==drag.pointer)return;hand=aimed();freeHand=null;drag=null;clock.classList.remove('dragging');renderDay();};
+ clock.addEventListener('pointerup',end);clock.addEventListener('pointercancel',end);clock.addEventListener('lostpointercapture',end);
+ app.querySelectorAll('[data-hand]').forEach(h=>h.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp'].includes(e.key)){e.preventDefault();moveHand((['ArrowLeft','ArrowDown'].includes(e.key)?-1:1)*(h.dataset.hand==='hour'?60:session.level.step));}}));
 }
 function dispatch(){
- if(paused||session.status!=='playing'||!session.queue.some(o=>o.arriving<=0))return;drag=null;settleId++;
- const orders=rushStamp(session,dial);updateDial();
- if(!orders.length){
-  playSound('wrong');$('#feedback').textContent='この時刻の注文はないよ。コンボをもう一度つなごう。';updateOrder();return;
+ if(paused||!session||session.status!=='playing')return;
+ if(drag){hand=aimed();freeHand=null;drag=null;$('#clock').classList.remove('dragging');}
+ const time=aimed(),r=routeStamp(session,time);if(!r)return;
+ if(!r.served.length){playSound('wrong');toast('この時刻の注文はないよ。ピンと注文票を見てみよう。');$('#clock').animate?.([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'none'}],{duration:260});renderScore();return;}
+ const n=r.served.length;
+ playSound('imprint');if(n>=3||session.combo%5===0)playSound('success');
+ r.served.forEach((o,i)=>{walkOut(o,'served',i*110);setTimeout(()=>soundtrack.play('merge',Math.min(2,1+i*.125)),i*110);});
+ if(!reduceMotion()){
+  document.body.classList.remove('stamping');void document.body.offsetWidth;prepareSpell();document.body.classList.add('stamping');clearTimeout(stampImpactTimer);stampImpactTimer=setTimeout(()=>document.body.classList.remove('stamping'),900);
+  const burst=document.createElement('div');burst.className=`day-burst${n>=3?' big':''}`;
+  burst.innerHTML=`<strong>${n>1?`${n}人まとめて！`:'お届け！'}</strong><span>${session.combo>1?`${session.combo} COMBO · `:''}+${r.points}</span><div class="rush-parcels">${r.served.slice(0,6).map((o,i)=>`<span class="rush-parcel" style="--parcel:${i}">${parcelSeal(time)}</span>`).join('')}</div>`;
+  const layer=$('.day-effects');if(layer.children.length>=3)layer.firstChild.remove();layer.append(burst);burst.addEventListener('animationend',e=>{if(e.target===burst)burst.remove();});
  }
- celebrateCustomers(orders);playSound('imprint');if(orders.length>=3||session.combo===3||session.combo%5===0)playSound('success');
- const message=`${orders.length}件同時配達！ ${session.combo} COMBO`;
- $('#feedback').textContent=message;
- if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
-  const burst=document.createElement('div');burst.className='rush-burst';
-  burst.innerHTML=`<strong>${orders.length}件同時！</strong><span>${session.combo} COMBO</span><div class="rush-parcels">${orders.slice(0,5).map((o,i)=>`<span class="rush-parcel" style="--parcel:${i}">${parcelSeal(dial)}</span>`).join('')}</div><img src="assets/delivery-plane.webp" alt="">`;
-  const layer=$('.rush-effects');if(layer.children.length>=4)layer.firstChild.remove();layer.append(burst);burst.addEventListener('animationend',e=>{if(e.target===burst)burst.remove();});
-  $('#seal-button').animate([{transform:'translate(-50%,-50%) scale(.88)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:160});
- }
- if(session.level.endless){const r=records.slots[activeSlot];r.endless.best=Math.max(r.endless.best,session.delivered);r.endless.total+=orders.length;r.updated=Date.now();persistRecords();}
- const log=$('#flight-log');if(session.combo===1)log.innerHTML='';const li=document.createElement('li');li.innerHTML=`<span>✓ ${orders.length}件まとめて</span><b>${timeText(dial)}</b>`;log.prepend(li);if(log.children.length>5)log.lastChild.remove();
- if(session.status==='cleared'){updateOrder();updateQueue();$('#feedback').textContent='本日のお届け完了！ 全員に届けられたよ！';clearInterval(timer);timer=null;closingTimer=setTimeout(()=>{closingTimer=null;finish(true);},matchMedia('(prefers-reduced-motion:reduce)').matches?650:1300);return;}
- // Keep the dial where the player left it. The next stamp is immediately available.
- updateOrder();updateQueue();updateDial();
+ toast(n>1?`${clockLabel(time)}の便で${n}人まとめて届けたよ！`:`${clockLabel(time)}の便で届けたよ！`);
+ if(r.served.some(o=>o.target===picked))picked=null;
+ renderScore();const counter=$('#delivered');counter.classList.remove('bump');void counter.offsetWidth;counter.classList.add('bump');
+ setTimeout(()=>{if(screen==='play')layoutLine();},n*110+700);renderDay();
 }
-
-function pauseGame(){if(busy||session.status!=='playing')return;paused=true;drag=null;openModal(`<p class="eyebrow">MIRACLE CLOCK</p><h2>ひとやすみ</h2><p>時計も、お客さんの行列も止まっています。</p><button class="primary" id="resume">つづける</button><button class="secondary sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button><button class="secondary quit-button" id="quit" aria-label="配送所えらびにもどる">配送所へ</button>`,false);$('.modal').classList.add('pause-modal');$('#resume').onclick=()=>{closeModal();paused=false;lastTick=performance.now();};$('#quit').onclick=()=>session.level.endless?finish(false):renderMap();bindSound();}
-function finish(won){clearInterval(timer);timer=null;session.status=won?'cleared':'over';if(!won)playSound('wrong');
- if(won&&!session.level.endless){const record=records.slots[activeSlot],id=session.level.stageId;session.rating=rateRun(session.level,session);record.stars[id]=betterRecord(record.stars[id],session.rating);if(!record.stages.includes(id))record.stages.push(id);if(stages.filter(t=>t.id===session.level.id).every(t=>record.stages.includes(t.stageId))&&!record.cleared.includes(session.level.id))record.cleared.push(session.level.id);record.updated=Date.now();persistRecords();syncProgress();}
- showResult(won);
+function pauseGame(){if(!session||session.status!=='playing'||paused)return;paused=true;if(drag){hand=aimed();freeHand=null;drag=null;}openModal(`<p class="eyebrow">MIRACLE CLOCK</p><h2>ひとやすみ</h2><p>時計も、お客さんの行列も止まっています。</p><button class="primary" id="resume">つづける</button><button class="secondary sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button><button class="secondary quit-button" id="quit" aria-label="配送所えらびにもどる">配送所へ</button>`,false);$('.modal').classList.add('pause-modal');$('#resume').onclick=()=>{closeModal();paused=false;lastTick=performance.now();};$('#quit').onclick=()=>session.stage.endless?finish():renderMap();bindSound();}
+function finish(){
+ cancelAnimationFrame(dayFrame);clearTimeout(closingTimer);closingTimer=null;paused=false;
+ const l=session.stage,record=records.slots[activeSlot],stars=l.endless?0:routeStars(session),won=l.endless||stars>0;session.status='closed';
+ if(l.endless){record.endless.best=Math.max(record.endless.best,session.delivered);record.endless.total+=session.delivered;record.updated=Date.now();persistRecords();}
+ else if(won){const id=l.stageId;session.rating={stars,time:Math.round(session.activeTime*10)/10,mistakes:session.missed+session.gaveUp};record.stars[id]=betterRecord(record.stars[id],session.rating);if(!record.stages.includes(id))record.stages.push(id);if(stages.filter(t=>t.id===l.id).every(t=>record.stages.includes(t.stageId))&&!record.cleared.includes(l.id))record.cleared.push(l.id);record.updated=Date.now();persistRecords();syncProgress();}
+ else playSound('wrong');
+ showResult(won,stars);
 }
 function showChapterCompletion(level,onDone){
  // Replays and retries still reach the chapter reward after accepting the result.
@@ -269,12 +317,14 @@ function showChapterCompletion(level,onDone){
  story.lines.push({who:story.partner,text:depotThemes[level.id].thanks});
  showDialogue(story,()=>showDepotReward(level.id,onDone));
 }
-function showResult(won){const l=session.level,r=session.rating,goal=l.endless?null:starGoal(l);if(won)playSound('win');
- openModal(`<div class="result-character">${won?'<img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ">':toto()}</div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${l.endless?'CENTRAL AIR POST':won?'DELIVERY COMPLETE':'TAKE A LITTLE BREAK'}</p><h2>${l.endless?'おつかれさま、中央便！':won?(session.departed?'この便の受付が終わったよ！':'みんなの荷物が届いたよ！'):'今日は、ここでひとやすみ。'}</h2><p>${l.endless?`${session.delivered}便お届け · 最高 ${records.slots[activeSlot].endless.best}便`:won?`お届け ${session.delivered}人 · 帰ってしまった ${session.departed}人`:'ライフがなくなったので、この便はおしまい。もう一度やってみよう。おてつだいなら、この便だけライフ6で挑戦できるぞ。'}</p>${l.endless?`<p>${session.lives===0?'ライフがなくなったので、中央便はおしまい。':session.queue.length>=session.capacity?'行列が24人になったので、中央便はおしまい。':'ここまでの配達を記録したよ。'}</p>`:''}<p class="rush-result">最大 ${session.maxCombo} COMBO · 最大 ${session.maxBatch}件同時 · ${session.points}点</p>${r?`<div class="star-result" data-stars="${r.stars}"><strong aria-label="${r.stars}つ星">${starText(r.stars)}</strong><p>${r.time.toFixed(1)}秒 · ミス ${r.mistakes}回</p><small>3つ星：${goal.time}秒以内・ミスなし<br>最高評価 ${starText(records.slots[activeSlot].stars[l.stageId].stars)}</small></div>`:''}<button class="primary" id="result-main">${won&&!l.endless?(l.number===6?'章クリアへ ▸':'次の便へ'):l.endless?'もう一度あそぶ':'もう一度・♥3'}</button>${!won&&!l.endless?'<button class="secondary" id="retry-assisted">おてつだいで挑戦・♥6</button>':''}<button class="secondary" id="result-map">配送所えらびにもどる</button>${won?'<button class="secondary" id="retry-stage">星をふやしに、もう一度</button>':''}`,false);
+function showResult(won,stars){
+ const l=session.stage,s=session,n=visitors(s),share=n?Math.round(s.delivered/n*100):0,record=records.slots[activeSlot];if(won)playSound('win');
+ openModal(`<div class="result-character">${won?'<img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ">':toto()}</div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${l.endless?'CENTRAL AIR POST':won?'SHOP CLOSED':'TAKE A LITTLE BREAK'}</p><h2>${l.endless?'おつかれさま、中央便！':stars===3?'大繁盛の一日！':stars===2?'いい一日だったね！':won?'今日の営業おしまい！':'今日は、ここでひとやすみ。'}</h2><p class="day-result-main">お届け <b>${s.delivered}</b>人 / 来店 ${n}人</p><p class="day-result-lost">乗り遅れ ${s.missed}人 · 帰ってしまった ${s.gaveUp}人</p><p class="rush-result">最大 ${s.maxCombo} COMBO · 最大 ${s.maxBatch}人まとめて · ${s.points}点</p>${l.endless?`<p>最高 ${record.endless.best}人 · 累計 ${record.endless.total}人</p>`:`<div class="star-result" data-stars="${stars}"><strong aria-label="${stars}つ星">${starText(stars)}</strong><p>${share}%のお客さんに届けたよ${s.slow?'（ゆっくりモード）':''}</p><small>★ 5割 · ★★ 7割 · ★★★ 9割${record.stars[l.stageId]?`<br>最高評価 ${starText(record.stars[l.stageId].stars)}`:''}</small></div>`}${won?'':'<p>半分のお客さんに届けたらクリア。ゆっくりモードなら、時間の流れがおだやかになるよ。</p>'}<button class="primary" id="result-main">${won&&!l.endless?(l.number===6?'章クリアへ ▸':'次の便へ'):'もう一度'}</button>${!won?'<button class="secondary" id="retry-slow">ゆっくりモードで挑戦</button>':''}<button class="secondary" id="result-map">配送所えらびにもどる</button>${won&&!l.endless?'<button class="secondary" id="retry-stage">星をふやしに、もう一度</button>':''}`,false);
  if(won){$('.result-modal').classList.add('victory-result');$('.result-modal').insertAdjacentHTML('afterbegin',victoryEffects());}
  const leaveResult=onDone=>{closeModal();if(won&&!l.endless&&l.number===6)showChapterCompletion(l,onDone);else onDone();};
- $('#result-main').onclick=()=>{if(won&&!l.endless)leaveResult(()=>{renderMap();if(l.stageId<35)chooseLevel(stages[l.stageId+1]);else renderPreparations();});else startLevel(l);};$('#retry-assisted')?.addEventListener('click',()=>startLevel(l,6));$('#result-map').onclick=()=>leaveResult(renderMap);$('#retry-stage')?.addEventListener('click',()=>startLevel(l));
+ $('#result-main').onclick=()=>{if(won&&!l.endless)leaveResult(()=>{renderMap();if(l.stageId<35)chooseLevel(stages[l.stageId+1]);else renderPreparations();});else startLevel(l,s.slow);};
+ $('#retry-slow')?.addEventListener('click',()=>startLevel(l,true));$('#result-map').onclick=()=>leaveResult(renderMap);$('#retry-stage')?.addEventListener('click',()=>startLevel(l,s.slow));
 }
-window.addEventListener('resize',()=>document.querySelectorAll('.farewell-layer').forEach(el=>el.remove()));
+window.addEventListener('resize',()=>{if(screen==='play'&&session)layoutLine();});
 document.addEventListener('visibilitychange',()=>{soundtrack.visibility(document.hidden);lastTick=performance.now();if(document.hidden&&screen==='play'&&!paused&&!busy&&session?.status==='playing')pauseGame();});
 renderHome();

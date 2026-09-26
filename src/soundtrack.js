@@ -120,19 +120,20 @@ export class Soundtrack{
    this.onChange();
   }catch{this.onChange();}finally{if(request===this.musicRequest)this.loadingTrack=null;}
  }
- async play(name){
+ // `rate` raises the pitch, so a batch of deliveries can climb a scale.
+ async play(name,rate=1){
   const file=name==='collect'?'click':name;
   if(!EFFECTS.includes(file)||!this.unlocked||this.hidden||!this.settings.sound||!this.settings.soundVolume)return;
   const now=performance.now(),cooldown=name.startsWith('dial-')?45:name==='collect'?35:name==='select'?65:100;
-  if(now-(this.lastEffect.get(name)??-Infinity)<cooldown)return;
-  this.lastEffect.set(name,now);const epoch=this.effectEpoch;
+  const key=rate===1?name:name+rate;if(now-(this.lastEffect.get(key)??-Infinity)<cooldown)return;
+  this.lastEffect.set(key,now);const epoch=this.effectEpoch;
   try{
    const buffer=await this.buffer(file+'.mp3');
    // Never replay old input after a slow load, mute or a background transition.
    if(this.hidden||!this.settings.sound||epoch!==this.effectEpoch||performance.now()-now>350||this.context.state!=='running')return;
    const limit=name==='select'||name.startsWith('dial-')?2:8;
    if([...this.voices].filter(v=>name.startsWith('dial-')?v.name.startsWith('dial-'):name!=='select'||v.name==='select').length>=limit)return;
-   const source=this.context.createBufferSource();source.buffer=buffer;source.connect(this.soundBus);
+   const source=this.context.createBufferSource();source.buffer=buffer;source.playbackRate.value=rate;source.connect(this.soundBus);
    const voice={source,name};this.voices.add(voice);
    const jingle=['chapter','clear','arrival','intro','spell'].includes(name);if(jingle)this.duck(voice,true);
    source.onended=()=>{source.disconnect();this.voices.delete(voice);if(jingle)this.duck(voice,false);};

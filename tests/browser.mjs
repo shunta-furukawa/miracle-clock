@@ -61,86 +61,77 @@ try {
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.clock.install();
     await page.locator('#open-shop').click();
-    assert.equal(await page.locator('.walk-customer').count(),0,'shop opens empty');
-    assert.match(await page.locator('#empty-reception').innerText(),/開店/);
-    assert.equal(await page.locator('#seal-button').isEnabled(),false);
-    await page.clock.runFor(700);assert.equal(await page.locator('.walk-customer').count(),1);
-    assert.equal(await page.locator('.walk-customer.arriving').count(),1,'visitor walks in before ordering');
-    await page.clock.runFor(650);assert.equal(await page.locator('.walk-customer').first().evaluate(e=>e.classList.contains('arriving')),false,'first visitor finishes walking before later visitors');
-    await page.evaluate(()=>window.firstCustomer=document.querySelector('.walk-customer'));
-    await page.clock.runFor(12000);
-    assert.equal(await page.evaluate(()=>window.firstCustomer===document.querySelector('.walk-customer')),true,'arrivals preserve existing customer nodes');
-    assert.equal(await page.locator('.walk-customer').count(),10);
-    assert.equal(await page.locator('.personal-order').count(),10,'every customer has their own order');
-    assert.match(await page.locator('#queue').innerText(),/最後のお客さん/);
+    // The shop day opens empty; the clock itself runs.
+    assert.equal(await page.locator('.shop-person').count(),0,'shop opens empty');
+    assert.match(await page.locator('#shop-note').innerText(),/開店/);
+    const aimedText=()=>page.locator('#minute-hand').getAttribute('aria-valuetext');
+    assert.equal(await aimedText(),'午前8時','the dial starts at the first flight after opening');
+    await page.clock.runFor(700);
+    assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
+    assert.match(await page.locator('.day-ticket').first().innerText(),/午前|午後/);
+    assert.equal(await page.locator('.day-pin').count(),1,'waiting orders are pinned on the dial');
+    await page.clock.runFor(6000);
+    await page.evaluate(()=>window.firstCustomer=document.querySelector('.shop-person'));
+    await page.clock.runFor(1500);
+    assert.equal(await page.evaluate(()=>window.firstCustomer===document.querySelector('.shop-person')),true,'arrivals preserve existing customer nodes');
     assert.equal(await overflow(),false);
-    await page.screenshot({path:`artifacts/${name}-living-opening.png`,animations:'disabled'});
+    await page.screenshot({path:`artifacts/${name}-day-opening.png`,animations:'disabled'});
     for(const hand of ['hour','minute'])assert.equal(await page.locator(`#${hand}-hand .hand-art image`).getAttribute('clip-path'),`url(#${hand}-art-crop)`,'atlas clipping must be explicit before glow filters');
-    await page.locator('[data-select=minute]').click();
-    assert.equal(await page.locator('#minute-hand').getAttribute('class'),'selected-hand');
-    await page.locator('[data-select=hour]').click();
-    assert.equal(await page.locator('#hour-hand').getAttribute('class'),'selected-hand');
-    // Real pointer drag at overlapping hands must select the short hand in lesson one.
+    // One real lap of the finger turns the long hand once: the short hand follows by an hour.
     const b=await page.locator('#clock').boundingBox();
-    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*65/300;
-    const handAngle=()=>page.evaluate(()=>Number(document.querySelector('#hour-hand').getAttribute('transform').match(/rotate\(([^ ]+)/)[1]));
+    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*40/300,before=await aimedText();
     await page.mouse.move(cx,cy-r);await page.mouse.down();
-    for(let i=1;i<=18;i++){const a=i*Math.PI/36;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));
-      // While the finger is down the hand follows it instead of jumping between hour marks.
-      if(i===5){const shown=await handAngle();assert.ok(Math.abs(shown-25)<3,`hand follows finger mid-drag, got ${shown}`);assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'1','snapped value is announced mid-drag');}
-    }
+    for(let i=1;i<=36;i++){const a=i*Math.PI/18;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));}
     await page.mouse.up();
-    assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'3','dragging overlapping short hand reaches 3');
-    // On release the hand glides to the snapped mark rather than staying under the finger.
-    await page.waitForFunction(()=>document.querySelector('#hour-hand').getAttribute('transform')==='rotate(90 150 150)',null,{timeout:2000});
-    await page.locator('#seal-button').click();
-    assert.ok(await page.locator('.farewell').count()>0,'visible served customers celebrate in place');assert.ok(await page.locator('.farewell-spark').count()>0);assert.match(await page.locator('.farewell .personal-order').first().innerText(),/ありがとう|助かった|また来る|やった|お願い/);
-    assert.match(await page.locator('#score').innerText(),/4 \/ 10/);
-    assert.match(await page.locator('#rush-combo').innerText(),/1 COMBO/);
-    assert.equal(await page.locator('#skip-delivery').isVisible(),false);
+    assert.equal(before,'午前8時');assert.equal(await aimedText(),'午前9時','a full lap near the centre still turns only the long hand');
+    // Stamp the earliest waiting order through the real seal.
+    const stampEarliest=async target=>{await target.evaluate(()=>{hand=routePins(session)[0].target;renderDay();});await target.locator('#seal-button').click();};
+    const waiting=await page.evaluate(()=>routePins(session)[0].orders.length);
+    await stampEarliest(page);
+    assert.equal(await page.locator('#delivered').innerText(),String(waiting));
+    assert.ok(await page.locator('.shop-person.served').count()>0,'served customers celebrate in the line');assert.ok(await page.locator('.day-ticket.served').count()>0,'tickets get stamped');
+    assert.match(await page.locator('#feedback').innerText(),/便で/);
+    await page.screenshot({path:`artifacts/${name}-day-batch.png`});
     await page.locator('#plus').click();
-    assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),'4','controls respond during dispatch');
-    await page.screenshot({path:`artifacts/${name}-rush-batch.png`});
-    await page.locator('#seal-button').click();
-    assert.match(await page.locator('#rush-combo').innerText(),/0 COMBO/);
-    assert.equal(await page.locator('.heart-vessel.full').count(),3,'wrong time keeps hearts');
-    assert.match(await page.locator('#score').innerText(),/4 \/ 10/);
-    for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820}]){
+    assert.notEqual(await aimedText(),null,'controls respond during the celebration');
+    // A stamp on a time nobody asked for changes nothing but the combo.
+    await page.evaluate(()=>{const taken=new Set(session.queue.map(o=>o.target));let t=nextSlot(session);while(taken.has(t))t+=session.level.step;hand=t;renderDay();});
+    const delivered=await page.locator('#delivered').innerText();await page.locator('#seal-button').click();
+    assert.equal(await page.locator('#delivered').innerText(),delivered);assert.match(await page.locator('#feedback').innerText(),/注文はない/);
+    for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
-      for(const selector of ['#clock','#plus','#seal-button','#customer-floor','#pause']){
-        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>20,selector+' has usable size');
+      for(const selector of ['#clock','#plus','#seal-button','.shop-floor','#tickets','#pause','#day-track']){
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
-      assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-rush-${size.width}.png`});
+      assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-day-${size.width}x${size.height}.png`});
     }
     await page.setViewportSize({width:390,height:844});
-    for(let i=0;i<2;i++)await page.locator('#plus').click();
-    await page.locator('#seal-button').click();assert.match(await page.locator('#score').innerText(),/7 \/ 10/);
-    for(let i=0;i<3;i++)await page.locator('#plus').click();
-    await page.locator('#seal-button').click();assert.equal(await page.locator('#result-main').count(),0,'final customer farewell precedes results');await page.clock.runFor(1400);await page.locator('#result-main').waitFor();
-    assert.match(await page.locator('.rush-result').innerText(),/最大 2 COMBO · 最大 4件同時/);
+    // Pausing freezes the day, the line and every deadline.
+    await page.locator('#pause').click();const frozen=await page.evaluate(()=>[session.now,session.queue.length,session.missed]);await page.clock.runFor(20000);
+    assert.deepEqual(await page.evaluate(()=>[session.now,session.queue.length,session.missed]),frozen,'pause freezes the day');await page.locator('#resume').click();
+    // Leaving orders alone lets their time pass: they are counted, never a game over.
+    await page.clock.runFor(30000);
+    assert.doesNotMatch(await page.locator('#lost').innerText(),/取りこぼし 0$/,'unstamped orders are missed when their time comes');
+    assert.equal(await page.evaluate(()=>session.status),'playing');
+    async function finishCurrent(target=page){for(let i=0;i<600&&await target.evaluate(()=>session.status==='playing');i++){await target.clock.runFor(400);if(await target.evaluate(()=>session.status==='playing'&&session.queue.length>0))await stampEarliest(target);}await target.clock.runFor(1600);await target.locator('#result-main').waitFor();}
+    await finishCurrent();
+    assert.match(await page.locator('.rush-result').innerText(),/COMBO · 最大 \d+人まとめて/);
+    assert.match(await page.locator('.day-result-main').innerText(),/お届け \d+人 \/ 来店 \d+人/);
     assert.equal(await page.locator('.chapter-ending').count(),0,'stage result precedes chapter ending');
-    await page.locator('#retry-stage').click();assert.equal(await page.locator('.walk-customer').count(),0);assert.equal(await page.locator('.farewell').count(),0,'retry cleans up celebration');
+    await page.locator((await page.locator('#retry-stage').count())?'#retry-stage':'#result-main').click();assert.equal(await page.locator('.shop-person').count(),0,'retry opens a fresh day');assert.equal(await page.locator('#delivered').innerText(),'0');
     await page.locator('#pause').click();await page.locator('#quit').click();
-    await page.locator('[data-stage="1"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    assert.match(await page.locator('#score').innerText(),/0 \/ 15/);
-    await page.clock.runFor(700);assert.equal(await page.locator('.walk-customer').count(),1);
-    await page.clock.runFor(900);assert.equal(await page.locator('.walk-customer').count(),2,'arrivals are individual');
-    await page.locator('#pause').click();const count=await page.locator('#queue-count').innerText();await page.clock.runFor(20000);assert.equal(await page.locator('#queue-count').innerText(),count,'pause freezes arrivals');await page.locator('#resume').click();
-    // Exercise later chapter boards with the same public controls.
-    await page.locator('#pause').click();await page.locator('#quit').click();
-    await page.locator('[data-stage="26"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    await page.clock.runFor(9000);assert.equal(await page.locator('#period-toggle').isVisible(),true);
-    assert.match((await page.locator('#customer-line .personal-order').allTextContents()).join(' '),/午前/);
-    assert.match((await page.locator('#customer-line .personal-order').allTextContents()).join(' '),/午後/);
+    // Later chapters mix notations of the same time: 24-hour and "in N hours" tickets.
+    await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
+    await page.clock.runFor(30000);
+    const later=(await page.locator('.day-ticket').allInnerTexts()).join(' ');assert.match(later,/\d時/);
     await page.locator('#pause').click();await page.locator('#quit').click();
     await page.locator('[data-stage="35"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    await page.clock.runFor(50000);assert.equal(await page.locator('.reference-time').isVisible(),true);
-    assert.equal(await page.locator('#customer-line .personal-order').count(),30,'each visitor retains their own order');
-    await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-rush-relative.png`});
+    await page.clock.runFor(12000);
+    assert.match((await page.locator('.day-ticket').allInnerTexts()).join(' '),/後[\s\S]*受付/,'relative orders show their receipt time');
+    await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-day-relative.png`});
     await page.setViewportSize({width:390,height:844});
     // Drive chapter-final result routing through the real stamp button.
-    async function finishCurrent(){for(let i=0;i<150&&await page.evaluate(()=>session.status==='playing');i++){await page.clock.runFor(800);if(await page.locator('#seal-button').isEnabled()){await page.evaluate(()=>{dial=session.queue.find(o=>o.arriving<=0).target;updateDial();});await page.locator('#seal-button').click();}}await page.clock.runFor(1400);await page.locator('#result-main').waitFor();}
     await finishCurrent();assert.equal(await page.locator('.story-dialog').count(),0,'results appear before chapter ending');
     await page.locator('#retry-stage').click();assert.equal(await page.locator('.story-dialog').count(),0,'retry goes straight back to the stage');
     await finishCurrent();await page.locator('#result-main').click();await page.locator('.story-dialog').waitFor();
@@ -200,18 +191,18 @@ try {
     await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.opening-skip').click();await unavailable.locator('.story-skip').click();
     assert.match(await unavailable.locator('.save-warning').innerText(),/保存できません/);
     await unavailable.close();
-    // A fresh diary advances by stages; pauses and flight animations do not spoil stars.
+    // A fresh diary advances by stages; pausing never costs a customer.
     const beginner=await browser.newPage({viewport:{width:393,height:852},reducedMotion:'reduce'});
     beginner.on('pageerror',e=>errors.push(e.message));
     await beginner.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
     await beginner.clock.install();await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
     assert.equal(await beginner.locator('[data-stage="1"]').isDisabled(),true);assert.equal(await beginner.locator('#endless').isDisabled(),true);
     await beginner.locator('[data-stage="0"]').click();await beginner.locator('#chapter-begin').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
-    await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();await beginner.clock.runFor(12000);
-    for(let i=0;i<3;i++){for(let n=0;n<3;n++)await beginner.locator('#plus').click();await beginner.locator('#seal-button').click();await beginner.clock.runFor(1400);}
-    assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','pause time is excluded');
+    await beginner.clock.runFor(3000);await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();
+    await finishCurrent(beginner);
+    assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','prompt stamping delivers everyone');
     await beginner.locator('#result-map').click();assert.equal(await beginner.locator('[data-stage="1"]').isEnabled(),true);assert.equal(await beginner.locator('[data-stage="2"]').isDisabled(),true);
     assert.match(await beginner.locator('[data-stage="0"]').innerText(),/★★★/);await beginner.screenshot({path:`artifacts/${name}-campaign-stars.png`});await beginner.close();
-    assert.deepEqual(errors,[]);await browser.close();console.log(name+': chapter, rewards, rush board, batch dispatch, controls, responsive layout and waves PASS');
+    assert.deepEqual(errors,[]);await browser.close();console.log(name+': chapter, rewards, day clock, batch stamping, controls, responsive layout and chapter routing PASS');
   }
 }finally{server.kill();}

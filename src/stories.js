@@ -13,7 +13,7 @@ const depotConversations=[
  ['フレア','工房の配送所','組み立て中の飛行機に部品を届けたいんだ。細かい時刻でも頼めるかい？','5分ずつ数えて、それから小さな目盛りも読んでみるよ。','頼もしいね。職人たちの荷物はここで預かって、配送機に託そう。','部品がそろったよ！ 職人たちも待ちぼうけにならずにすんだ。','小さな目盛りも大事な約束なんだね。1分ずつ、よく見よう。'],
  ['フウ','雲の配送所','朝の手紙と夜の手紙、同じ9時でも届く時間が違うんだよ。','午前と午後を確かめよう。夜の9時は、24時間の言い方だと21時だね。','うん。雲の仲間もここに手紙を持ってくるから、お願いね。','朝の便も夜の便も、ちゃんと届いたよ！ おやすみの手紙も間に合った。','針だけでなく、午前と午後も確かめる。これで安心だね！'],
  ['スナリ','砂丘の温室配送所','ようこそ！ この苗は、今から15分後に友だちの温室へ届けたいんだ。','受付の時計から15分進めれば、お届けする時刻になるんだね。','そう！ ぼくはスナリ。砂丘のトビネズミ族のみんなも、苗やお茶を送りに来るよ。','苗もお茶も、ちょうどいい時間に届いたよ！ 温室のみんなも喜んでる。','何分後も何時間後も、いまの時刻から考えればいいんだね！'],
- ['トトじい','空の中央配送所','ルカ、ふたりで中央配送所をひらこう。森から砂丘まで、みんなの荷物をここで預かるんじゃ。','これまで出会ったみんなが来るんだね。時計の読み方も、全部使ってみよう！','うむ。終わりのない空の便じゃ。行列がいっぱいになるまで、いくつ届けられるかのう。','今日もたくさんの約束が届いたのう。','また一緒に、空の便をひらこうね！']
+ ['トトじい','空の中央配送所','ルカ、ふたりで中央配送所をひらこう。森から砂丘まで、みんなの荷物をここで預かるんじゃ。','これまで出会ったみんなが来るんだね。時計の読み方も、全部使ってみよう！','うむ。閉店のない空の便じゃ。5人取りこぼすまでに、何人に届けられるかのう。','今日もたくさんの約束が届いたのう。','また一緒に、空の便をひらこうね！']
 ];
 export function depotStory(level,ending=false){const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
 
@@ -25,4 +25,4 @@ const growingMessages=[
  ['午後の手紙を送りたい仲間が並んでいるよ。','朝も夜も頼めるって、評判になったんだ。','昼の12時と夜の12時、注文をよく見ようね。','24時間の言い方で頼むお客さんも増えたよ。','空のたよりを集めて、最後の便を届けよう！'],
  ['お茶の便も増えて、温室がにぎやかになってきたよ。','時刻をまたいでも、苗が元気に届くようにお願いね。','遠い温室から、何時間後の注文も来たんだ。','育った苗がいっぱい！ 出荷の列も長くなったね。','明日のお届けまで任せられるね。中央配送所までもう少し！']
 ];
-export function stageStory(level){if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:`${level.count}人のお客さんが待ってるね。ひとつずつ、時刻を確かめて刻印しよう！`}]};}
+export function stageStory(level){if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:['時計の「いま」は待ってくれない。注文の時刻が来る前に刻印しよう！','同じ時刻の注文は、書き方がちがってもまとめて届けられるね。','ピンの場所に短い針。長い針をくるっとまわして合わせよう！','列がいっぱいになる前に、どんどん届けよう！','今日もたくさんのお客さん。閉店まで、がんばろう！'][level.number-2]}]};}

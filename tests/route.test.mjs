@@ -54,7 +54,7 @@ test('fast play — stamping the earliest pin each second — delivers everyone'
 });
 test('a day left alone ends at closing time with everyone missed or turned away',()=>{
  const s=routeSession(forest,{rng:seeded()});while(s.status==='playing')routeTick(s,.5);
- assert.equal(s.delivered,0);assert.ok(s.now>=forest.close-1e-6);assert.equal(s.queue.length,0);assert.equal(routeStars(s),1);
+ assert.equal(s.delivered,0);assert.ok(s.now>=forest.close-1e-6);assert.equal(s.queue.length,0);assert.equal(routeStars(s),0,'under half is not a clear');
  assert.ok(s.missed>0&&s.gaveUp>0);
 });
 test('labels read the same time in every notation, including tomorrow',()=>{
