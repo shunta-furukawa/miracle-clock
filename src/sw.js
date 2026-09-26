@@ -17,7 +17,8 @@ self.addEventListener('fetch',event=>{
  if(event.request.method!=='GET'||url.origin!==self.location.origin)return;
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE);
-  const key=event.request.mode==='navigate'?'./index.html':url.pathname;
+  // The rule prototype is its own page; every other navigation opens the game.
+  const key=event.request.mode==='navigate'&&!url.pathname.includes('/prototype/')?'./index.html':url.pathname;
   return await cache.match(key)||fetch(event.request);
  })());
 });

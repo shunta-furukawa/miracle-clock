@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>一日便 試作</title>
+<link rel="icon" href="../favicon.svg">
+<link rel="stylesheet" href="proto.css">
+</head>
+<body>
+<main class="proto" id="proto">
+ <header class="bar">
+  <button class="ghost" id="back" type="button">コース</button>
+  <div class="bar-title"><small id="course-skill"></small><b id="course-title">一日便 試作</b></div>
+  <div class="bar-stats"><span id="hearts"></span><span class="count"><b id="delivered">0</b>/<span id="goal">0</span>人</span></div>
+ </header>
+ <section class="day" aria-label="今日の運行表">
+  <div class="day-track" id="day-track"></div>
+  <div class="day-labels"><span id="day-open"></span><span id="combo" class="combo"></span><span id="day-close"></span></div>
+ </section>
+ <section class="shop" aria-label="受付の列">
+  <div class="door">入口</div>
+  <div class="line" id="line"></div>
+  <div class="counter"><span class="luka">👧</span><span>受付</span></div>
+  <div class="line-note" id="line-note"></div>
+ </section>
+ <section class="rail" id="rail" aria-label="注文票"></section>
+ <section class="station">
+  <div class="dial-wrap">
+   <svg id="clock" viewBox="-172 -188 344 360" role="slider" aria-label="お届け時刻" tabindex="0">
+    <circle r="156" class="rim"/>
+    <path id="remaining" class="remaining"/>
+    <circle r="132" class="face"/>
+    <g id="ticks"></g>
+    <g id="ghost" class="ghost-hands"><line id="ghost-hour" y2="-70"/><line id="ghost-minute" y2="-110"/></g>
+    <text id="period" y="62" class="period"></text>
+    <line id="hour" class="hour" y1="12" y2="-72"/>
+    <line id="minute" class="minute" y1="16" y2="-114"/>
+    <g id="pins"></g>
+    <g id="now-mark" class="now-mark"><path d="M0 -158 L-8 -171 L8 -171 Z"/></g><text id="now-label" class="now-label">いま</text>
+    <g id="seal" class="seal" role="button" tabindex="0" aria-label="刻印をおす"><circle r="31"/><text y="-3">刻印</text><text y="12" class="seal-small">おす</text></g>
+   </svg>
+   <div class="pop" id="pop"></div>
+  </div>
+  <div class="controls">
+   <button type="button" data-move="-60">−1時間</button>
+   <button type="button" data-move="-1" class="big">−</button>
+   <button type="button" data-move="1" class="big">＋</button>
+   <button type="button" data-move="60">＋1時間</button>
+  </div>
+ </section>
+</main>
+<div class="overlay" id="menu">
+ <div class="card">
+  <p class="eyebrow">RULE PROTOTYPE</p>
+  <h1>一日便</h1>
+  <ul class="rules">
+   <li>時計は<b>今日という一日</b>。針は<b>前にしか進まない</b>（刻印するまでは戻せる）。</li>
+   <li>刻印すると、その時刻の注文は<b>書き方がちがっても全員まとめて</b>配達。</li>
+   <li>刻印より前の時刻の人は<b>乗り遅れ</b>、列があふれると<b>帰ってしまう</b>（どちらも♥−1）。</li>
+   <li>ピンは待っている人の短い針の場所。注文票をタップすると正解の針が見える。</li>
+  </ul>
+  <div class="speed" id="speed">
+   <button type="button" data-speed="1.5">ゆっくり</button><button type="button" data-speed="1" aria-pressed="true">ふつう</button><button type="button" data-speed=".75">いそがしい</button>
+  </div>
+  <div class="courses" id="courses"></div>
+  <p class="note">本編とは別の試作ページです。記録は保存しません。</p>
+ </div>
+</div>
+<div class="overlay" id="result" hidden>
+ <div class="card">
+  <p class="eyebrow" id="result-kind"></p>
+  <h1 id="result-title"></h1>
+  <dl class="result-stats" id="result-stats"></dl>
+  <div class="result-actions"><button type="button" id="retry" class="primary">もう一度</button><button type="button" id="to-menu">コースをえらぶ</button></div>
+ </div>
+</div>
+<script type="module" src="proto.js"></script>
+</body>
+</html>
