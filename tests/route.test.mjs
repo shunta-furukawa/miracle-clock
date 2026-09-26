@@ -57,6 +57,9 @@ test('a day left alone ends at closing time with everyone missed or turned away'
  assert.equal(s.delivered,0);assert.ok(s.now>=forest.close-1e-6);assert.equal(s.queue.length,0);assert.equal(routeStars(s),0,'under half is not a clear');
  assert.ok(s.missed>0&&s.gaveUp>0);
 });
+test('every order carries one plain ticket time',()=>{
+ for(const level of routeLevels){const s=routeSession(level,{rng:seeded(9)});routeTick(s,20);for(const o of s.queue)assert.match(o.card,/^\d{1,2}時(\d+分)?$/);}
+});
 test('labels read the same time in every notation, including tomorrow',()=>{
  assert.equal(routeLabel('period',870,0),'午後2時30分');assert.equal(routeLabel('period',870,0,true),'午後2時半');
  assert.equal(routeLabel('24',870,0),'14時30分');assert.equal(routeLabel('relative',870,720),'2時間半後');

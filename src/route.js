@@ -39,7 +39,8 @@ export function routeOrder(s){
  const allowed=kinds.filter(k=>k!=='relative'||target-base<=horizon);
  const fresh=allowed.filter(k=>!s.queue.some(o=>o.target===target&&o.kind===k));
  const kind=pick(s,fresh.length?fresh:allowed);
- return {id:s.generated,target,kind,base,label:routeLabel(kind,target,base,s.generated%2===1)};
+ // `label` is how the customer says it; `card` is the one plain way the order ticket shows it.
+ return {id:s.generated,target,kind,base,label:routeLabel(kind,target,base,s.generated%2===1),card:timeText(target,'12')};
 }
 function expire(s,events){
  const late=s.queue.filter(o=>o.target<=s.now+1e-9);

@@ -35,6 +35,8 @@
 .person-name{display:none}
 .person-say{position:absolute;left:50%;bottom:92%;transform:translateX(-50%);white-space:nowrap;background:#fffbe8;border:1px solid #b99b64;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:800;color:#6d4321;box-shadow:0 2px 3px #35261366}
 .person-say:empty{display:none}
+.person-say.order-say{background:#fff;color:#1f4a4b;border-color:var(--tint);font-size:11px;animation:day-say 2.4s ease-out both}
+@keyframes day-say{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}12%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
 .shop-person.walking .portrait{animation:day-steps .16s ease-in-out infinite alternate}
 .shop-person.matching{filter:drop-shadow(0 0 5px #ffe98a) drop-shadow(0 0 2px #fff)}
 .shop-person.urgent .portrait{animation:day-tremble .22s ease-in-out infinite alternate}
@@ -66,11 +68,16 @@
 /* The dial. The magic clock housing keeps its artwork; pins and the remaining day are drawn inside. */
 .day-station{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;gap:6px}
 .day-station .clock-bay{display:grid;place-items:center;flex:1;min-height:0;width:100%;container-type:size}
-.day-game .clock-housing{position:relative;width:min(100cqw,100cqh,440px);height:auto;aspect-ratio:1;margin:0;padding:0}
+.day-game .clock-housing{position:relative;width:min(88cqw,88cqh,420px);height:auto;aspect-ratio:1;margin:0;padding:0}
 .day-game #clock{overflow:visible;cursor:grab;touch-action:none}
 .day-game #clock.dragging{cursor:grabbing}
-.day-remaining{fill:none;stroke:#ffe39a;stroke-width:4;stroke-linecap:round;opacity:.95;filter:drop-shadow(0 0 2px #fff6c9)}
-.now-mark path{fill:#fff4c0;stroke:#5a3b16;stroke-width:1}
+.now-track{fill:none;stroke:#10292dcc;stroke-width:9}
+.day-remaining{fill:none;stroke:#ffd45c;stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 4px #ffe89a)}
+.now-sun circle{fill:#fff6c8;stroke:#c7821d;stroke-width:2.5;filter:drop-shadow(0 0 6px #ffd86a)}
+.now-sun text{font-size:15px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.now-sun.night circle{fill:#dfe6ff;stroke:#4d5fa8;filter:drop-shadow(0 0 6px #a9b8ff)}
+.now-sun{animation:day-sun 2.4s ease-in-out infinite alternate}
+@keyframes day-sun{to{opacity:.82}}
 .ghost-hands line{stroke-linecap:round;stroke-dasharray:3 4;opacity:0;transition:opacity .3s;pointer-events:none}
 #ghost-hour{stroke:#1f6f72;stroke-width:6}#ghost-minute{stroke:#b3582f;stroke-width:3.5}
 .ghost-hands.show line{opacity:.75}
@@ -83,8 +90,6 @@
 .day-pin.picked .pin-body{stroke:#1f6b6b;stroke-width:3.5}
 .day-pin.urgent .pin-body{stroke:#d23b2a;stroke-width:3.5;animation:day-pulse .3s infinite alternate}
 .day-game .seal-button.ready{box-shadow:0 0 0 3px #ffe78f,0 0 18px 6px #ffe38acc,0 3px 0 #694522;animation:day-ready 1s ease-in-out infinite alternate}
-.period-badge{position:absolute;left:50%;top:67%;transform:translateX(-50%);z-index:2;pointer-events:none;background:#fff3d8e6;border:1px solid #c9a86a;border-radius:20px;padding:1px 8px;font-size:clamp(9px,2.6cqw,12px);font-weight:800;color:#7a5a1e;white-space:nowrap}
-.period-badge.night{background:#26356ae6;color:#fff3c9;border-color:#6d7bc0}
 .day-controls{display:flex;gap:6px;justify-content:center}
 .day-controls .adjust{width:auto;height:42px;min-height:42px;min-width:46px;padding:0 8px;font-size:22px;line-height:1;white-space:nowrap}
 .day-controls .adjust.wide{font-size:12px;padding:0 10px}
@@ -155,6 +160,6 @@
 }
 body:has(.pause-modal) .shop-person .portrait,body:has(.pause-modal) .day-ticket{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){
- .shop-person,.day-ticket,.shop-person .portrait,.day-pin .pin-body,.day-game .seal-button.ready{animation:none!important;transition:none!important}
+ .shop-person,.day-ticket,.shop-person .portrait,.day-pin .pin-body,.day-game .seal-button.ready,.now-sun,.person-say.order-say{animation:none!important;transition:none!important}
  .day-burst{animation:day-toast 1s ease-out both}
 }

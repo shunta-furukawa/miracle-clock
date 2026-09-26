@@ -65,10 +65,10 @@ try {
     assert.equal(await page.locator('.shop-person').count(),0,'shop opens empty');
     assert.match(await page.locator('#shop-note').innerText(),/開店/);
     const aimedText=()=>page.locator('#minute-hand').getAttribute('aria-valuetext');
-    assert.equal(await aimedText(),'午前8時','the dial starts at the first flight after opening');
+    assert.equal(await aimedText(),'8時','the dial starts at the first flight after opening');
     await page.clock.runFor(700);
     assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
-    assert.match(await page.locator('.day-ticket').first().innerText(),/午前|午後/);
+    assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.person-say').first().innerText(),/午前|午後/,'the customer says it their own way');
     assert.equal(await page.locator('.day-pin').count(),1,'waiting orders are pinned on the dial');
     await page.clock.runFor(6000);
     await page.evaluate(()=>window.firstCustomer=document.querySelector('.shop-person'));
@@ -83,7 +83,7 @@ try {
     await page.mouse.move(cx,cy-r);await page.mouse.down();
     for(let i=1;i<=36;i++){const a=i*Math.PI/18;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));}
     await page.mouse.up();
-    assert.equal(before,'午前8時');assert.equal(await aimedText(),'午前9時','a full lap near the centre still turns only the long hand');
+    assert.equal(before,'8時');assert.equal(await aimedText(),'9時','a full lap near the centre still turns only the long hand');
     // Stamp the earliest waiting order through the real seal.
     const stampEarliest=async target=>{await target.evaluate(()=>{hand=routePins(session)[0].target;renderDay();});await target.locator('#seal-button').click();};
     const waiting=await page.evaluate(()=>routePins(session)[0].orders.length);
@@ -128,7 +128,7 @@ try {
     await page.locator('#pause').click();await page.locator('#quit').click();
     await page.locator('[data-stage="35"]').click();await skipDialogue();await page.locator('#open-shop').click();
     await page.clock.runFor(12000);
-    assert.match((await page.locator('.day-ticket').allInnerTexts()).join(' '),/後[\s\S]*受付/,'relative orders show their receipt time');
+    const tickets=(await page.locator('.day-ticket').allInnerTexts()).join(' ');assert.doesNotMatch(tickets,/後|午前|午後|受付/,'tickets never make the child convert');assert.match(tickets,/\d+時/);
     await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-day-relative.png`});
     await page.setViewportSize({width:390,height:844});
     // Drive chapter-final result routing through the real stamp button.

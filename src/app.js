@@ -46,10 +46,10 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.6.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.6.1</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
-  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>配送所の一日がはじまると、時計の「いま」はどんどん進みます。お客さんの注文の時刻が来る前に、針を合わせて真ん中の刻印をおそう。</p><p>文字盤をなぞると長い針が回り、短い針もついてきます。顔のピンは、注文の時刻に短い針が来る場所。同じ時刻なら「午後2時半」「14時30分」「2時間半後」のように書き方がちがっても、1回の刻印でまとめて届けられます。</p><p>間に合わなかった人や、列がいっぱいで帰った人は取りこぼし。閉店までに、たくさんのお客さんに届けよう！</p>');
+  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>配送所の一日がはじまると、時計の「いま」はどんどん進みます。お客さんの注文の時刻が来る前に、針を合わせて真ん中の刻印をおそう。</p><p>文字盤をなぞると長い針が回り、短い針もついてきます。顔のピンは、注文の時刻に短い針が来る場所。同じ時刻の注文は、1回の刻印でまとめて届けられます。お客さんは「午後2時半」「2時間後」などいろいろな言い方をするけれど、注文票はいつも「2時30分」のように書いてあるよ。</p><p>間に合わなかった人や、列がいっぱいで帰った人は取りこぼし。閉店までに、たくさんのお客さんに届けよう！</p>');
   $('#home-share').onclick=async()=>{const data={title:'Miracle Clock',text:'ルカと空のとけい便。魔法の時計で、浮遊島へ荷物を届けよう。',url:'https://miracle-clock.vercel.app/'};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(data.url);$('#home-share').textContent='リンクをコピーしました';}}catch(e){if(e.name!=='AbortError')openModal('<h2>友だちに教える</h2><p><a href="https://miracle-clock.vercel.app/">miracle-clock.vercel.app</a></p><p>このリンクをコピーして教えてね。</p>');}};
 }
 function bindSound(){const b=$('.sound');if(b){b.title='音の設定';b.addEventListener('click',audioSettingsDialog);}}
@@ -128,15 +128,17 @@ const reduceMotion=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 const snapHand=v=>Math.min(session.level.close,Math.max(nextSlot(session),Math.round(v/session.level.step)*session.level.step));
 const aimed=()=>snapHand(freeHand??hand);
 const secondsLeft=o=>(o.target-session.now)*session.level.hourSeconds*routePace(session)/60;
+const cardText=t=>timeText(t,'12');
 const clockLabel=(t,open=session.level.open)=>(Math.floor(t/1440)>Math.floor(open/1440)?'あした':'')+timeText(t,'period');
 const stageHeading=level=>level.endless?'特別ステージ · エンドレス':`${level.id+1}-${level.number} · ${depotNames[level.id]}`;
 function levelDetails(input){
  const level=dayLevel(input);
- openModal(`<p class="eyebrow">${stageHeading(level)}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'閉店のない一日 · 5人取りこぼすと店じまい':`${timeText(level.open,'period')} 開店 → ${clockLabel(level.close,level.open)} 閉店`}</p><p class="start-tip">「いま」はどんどん進むよ。注文の時刻が来る前に、針を合わせて刻印しよう！ 同じ時刻なら、書き方がちがってもまとめて届けられる。</p><p class="start-rule">長い針をまわすと、短い針もついてくる。${level.endless?'配達するほど、時間が速くなるぞ。':`練習：${level.skill}`}</p>${level.endless?'':`<p class="start-stars">★ 5割 · ★★ 7割 · ★★★ 9割のお客さんに届けよう</p>`}<button class="primary" id="open-shop">開店する</button>`);
+ openModal(`<p class="eyebrow">${stageHeading(level)}</p><h2>${level.stageTitle}</h2><p class="start-goal">${level.endless?'閉店のない一日 · 5人取りこぼすと店じまい':`${timeText(level.open,'period')} 開店 → ${clockLabel(level.close,level.open)} 閉店`}</p><p class="start-tip">「いま」はどんどん進むよ。注文の時刻が来る前に、針を合わせて刻印しよう！ 同じ時刻の注文は、1回の刻印でまとめて届けられる。</p><p class="start-rule">長い針をまわすと、短い針もついてくる。${level.endless?'配達するほど、時間が速くなるぞ。':`練習：${level.skill}`}</p>${level.endless?'':`<p class="start-stars">★ 5割 · ★★ 7割 · ★★★ 9割のお客さんに届けよう</p>`}<button class="primary" id="open-shop">開店する</button>`);
  $('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startLevel(level);};
 }
 function dayClockMarkup(){
- const overlay=`<path id="day-remaining" class="day-remaining"/><g id="now-mark" class="now-mark"><path d="M150 49l-5-8h10z"/></g><g id="ghost-hands" class="ghost-hands"><line id="ghost-hour" x1="150" y1="150" x2="150" y2="96"/><line id="ghost-minute" x1="150" y1="150" x2="150" y2="68"/></g><g id="day-pins" class="day-pins"></g>`;
+ // The day meter runs around the outside of the housing: a dark track, the open hours ahead, and a sun (or moon) at "now".
+ const overlay=`<circle class="now-track" cx="150" cy="150" r="158"/><path id="day-remaining" class="day-remaining"/><g id="now-sun" class="now-sun"><circle r="13"/><text y="1">☀️</text></g><g id="ghost-hands" class="ghost-hands"><line id="ghost-hour" x1="150" y1="150" x2="150" y2="96"/><line id="ghost-minute" x1="150" y1="150" x2="150" y2="68"/></g><g id="day-pins" class="day-pins"></g>`;
  return clockMarkup().replace('<g id="hour-hand"',overlay+'<g id="hour-hand"');
 }
 function startLevel(input,slow=false){
@@ -146,7 +148,7 @@ function startLevel(input,slow=false){
  session=routeSession(paced);session.stage=level;session.slow=slow;
  hand=nextSlot(session);freeHand=null;picked=null;people.clear();tickets.clear();
  const place=level.endless?6:level.id,art=level.endless?5:level.id===5?6:level.id;
- app.innerHTML=`<main class="day-game scene" style="--depot-image:url(assets/depots/${art}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span id="score" class="score">お届け <b id="delivered">0</b>人</span><span id="lost" class="lost">取りこぼし 0</span></div></header><section class="day-strip" aria-label="今日の営業時間"><div class="day-track" id="day-track"></div><div class="day-labels"><span>${timeText(level.open,'period')} 開店</span><b id="day-combo" class="day-combo"></b><span>${level.endless?'閉店なし':clockLabel(level.close)+' 閉店'}</span></div></section><section class="shop-floor" aria-label="受付に並ぶお客さん"><svg class="shop-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div class="shop-line" id="shop-line"></div><p class="shop-note" id="shop-note">開店！ お客さんがやってくるよ</p></section><section class="ticket-rail" id="tickets" aria-label="注文票"></section><section class="day-station"><div class="clock-bay"><div class="clock-housing">${dayClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}<span class="period-badge" id="period-badge"></span></div></div><div class="day-controls"><button class="adjust wide" data-move="-60">−1時間</button><button class="adjust" id="minus" data-move="-1" aria-label="長い針を戻す">−</button><button class="adjust" id="plus" data-move="1" aria-label="長い針を進める">＋</button><button class="adjust wide" data-move="60">＋1時間</button></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></section><div class="day-effects" aria-hidden="true"></div><p class="day-toast" id="feedback" role="status" aria-live="polite"></p></main>`;
+ app.innerHTML=`<main class="day-game scene" style="--depot-image:url(assets/depots/${art}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span id="score" class="score">お届け <b id="delivered">0</b>人</span><span id="lost" class="lost">取りこぼし 0</span></div></header><section class="day-strip" aria-label="今日の営業時間"><div class="day-track" id="day-track"></div><div class="day-labels"><span>${timeText(level.open,'period')} 開店</span><b id="day-combo" class="day-combo"></b><span>${level.endless?'閉店なし':clockLabel(level.close)+' 閉店'}</span></div></section><section class="shop-floor" aria-label="受付に並ぶお客さん"><svg class="shop-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div class="shop-line" id="shop-line"></div><p class="shop-note" id="shop-note">開店！ お客さんがやってくるよ</p></section><section class="ticket-rail" id="tickets" aria-label="注文票"></section><section class="day-station"><div class="clock-bay"><div class="clock-housing">${dayClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}</div></div><div class="day-controls"><button class="adjust wide" data-move="-60">−1時間</button><button class="adjust" id="minus" data-move="-1" aria-label="長い針を戻す">−</button><button class="adjust" id="plus" data-move="1" aria-label="長い針を進める">＋</button><button class="adjust wide" data-move="60">＋1時間</button></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></section><div class="day-effects" aria-hidden="true"></div><p class="day-toast" id="feedback" role="status" aria-live="polite"></p></main>`;
  $('#clock').classList.toggle('show-guide',!!level.guide);$('#pause').onclick=()=>pauseGame();$('#seal-button').onclick=dispatch;$('#elements').onclick=showElements;
  app.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{const m=Number(b.dataset.move);moveHand(Math.abs(m)===1?m*session.level.step:m);});
  $('#guide').onclick=e=>{const on=$('#clock').classList.toggle('show-guide');e.currentTarget.textContent=`分のめもり ${on?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',on);};
@@ -160,15 +162,13 @@ function showHint(){
  const o=session.queue.find(x=>x.target===picked)||[...session.queue].sort((a,b)=>a.target-b.target)[0];
  if(!o){toast('お客さんが来たら、注文の時刻に針を合わせよう。');return;}
  pickTarget(o.target);
- toast(o.kind==='relative'?`${o.name}の受付は${timeText(o.base,'period')}。そこから${durationText(o.target-o.base).replace('後','')}進めた時刻だよ。点線の針を見てみよう。`:`${orderHint({...o,period:false,duration:0},aimed())} 点線の針が正解だよ。`);
+ toast(`${orderHint({...o,period:false,duration:0},aimed())} 点線の針が正解だよ。`);
 }
 function drawHands(){
  const v=freeHand??hand,target=aimed(),angles=clockAngles(v);
  $('#hour-hand').setAttribute('transform',`rotate(${angles.hour} 150 150)`);$('#minute-hand').setAttribute('transform',`rotate(${angles.minute} 150 150)`);
- $('#hour-hand').setAttribute('aria-valuenow',Math.floor(mod(target,720)/60)||12);$('#minute-hand').setAttribute('aria-valuenow',mod(target,60));$('#minute-hand').setAttribute('aria-valuetext',clockLabel(target));
+ $('#hour-hand').setAttribute('aria-valuenow',Math.floor(mod(target,720)/60)||12);$('#minute-hand').setAttribute('aria-valuenow',mod(target,60));$('#minute-hand').setAttribute('aria-valuetext',cardText(target));
  app.querySelectorAll('.element-gem').forEach(g=>g.classList.toggle('resonating',Number(g.dataset.element)===Math.floor(mod(v,720)/60)));
- $('#period-badge').textContent=(Math.floor(target/1440)>Math.floor(session.level.open/1440)?'あした ':'')+(mod(target,1440)<720?'☀ 午前':'☾ 午後');
- $('#period-badge').classList.toggle('night',mod(target,1440)>=1080||mod(target,1440)<360);
 }
 const polar=(deg,r)=>[150+Math.sin(deg*Math.PI/180)*r,150-Math.cos(deg*Math.PI/180)*r];
 const hourAngle=t=>mod(t,720)/2;
@@ -177,8 +177,9 @@ function residentFace(o,cls=''){const rows=[0,270,500,735,970,1210,1536],x=(o.va
 function renderDay(){
  if(!session||screen!=='play')return;
  const target=aimed(),s=session;drawHands();
- $('#day-remaining').setAttribute('d',remainingArc(s.now,Math.min(s.level.close,s.now+719),98));
- $('#now-mark').setAttribute('transform',`rotate(${hourAngle(s.now)} 150 150)`);
+ $('#day-remaining').setAttribute('d',remainingArc(s.now,Math.min(s.level.close,s.now+719),158));
+ const [sx,sy]=polar(hourAngle(s.now),158),night=mod(s.now,1440)<360||mod(s.now,1440)>=1110,sun=$('#now-sun');
+ sun.setAttribute('transform',`translate(${sx} ${sy})`);sun.classList.toggle('night',night);const face=night?'🌙':'☀️';if(sun.lastChild.textContent!==face)sun.lastChild.textContent=face;
  $('#ghost-hands').classList.toggle('show',picked!==null);
  if(picked!==null){const a=clockAngles(picked);$('#ghost-hour').setAttribute('transform',`rotate(${a.hour} 150 150)`);$('#ghost-minute').setAttribute('transform',`rotate(${a.minute} 150 150)`);}
  // Pins sit where the short hand must point. Close neighbours step inward so none hide another.
@@ -231,26 +232,28 @@ function dress(o){if(o.name)return;const {id,...person}=customerFor(session.stag
 function arrive(o){
  dress(o);o.lead=Math.max(1,secondsLeft(o));
  const p=makePerson(o,'walking');p.dataset.order=o.id;people.set(o.id,p);
+ // Customers say it their own way; the ticket below always reads the same plain way.
+ const say=p.querySelector('.person-say');say.textContent=o.kind==='relative'?`${o.label}に届けて！`:`${o.label}にお願い！`;say.classList.add('order-say');setTimeout(()=>{if(say.classList.contains('order-say')){say.textContent='';say.classList.remove('order-say');}},2400);
  requestAnimationFrame(()=>requestAnimationFrame(()=>{layoutLine();setTimeout(()=>p.classList.remove('walking'),650);}));
  const t=document.createElement('button');t.className='day-ticket entering';t.dataset.order=o.id;t.style.setProperty('--tint',regionColors[o.region]);
- t.innerHTML=`${residentFace(o)}<span class="ticket-text"><strong>${o.label}</strong><small>${o.kind==='relative'?`受付 ${timeText(o.base,'period')}`:o.name}</small></span><i class="ticket-timer" aria-hidden="true"></i>`;
- t.setAttribute('aria-label',`${o.name}の注文 ${o.label}${o.kind==='relative'?`、受付 ${timeText(o.base,'period')}`:''}`);
+ t.innerHTML=`${residentFace(o)}<span class="ticket-text"><strong>${o.card}</strong><small>${o.name}</small></span><i class="ticket-timer" aria-hidden="true"></i>`;
+ t.setAttribute('aria-label',`${o.name}の注文 ${o.card}`);
  t.onclick=()=>pickTarget(o.target);t.addEventListener('animationend',()=>t.classList.remove('entering'),{once:true});
  $('#tickets').append(t);tickets.set(o.id,t);playSound('collect');renderScore();
 }
 function walkOut(o,how,delay=0){
  const p=people.get(o.id),t=tickets.get(o.id);people.delete(o.id);tickets.delete(o.id);
  setTimeout(()=>{
-  if(how==='served'){p?.classList.add('served');t?.classList.add('served');if(p)p.querySelector('.person-say').textContent=['ありがとう！','助かった！','また来るね！','やったー！','お願いね！'][o.id%5];
+  if(how==='served'){p?.classList.add('served');t?.classList.add('served');p?.querySelector('.person-say').classList.remove('order-say');if(p)p.querySelector('.person-say').textContent=['ありがとう！','助かった！','また来るね！','やったー！','お願いね！'][o.id%5];
    setTimeout(()=>{if(p){p.classList.add('leaving');p.style.setProperty('--x','4%');}},reduceMotion()?0:420);}
-  else{p?.classList.add('sad');t?.classList.add('missed');if(p)p.querySelector('.person-say').textContent='間に合わなかった…';
+  else{p?.classList.add('sad');t?.classList.add('missed');p?.querySelector('.person-say').classList.remove('order-say');if(p)p.querySelector('.person-say').textContent='間に合わなかった…';
    setTimeout(()=>{if(p){p.classList.add('leaving');p.style.setProperty('--x',`${$('#shop-line').clientWidth+60}px`);}},reduceMotion()?0:500);}
   setTimeout(()=>{p?.remove();t?.remove();},reduceMotion()?500:1200);
  },delay);
 }
 function handleEvent(e){
  if(e.type==='arrive')arrive(e.order);
- else if(e.type==='missed'){dress(e.order);walkOut(e.order,'missed');playSound('discard');toast(`${e.order.name}の便が出てしまった…（${e.order.label}）`);renderScore();setTimeout(layoutLine,900);}
+ else if(e.type==='missed'){dress(e.order);walkOut(e.order,'missed');playSound('discard');toast(`${e.order.name}の便が出てしまった…（${e.order.card}）`);renderScore();setTimeout(layoutLine,900);}
  else if(e.type==='gaveUp'){dress(e.order);const p=makePerson(e.order,'angry');p.querySelector('.person-say').textContent='いっぱいだ…';playSound('wrong');toast(`列がいっぱいで、${e.order.name}が帰ってしまった。`);renderScore();setTimeout(()=>{p.classList.add('leaving');},900);setTimeout(()=>p.remove(),1600);}
  else if(e.type==='closed'){renderScore();toast(session.level.endless?'お客さんが帰りすぎて、今日は店じまい。':'閉店の時間！ 今日の営業おしまい。');playSound('chapter');closingTimer=setTimeout(()=>{closingTimer=null;finish();},reduceMotion()?600:1500);}
 }
@@ -297,7 +300,7 @@ function dispatch(){
   burst.innerHTML=`<strong>${n>1?`${n}人まとめて！`:'お届け！'}</strong><span>${session.combo>1?`${session.combo} COMBO · `:''}+${r.points}</span><div class="rush-parcels">${r.served.slice(0,6).map((o,i)=>`<span class="rush-parcel" style="--parcel:${i}">${parcelSeal(time)}</span>`).join('')}</div>`;
   const layer=$('.day-effects');if(layer.children.length>=3)layer.firstChild.remove();layer.append(burst);burst.addEventListener('animationend',e=>{if(e.target===burst)burst.remove();});
  }
- toast(n>1?`${clockLabel(time)}の便で${n}人まとめて届けたよ！`:`${clockLabel(time)}の便で届けたよ！`);
+ toast(n>1?`${cardText(time)}の便で${n}人まとめて届けたよ！`:`${cardText(time)}の便で届けたよ！`);
  if(r.served.some(o=>o.target===picked))picked=null;
  renderScore();const counter=$('#delivered');counter.classList.remove('bump');void counter.offsetWidth;counter.classList.add('bump');
  setTimeout(()=>{if(screen==='play')layoutLine();},n*110+700);renderDay();
