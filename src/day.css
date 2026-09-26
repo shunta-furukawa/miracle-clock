@@ -22,8 +22,14 @@
 .day-track .cursor{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#b85732;border-radius:1px}
 .day-track .sun{position:absolute;top:-4px;font-size:16px;line-height:1;transform:translateX(-50%);filter:drop-shadow(0 1px 1px #0006)}
 .day-track .mark{position:absolute;top:15px;font-size:8px;transform:translateX(-50%);color:#6b6552}
-.day-labels{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#5d523b;margin-top:9px;min-height:15px;font-weight:700}
-.day-combo{color:#a24e22;font-size:12px;font-variant-numeric:tabular-nums}
+.day-labels{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:10px;color:#5d523b;margin-top:7px;min-height:15px;font-weight:700}
+.day-combo{position:absolute;left:8px;top:6px;z-index:26;color:#fff3c4;font-size:13px;font-weight:900;text-shadow:0 1px 3px #201b12,0 0 6px #201b12;font-variant-numeric:tabular-nums;pointer-events:none}
+.now-time{display:flex;align-items:center;gap:5px;background:#fff;border:1.5px solid #c9a86a;border-radius:20px;padding:1px 10px 1px 3px;color:#1f4a4b;font-size:12px;white-space:nowrap}
+.now-time b{font-size:15px;font-variant-numeric:tabular-nums}
+.now-clock{width:26px;height:26px;flex-shrink:0}
+.now-clock circle:first-child{fill:#fff8e8;stroke:#b28b4d;stroke-width:2.5}
+.now-clock path{stroke-linecap:round}#now-h{stroke:#1f6f72;stroke-width:3.5}#now-m{stroke:#b3582f;stroke-width:2.2}
+.now-clock circle:last-child{fill:#5a3b16}
 
 /* Reception: the counter is on the left of every illustrated place; people queue toward the right. */
 .shop-floor{position:relative;isolation:isolate;height:clamp(96px,17dvh,160px);border:2px solid #9c7847;border-radius:12px;overflow:hidden;background:#8e714b;box-shadow:0 4px 0 #563e2f70}
@@ -57,7 +63,8 @@
 .resident-face{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:#fff3d6;border:1px solid #d8bf8a}
 .ticket-text{display:flex;flex-direction:column;min-width:0;line-height:1.15}
 .ticket-text strong{font-family:var(--storybook-font);font-size:clamp(11px,3.3vw,14px);color:#1f4a4b;overflow-wrap:anywhere}
-.ticket-text small{font-size:8px;color:#8b4e25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-text small{font-size:10px;font-weight:800;color:#2f6b4f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.day-ticket.urgent .ticket-text small{color:#c0392b}
 .ticket-timer{position:absolute;left:0;bottom:0;height:3px;width:calc(var(--left,1)*100%);background:#4c9a57;transition:background .3s}
 .day-ticket.urgent .ticket-timer{background:#c0392b}
 .day-ticket.urgent{animation:day-tremble .22s ease-in-out infinite alternate}
