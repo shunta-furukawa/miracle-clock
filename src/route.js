@@ -80,15 +80,20 @@ export function routePins(s){
  return [...pins.values()].sort((a,b)=>a.target-b.target);
 }
 export const batchPoints=n=>100*n+50*n*(n-1);
-// Stamping never moves time. An empty stamp only breaks the combo.
-export function routeStamp(s,time){
- if(s.status!=='playing'||time<=s.now||time>s.level.close)return null;
- const served=s.queue.filter(o=>o.target===time);
- if(!served.length){s.mistakes++;s.combo=0;return {served,points:0};}
- s.queue=s.queue.filter(o=>o.target!==time);
- s.delivered+=served.length;s.flights++;s.combo++;s.maxCombo=Math.max(s.maxCombo,s.combo);s.maxBatch=Math.max(s.maxBatch,served.length);
+// A stamp is a flight: it carries every order from `from` to `from+span` minutes (span 0 = that one minute),
+// and the plane is away for the same number of minutes (at least one), so no other stamp can go until it returns.
+// Stamping never moves time. An empty flight still takes its time and breaks the combo.
+export const routeBusy=s=>Math.max(0,(s.busyUntil??-Infinity)-s.now);
+export function routeStamp(s,from,span=0){
+ span=Math.max(0,Math.min(60,Math.round(span)));
+ if(s.status!=='playing'||from<=s.now||from>s.level.close||routeBusy(s)>0)return null;
+ const to=from+span,served=s.queue.filter(o=>o.target>=from&&o.target<=to);
+ s.busyUntil=s.now+Math.max(1,span);s.flights++;
+ if(!served.length){s.mistakes++;s.combo=0;return {served,points:0,span};}
+ s.queue=s.queue.filter(o=>!served.includes(o));
+ s.delivered+=served.length;s.combo++;s.maxCombo=Math.max(s.maxCombo,s.combo);s.maxBatch=Math.max(s.maxBatch,served.length);
  const points=Math.round(batchPoints(served.length)*(1+Math.min(s.combo-1,9)*.1));s.points+=points;
- return {served,points};
+ return {served,points,span};
 }
 export const visitors=s=>s.delivered+s.missed+s.gaveUp+s.queue.length;
 // Stars count the share of today's visitors who got their parcel off. Under half is not yet a clear.

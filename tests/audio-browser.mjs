@@ -26,7 +26,7 @@ try{
   await page.waitForFunction(()=>soundtrack.lastEffect.has('merge'),null,{timeout:2000});
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>soundtrack.lastEffect.delete('assemble'));
-  await page.waitForFunction(()=>session.queue.length>0);await aimEarliest();
+  await page.waitForFunction(()=>session.queue.length>0&&routeBusy(session)===0);await aimEarliest();
   await page.locator('#seal-button').click();await page.waitForFunction(()=>soundtrack.lastEffect.has('assemble'));
   assert.equal(await page.locator('#seal-button').isEnabled(),true,'pop and dispatch do not block the seal');
 

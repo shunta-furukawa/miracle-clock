@@ -65,11 +65,13 @@ try {
     assert.equal(await page.locator('.shop-person').count(),0,'shop opens empty');
     assert.match(await page.locator('#shop-note').innerText(),/開店/);
     const aimedText=()=>page.locator('#minute-hand').getAttribute('aria-valuetext');
-    assert.equal(await aimedText(),'8時','the dial starts at the first flight after opening');
+    assert.equal(await aimedText(),'7時1分','the long hand rests on the first minute after opening');
     await page.clock.runFor(700);
     assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
     assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.order-bubble').first().innerText(),/午前|午後/,'the customer says it their own way');
-    assert.equal(await page.locator('.day-pin').count(),1,'waiting orders are pinned on the dial');
+    assert.equal(await page.locator('.day-pin').count(),0,'an order more than an hour ahead of the long hand has no pin yet');
+    await page.evaluate(()=>{hand=routePins(session)[0].target-5;renderDay();});assert.equal(await page.locator('.day-pin').count(),1,'orders within the next sixty minutes are pinned at the long hand position');
+    await page.evaluate(()=>{hand=nextMinute();renderDay();});
     await page.clock.runFor(6000);
     await page.evaluate(()=>window.firstCustomer=document.querySelector('.shop-person'));
     await page.clock.runFor(1500);
@@ -79,11 +81,11 @@ try {
     for(const hand of ['hour','minute'])assert.equal(await page.locator(`#${hand}-hand .hand-art image`).getAttribute('clip-path'),`url(#${hand}-art-crop)`,'atlas clipping must be explicit before glow filters');
     // One real lap of the finger turns the long hand once: the short hand follows by an hour.
     const b=await page.locator('#clock').boundingBox();
-    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*40/300,before=await aimedText();
+    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*40/300,beforeMinute=await page.evaluate(()=>aimed());
     await page.mouse.move(cx,cy-r);await page.mouse.down();
     for(let i=1;i<=36;i++){const a=i*Math.PI/18;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));}
     await page.mouse.up();
-    assert.equal(before,'8時');assert.equal(await aimedText(),'9時','a full lap near the centre still turns only the long hand');
+    assert.equal(await page.evaluate(()=>aimed()),beforeMinute+60,'a full lap near the centre turns only the long hand, exactly one hour');
     // Stamp the earliest waiting order through the real seal.
     const stampEarliest=async target=>{await target.evaluate(()=>{hand=routePins(session)[0].target;renderDay();});await target.locator('#seal-button').click();};
     const waiting=await page.evaluate(()=>routePins(session)[0].orders.length);
@@ -94,10 +96,23 @@ try {
     await page.screenshot({path:`artifacts/${name}-day-batch.png`});
     await page.locator('#minute-hand').focus();await page.keyboard.press('ArrowRight');
     assert.notEqual(await aimedText(),null,'controls respond during the celebration');
-    // A stamp on a time nobody asked for changes nothing but the combo.
-    await page.evaluate(()=>{const taken=new Set(session.queue.map(o=>o.target));let t=nextSlot(session);while(taken.has(t))t+=session.level.step;hand=t;renderDay();});
+    // The one-minute plane comes back, then a stamp on a time nobody asked for changes nothing but the combo.
+    await page.clock.runFor(600);
+    await page.evaluate(()=>{const taken=new Set(session.queue.map(o=>o.target));let t=Math.floor(session.now)+1;while(taken.has(t))t++;hand=t;renderDay();});
     const delivered=await page.locator('#delivered').innerText();await page.locator('#seal-button').click();
-    assert.equal(await page.locator('#delivered').innerText(),delivered);assert.match(await page.locator('#feedback').innerText(),/注文はない/);
+    assert.equal(await page.locator('#delivered').innerText(),delivered);assert.match(await page.locator('#feedback').innerText(),/注文がなかった/);
+    // Holding the seal sweeps a wedge ahead of the long hand; everything inside goes on one flight and the plane is away that long.
+    await page.clock.runFor(600);
+    const sweepFrom=await page.evaluate(()=>{const t=routePins(session)[0].target;hand=Math.max(Math.floor(session.now)+1,t-3);renderDay();return hand;});
+    const seal=await page.locator('#seal-button').boundingBox();await page.mouse.move(seal.x+seal.width/2,seal.y+seal.height/2);await page.mouse.down();
+    await page.clock.runFor(1200);assert.equal(await page.locator('#sweep.show').count(),1,'a wedge grows while the seal is held');
+    const span=await page.evaluate(()=>hold.span);assert.ok(span>=8,'the wedge covers several minutes');
+    const caught=await page.evaluate(()=>session.queue.filter(o=>o.target>=hold.start&&o.target<=hold.start+hold.span).length);
+    const deliveredBefore=Number(await page.locator('#delivered').innerText());await page.mouse.up();
+    assert.equal(Number(await page.locator('#delivered').innerText()),deliveredBefore+caught);assert.ok(caught>=1);
+    assert.match(await page.locator('#seal-button').innerText(),/あと\d+分/,'the seal rests while the plane is away');assert.equal(await page.locator('#plane-back').isVisible(),true);
+    await page.evaluate(f=>{hand=f;},sweepFrom);await page.clock.runFor(Math.ceil(span*10/60*1000)+400);
+    assert.match(await page.locator('#seal-button').innerText(),/長押し/,'the plane returns after the swept minutes');
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
       for(const selector of ['#clock','#seal-button','.shop-floor','#tickets','#pause','#day-track']){

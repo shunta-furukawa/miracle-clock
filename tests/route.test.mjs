@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {routeLevels,routeSession,routeTick,routeStamp,routePins,routeLabel,routeStars,batchPoints,earliestSlot,nextSlot,visitors} from '../src/route.js';
+import {routeLevels,routeSession,routeTick,routeStamp,routePins,routeLabel,routeStars,routeBusy,batchPoints,earliestSlot,nextSlot,visitors} from '../src/route.js';
 
 const seeded=(seed=7)=>()=>((seed=(seed*16807)%2147483647)-1)/2147483646;
 const fixed=(level,orders)=>{const s=routeSession(level,{rng:seeded()});s.untilArrival=Infinity;s.queue=orders.map((o,i)=>({id:i,kind:'period',base:level.open,label:'',...o}));s.generated=orders.length;return s;};
@@ -24,7 +24,8 @@ test('one stamp serves every notation of the same time and never moves time',()=
  const s=fixed(forest,[{target:600,kind:'period'},{target:600,kind:'relative'},{target:660}]);
  const r=routeStamp(s,600);assert.equal(r.served.length,2);assert.equal(s.now,forest.open);assert.deepEqual(s.queue.map(o=>o.target),[660]);
  assert.equal(r.points,batchPoints(2));assert.equal(s.maxBatch,2);
- assert.equal(routeStamp(s,660).served.length,1,'going back or forward between flights is free');
+ const minute=forest.hourSeconds/60;routeTick(s,minute*1.01);
+ assert.equal(routeStamp(s,660).served.length,1,'once the one-minute plane is back, any later time can be stamped');
 });
 test('an order is missed only when its time arrives unstamped',()=>{
  const s=fixed(forest,[{target:480},{target:540}]);
@@ -32,9 +33,21 @@ test('an order is missed only when its time arrives unstamped',()=>{
  const late=routeTick(s,forest.hourSeconds*.02);assert.deepEqual(late.map(e=>[e.type,e.order.target]),[['missed',480]]);
  assert.equal(s.missed,1);assert.equal(s.combo,0);assert.equal(routeStamp(s,480),null,'past times cannot be stamped');
 });
-test('an empty stamp only breaks the combo',()=>{
- const s=fixed(forest,[{target:600},{target:660}]);routeStamp(s,600);assert.equal(s.combo,1);
+test('an empty flight breaks the combo and still takes its time',()=>{
+ const s=fixed(forest,[{target:600},{target:660}]);routeStamp(s,600);assert.equal(s.combo,1);routeTick(s,forest.hourSeconds/60*1.01);
  const r=routeStamp(s,720);assert.equal(r.served.length,0);assert.equal(s.combo,0);assert.equal(s.mistakes,1);assert.equal(s.queue.length,1);
+});
+test('a held stamp sweeps a span of minutes; the plane is away for that long',()=>{
+ const s=fixed(forest,[{target:600},{target:605},{target:612},{target:700}]);
+ const r=routeStamp(s,598,10);assert.deepEqual(r.served.map(o=>o.target),[600,605],'only orders inside the swept minutes');
+ assert.equal(routeBusy(s),10);assert.equal(routeStamp(s,612),null,'no second flight while the plane is away');
+ routeTick(s,forest.hourSeconds/60*9.9);assert.equal(routeStamp(s,700),null);
+ routeTick(s,forest.hourSeconds/60*.2);assert.equal(routeStamp(s,700).served.length,1);
+ assert.equal(routeStamp(fixed(forest,[{target:600}]),590,80).span,60,'a flight covers at most one lap');
+});
+test('a tap is a one-minute flight for exactly that minute',()=>{
+ const s=fixed(forest,[{target:600},{target:601}]);const r=routeStamp(s,600);
+ assert.deepEqual(r.served.map(o=>o.target),[600]);assert.equal(routeBusy(s),1);
 });
 test('a full line turns new visitors away without ending the day',()=>{
  const s=routeSession(forest,{rng:seeded()});const events=routeTick(s,40).filter(e=>e.type==='gaveUp');
