@@ -65,7 +65,7 @@ try {
     assert.equal(await page.locator('.shop-person').count(),0,'shop opens empty');
     assert.match(await page.locator('#shop-note').innerText(),/開店/);
     const aimedText=()=>page.locator('#minute-hand').getAttribute('aria-valuetext');
-    assert.equal(await aimedText(),'7時1分','the long hand rests on the first minute after opening');
+    assert.equal(await page.evaluate(()=>aimed()===Math.floor(session.now)+1),true,'the long hand rests on the first minute after now');assert.match(await aimedText(),/^7時\d+分$/);
     await page.clock.runFor(700);
     assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
     assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.order-bubble').first().innerText(),/午前|午後/,'the customer says it their own way');
