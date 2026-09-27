@@ -175,7 +175,13 @@ body:has(.pause-modal) .shop-person .portrait,body:has(.pause-modal) .day-ticket
 }
 
 /* Flights: the hour's gem colour on the face, the swept wedge, and the plane on its way back. */
-.hour-tint{fill:#eee9dc;fill-opacity:.45;transition:fill .5s ease;pointer-events:none}
+.hour-tint{fill:url(#hour-glow);pointer-events:none}
+.hg0{stop-color:var(--hour,#eee9dc);stop-opacity:.32}.hg1{stop-color:var(--hour,#eee9dc);stop-opacity:.55}.hg2{stop-color:var(--hour,#eee9dc);stop-opacity:.85}
+.hour-flash{fill:var(--hour,#fff);opacity:0;pointer-events:none}
+.hour-flash.show{animation:hour-flash .9s ease-out}
+@keyframes hour-flash{0%{opacity:.9}100%{opacity:0}}
+.day-game .element-gem.resonating{filter:drop-shadow(0 0 6px #fff3a8) drop-shadow(0 0 12px var(--hour,#fff0a8))}
+.day-game .element-gem.resonating .gem-art{transform:scale(1.14);transform-box:fill-box;transform-origin:center}
 .sweep{fill:#ffd24a;fill-opacity:.32;stroke:#ffbf1f;stroke-width:1.5;display:none;pointer-events:none}
 .sweep.show{display:block;filter:drop-shadow(0 0 4px #ffe79a)}
 .sweep-end{stroke:#ffb400;stroke-width:3;stroke-linecap:round;stroke-dasharray:4 3;display:none;pointer-events:none}
@@ -188,4 +194,4 @@ body:has(.pause-modal) .shop-person .portrait,body:has(.pause-modal) .day-ticket
 .plane-back text{font-size:14px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .day-game .seal-button.away{filter:grayscale(.7) brightness(.85);cursor:wait}
 .day-game .seal-button small{white-space:nowrap}
-@media(prefers-reduced-motion:reduce){.hour-tint{transition:none}}
+@media(prefers-reduced-motion:reduce){.hour-flash.show{animation:none}}
