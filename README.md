@@ -56,6 +56,7 @@ npm run dev
 - [アート出典・生成プロンプト](docs/ART.md)
 - [ゲームデザイン](docs/DESIGN.md)
 - 前作: https://github.com/shunta-furukawa/miracle-mine
+- 作者のほかの作品: https://shunta-furukawa.info/works/
 
 初回版には、時計操作、6章、配送演出、行列、練習、ヒント、進行保存、短い効果音を実装。
 BGM、PWA、ランキング、複数セーブ、読み上げは今回の範囲に含みません。
