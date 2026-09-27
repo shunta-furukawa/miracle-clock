@@ -103,7 +103,8 @@ try {
     assert.equal(await page.locator('#delivered').innerText(),delivered);assert.match(await page.locator('#feedback').innerText(),/注文がなかった/);
     // Holding the seal sweeps a wedge ahead of the long hand; everything inside goes on one flight and the plane is away that long.
     await page.clock.runFor(600);
-    const sweepFrom=await page.evaluate(()=>{const t=routePins(session)[0].target;hand=Math.max(Math.floor(session.now)+1,t-3);renderDay();return hand;});
+    for(let i=0;i<40&&!(await page.evaluate(()=>session.queue.length>0&&routeBusy(session)===0));i++)await page.clock.runFor(300);
+    const sweepFrom=await page.evaluate(()=>{const t=routePins(session).at(-1).target;hand=Math.max(Math.floor(session.now)+1,t-3);renderDay();return hand;});
     const seal=await page.locator('#seal-button').boundingBox();await page.mouse.move(seal.x+seal.width/2,seal.y+seal.height/2);await page.mouse.down();
     await page.clock.runFor(1200);assert.equal(await page.locator('#sweep.show').count(),1,'a wedge grows while the seal is held');
     const span=await page.evaluate(()=>hold.span);assert.ok(span>=8,'the wedge covers several minutes');
