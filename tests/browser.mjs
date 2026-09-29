@@ -175,7 +175,8 @@ try {
     // Leaving orders alone lets their time pass: they are counted as missed.
     await page.clock.runFor(8000);
     assert.doesNotMatch(await page.locator('#lost').innerText(),/取りこぼし 0$/,'unstamped orders are missed when their time comes');
-    await page.locator('#pause').click();await page.locator('#quit').click();await page.locator('#result-main').waitFor();
+    // Five missed orders close the central post by themselves; otherwise leave through the pause menu.
+    if(await page.evaluate(()=>session.status==='playing')){await page.locator('#pause').click();await page.locator('#quit').click();}await page.locator('#result-main').waitFor();
     assert.match(await page.locator('.rush-result').innerText(),/COMBO · 最大 \d+人まとめて/);
     assert.match(await page.locator('.day-result-main').innerText(),/お届け \d+人 \/ 来店 \d+人/);
     await page.locator('#result-main').click();assert.equal(await page.locator('.shop-person').count(),0,'retry opens a fresh day');assert.equal(await page.locator('#delivered').innerText(),'0');
