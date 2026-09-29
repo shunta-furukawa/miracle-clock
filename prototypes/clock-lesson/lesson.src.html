@@ -1,0 +1,326 @@
+<title>ルカの時計けいこ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+/* One storybook look on purpose: warm paper, brass and the Miracle Mine gems. Colors are set explicitly for both host themes. */
+:root{--paper:#fbf3df;--paper2:#f3e3bd;--ink:#2f3a33;--muted:#6f6a58;--brass:#b98a3e;--brass-d:#7a5725;--hour:#1f6f72;--minute:#c0592b;--good:#2f8a4f;--bad:#c0392b;--bg:#20484b;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
+.app{min-height:100%;max-width:520px;margin:0 auto;padding:10px 16px 18px;display:flex;flex-direction:column;gap:10px;background:radial-gradient(120% 60% at 50% 0%,#2d6266,var(--bg) 70%)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff6dc}
+.top h1{font-size:16px;margin:0;font-weight:900;letter-spacing:.04em;text-align:center;flex:1}
+.top h1 small{display:block;font-size:11px;font-weight:500;opacity:.85}
+.chip{border:1px solid #d9b56b;background:#fff6dc22;color:#fff6dc;border-radius:20px;padding:6px 11px;font-size:12px;font-weight:700;min-height:36px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:10px;height:10px;border-radius:50%;background:#ffffff33;border:1px solid #fff6dc88}
+.dots i.done{background:#ffd45c;border-color:#ffd45c}.dots i.miss{background:#ffb0a0}.dots i.now{outline:2px solid #fff;outline-offset:2px}
+
+/* The task: a customer with a ticket, or a returning plane's stamp to read. */
+.task{display:flex;align-items:center;gap:10px;background:var(--paper);border:2px solid var(--brass);border-radius:16px;padding:8px 12px;box-shadow:0 4px 0 #0003}
+.task img{width:58px;height:58px;object-fit:contain;flex-shrink:0}
+.task .say{flex:1;min-width:0}
+.task .who{font-size:12px;color:var(--muted);font-weight:700}
+.task .line{font-size:15px;font-weight:700;line-height:1.45}
+.ticket{display:inline-flex;align-items:baseline;gap:2px;background:#fff;border:2px dashed var(--brass);border-radius:10px;padding:2px 10px;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:.02em}
+.t-h{color:var(--hour)}.t-m{color:var(--minute)}
+
+/* The dial: twelve gem-coloured rooms, hour badge on the short hand, minute badge on the long one. */
+.dial-wrap{position:relative;display:grid;place-items:center}
+#dial{width:min(100%,380px);aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;display:block}
+#dial.drag{cursor:grabbing}
+.rim{fill:#6b4a26;stroke:#e2bf73;stroke-width:3}
+.minring{fill:#3b2a17}
+.minnum{font-size:11px;font-weight:900;fill:#ffb07d;text-anchor:middle;dominant-baseline:central}
+.minnum.on{fill:#fff;font-size:13px}
+.mintick{stroke:#a07c4a;stroke-width:1}.mintick.big{stroke:#ffcf8a;stroke-width:2}
+.face{fill:#fffaf0}
+.room{stroke:#fff;stroke-width:1.2;transition:fill-opacity .25s}
+.roomlabel{font-size:12px;font-weight:900;text-anchor:middle;dominant-baseline:central;fill:#0007;transition:opacity .25s}
+.roomlabel.on{fill:#000c;font-size:15px}
+.edge{stroke:#fff;stroke-width:2}
+.hand-h{stroke:var(--hour);stroke-width:9;stroke-linecap:round}
+.hand-m{stroke:var(--minute);stroke-width:5;stroke-linecap:round}
+.badge circle{stroke:#fff;stroke-width:2.5}
+.badge text{fill:#fff;font-size:12px;font-weight:900;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.ghost line{stroke-dasharray:5 5;opacity:.7}
+.pin{fill:#4a3417;stroke:#e2bf73;stroke-width:2}
+.hidden{display:none}
+.readout{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;min-height:30px}
+.readout span{background:var(--paper);border-radius:14px;padding:3px 10px;font-size:14px;font-weight:900;border:2px solid transparent}
+.readout .rh{border-color:var(--hour);color:var(--hour)}.readout .rm{border-color:var(--minute);color:var(--minute)}
+
+/* Answers. */
+.actions{display:grid;gap:8px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choice{background:var(--paper);border:2px solid var(--brass);border-radius:14px;padding:10px 4px;font-size:20px;font-weight:900;box-shadow:0 4px 0 #0003;min-height:56px}
+.choice.right{background:#dff3e3;border-color:var(--good)}.choice.wrong{background:#fde2dc;border-color:var(--bad)}
+.stamp{background:linear-gradient(#2a7a78,#1b5557);color:#fff6dc;border:2px solid #e2bf73;border-radius:16px;font-size:20px;font-weight:900;min-height:58px;box-shadow:0 4px 0 #0f3436}
+.stamp:active{transform:translateY(2px);box-shadow:0 2px 0 #0f3436}
+.helper{display:flex;justify-content:center;gap:10px}
+.helper button{background:none;border:1px solid #fff6dc66;color:#fff6dc;border-radius:16px;padding:5px 12px;font-size:12px;min-height:34px}
+
+/* Feedback reads each hand in turn. */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.sheet[hidden]{display:none}
+.sheet .card{width:100%;max-width:496px;background:var(--paper);border:3px solid var(--brass);border-radius:20px;padding:14px 16px;box-shadow:0 -6px 30px #0006;animation:up .25s ease-out}
+.sheet h2{margin:0 0 6px;font-size:22px;font-weight:900}
+.sheet h2.ok{color:var(--good)}.sheet h2.ng{color:var(--bad)}
+.steps{display:grid;gap:4px;margin:6px 0 10px;font-size:16px;font-weight:700;line-height:1.45}
+.steps b.h{color:var(--hour)}.steps b.m{color:var(--minute)}
+.steps .sum{font-size:20px;font-weight:900}
+.sheet .row{display:flex;gap:8px}.sheet .row button{flex:1}
+.next{background:var(--hour);color:#fff;border:0;border-radius:14px;font-size:18px;font-weight:900;min-height:52px}
+.again{background:#fff;border:2px solid var(--brass);border-radius:14px;font-size:16px;font-weight:900;min-height:52px}
+
+/* Lesson list and results. */
+.overlay{position:fixed;inset:0;z-index:20;background:#123537ee;display:grid;place-items:start center;overflow:auto;padding:16px}
+.overlay[hidden]{display:none}
+.panel{width:100%;max-width:480px;background:var(--paper);border:3px solid var(--brass);border-radius:22px;padding:18px 16px;margin:auto 0}
+.panel h2{margin:0;font-size:24px;font-weight:900;text-align:center}
+.panel p{font-size:14px;line-height:1.7;margin:8px 0}
+.lessons{display:grid;gap:8px;margin-top:10px}
+.lesson{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;text-align:left;background:#fff;border:2px solid #e6d3a6;border-radius:14px;padding:8px 10px}
+.lesson b{font-size:16px}.lesson small{display:block;font-size:12px;color:var(--muted)}
+.lesson .no{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:var(--hour);font-size:18px}
+.lesson .st{color:#d09a1c;font-size:16px;letter-spacing:1px;white-space:nowrap}
+.big-stars{font-size:44px;color:#e0a51f;text-align:center;letter-spacing:6px;margin:6px 0}
+.legend{display:flex;justify-content:center;gap:14px;font-size:13px;font-weight:700;margin-top:6px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:22px;height:8px;border-radius:4px}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@keyframes pop{50%{transform:scale(1.08)}}
+.pop{animation:pop .35s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<main class="app" id="app">
+ <header class="top">
+  <button class="chip" id="menu-btn" type="button">レッスン</button>
+  <h1 id="title">ルカの時計けいこ<small id="goal"></small></h1>
+  <button class="chip" id="voice-btn" type="button" aria-pressed="true">🔊 こえ</button>
+ </header>
+ <div class="dots" id="dots" aria-label="問題の進み"></div>
+ <section class="task" id="task" aria-live="polite"></section>
+ <div class="dial-wrap"><svg id="dial" viewBox="-160 -160 320 320" role="img" aria-label="時計"></svg></div>
+ <div class="readout" id="readout" aria-live="polite"></div>
+ <div class="actions" id="actions"></div>
+ <div class="helper"><button type="button" id="hint-btn">ヒント（★が1つへる）</button></div>
+</main>
+
+<div class="sheet" id="sheet" hidden><div class="card" id="sheet-card"></div></div>
+
+<div class="overlay" id="menu">
+ <div class="panel">
+  <h2>ルカの時計けいこ</h2>
+  <p>時計には、<b style="color:var(--hour)">短い針（何時）</b>と<b style="color:var(--minute)">長い針（何分）</b>があるよ。ひとつずつ、なかよくなろう。</p>
+  <div class="legend"><span><i style="background:var(--hour)"></i>短い針＝時</span><span><i style="background:var(--minute)"></i>長い針＝分</span></div>
+  <div class="lessons" id="lessons"></div>
+  <p style="font-size:12px;color:var(--muted);text-align:center">時間せいげんはないよ。ゆっくり考えてね。</p>
+ </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+ <div class="panel" id="result-panel"></div>
+</div>
+
+<script>
+const GEM_IMG=__GEMS__;      // index 1..12 → gem artwork with its numeral
+const PEOPLE=__PEOPLE__;     // [{name,img}]
+// Miracle Mine gem colours; index is the hour (12 uses index 0).
+const GEM=['#eee9dc','#1468c1','#f1c84a','#c24627','#087c61','#b96a11','#9cdbeb','#343e89','#b64276','#b3a1e6','#83cfb5','#dc9656'];
+const HOUR='#1f6f72',MINUTE='#c0592b';
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const hourOf=t=>Math.floor(((t%720)+720)%720/60)||12;
+const minOf=t=>((Math.round(t)%60)+60)%60;
+const ms=t=>(((t%720)+720)%720);
+const text=(h,m)=>`${h}時${m?`${m}分`:''}`;
+const html=(h,m)=>`<span class="t-h">${h}時</span>${m===null?'':m?`<span class="t-m">${m}分</span>`:'<span class="t-m">ちょうど</span>'}`;
+const nextH=h=>h%12+1,prevH=h=>(h+10)%12+1;
+
+// Six small steps: meet each hand alone, then put them together.
+const LESSONS=[
+ {title:'短い針のへや',goal:'短い針がいる「へや」の色で何時かわかる',hour:true,minute:false,labels:true,step:60,drag:'hour',qs:['readRoom','setRoom','readRoom','setRoom','readRoom']},
+ {title:'ちょうどの時刻',goal:'長い針が12なら「◯時ちょうど」',hour:true,minute:true,labels:true,step:60,drag:'hour',exact:true,qs:['setExact','readHM','setExact','readHM','setExact']},
+ {title:'長い針で何分',goal:'長い針は外の数字。5、10、15…と数える',hour:false,minute:true,labels:false,step:5,drag:'minute',qs:['readMin','setMin','readMin','setMin','readMin']},
+ {title:'ちょうどと30分',goal:'30分のとき、短い針はへやのまん中',hour:true,minute:true,labels:true,step:30,drag:'both',qs:['setHM','readHM','setHM','readHM','setHM']},
+ {title:'5分ずつ',goal:'短い針はへや、長い針は外の数字',hour:true,minute:true,labels:true,step:5,drag:'both',qs:['setHM','readHM','setHM','readHM','setHM','readHM']},
+ {title:'なんじかな？ まとめ',goal:'へやの数字は出ないよ。針をよく見て',hour:true,minute:true,labels:false,step:5,drag:'both',qs:['readHM','readHM','setHM','readHM','readHM','setHM']}
+];
+let lesson=null,li=0,qi=0,q=null,t=0,mistakes=0,hints=0,tries=0,answered=false,results=[],voice=true,drag=null,ghost=null;
+let best={};try{best=JSON.parse(localStorage.getItem('clock-lesson-stars')||'{}');}catch{}
+
+// ---------- questions ----------
+function lateMinute(step){const pool=step>=30?[0,30]:[5,10,15,20,25,30,35,40,45,50,55];return pool.filter(m=>m>=40).length&&Math.random()<.5?pick(pool.filter(m=>m>=40)):pick(pool);}
+function make(kind){
+ const h=1+rnd(12),step=lesson.step;
+ if(kind==='readRoom'){const m=pick([10,20,35,45,50,55]);return {kind,read:true,h,m,answer:`${h}`,options:shuffle([h,nextH(h),prevH(h)]).map(x=>({key:`${x}`,label:`${x}時`,gem:x})),prompt:'短い針はどの「へや」にいる？ 何時かな？'};}
+ if(kind==='setRoom')return {kind,read:false,h,m:null,start:ms((h+4+rnd(6))*60+25),prompt:'短い針を、この時刻の「へや」に入れよう'};
+ if(kind==='setExact')return {kind,read:false,h,m:0,start:ms((h+3+rnd(7))*60),prompt:'この時刻に、短い針を合わせよう'};
+ if(kind==='readMin'){const m=5*(1+rnd(11));const opts=[m,m/5,m+(m<55?5:-5)];return {kind,read:true,h:null,m,answer:`${m}`,options:shuffle(opts).map(x=>({key:`${x}`,label:`${x}分`})),prompt:'長い針は何分をさしている？'};}
+ if(kind==='setMin'){const m=5*(1+rnd(11));return {kind,read:false,h:null,m,start:ms(rnd(12)*60+((m+30)%60)),prompt:'長い針を、この「分」に合わせよう'};}
+ const m=step===60?0:step===30?pick([0,30]):lateMinute(step);
+ if(kind==='readHM'){
+  const opts=[{h,m},{h:nextH(h),m},m?{h,m:m/5===Math.round(m/5)&&m/5!==m?m/5:(m+5)%60}:{h:prevH(h),m}];
+  const seen=new Set();const options=shuffle(opts.filter(o=>{const k=`${o.h}:${o.m}`;if(seen.has(k))return false;seen.add(k);return true;})).map(o=>({key:`${o.h}:${o.m}`,label:text(o.h,o.m)}));
+  return {kind,read:true,h,m,answer:`${h}:${m}`,options,prompt:'この時計は何時何分？'};
+ }
+ return {kind:'setHM',read:false,h,m,start:ms((h+4+rnd(6))*60+(m+25)%60),prompt:'この時刻に、針を合わせよう'};
+}
+
+// ---------- the dial ----------
+const P=(deg,r)=>[Math.sin(deg*Math.PI/180)*r,-Math.cos(deg*Math.PI/180)*r];
+function wedge(a0,a1,r){const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);return `M0 0L${x0} ${y0}A${r} ${r} 0 0 1 ${x1} ${y1}Z`;}
+function buildDial(){
+ let s=`<circle r="156" class="rim"/><circle r="146" class="minring"/>`;
+ for(let i=0;i<60;i++){const big=i%5===0,[x0,y0]=P(i*6,big?128:133),[x1,y1]=P(i*6,145);s+=`<line class="mintick${big?' big':''}" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>`;}
+ s+=`<g id="minnums">`;for(let i=0;i<12;i++){const [x,y]=P(i*30,137);s+=`<text class="minnum" data-min="${i*5}" x="${x}" y="${y}">${i*5}</text>`;}s+=`</g>`;
+ s+=`<circle r="126" class="face"/><g id="rooms">`;
+ for(let n=0;n<12;n++){s+=`<path class="room" data-room="${n}" d="${wedge(n*30,n*30+30,125)}" fill="${GEM[n]}" fill-opacity=".22"/>`;}
+ s+=`</g><g id="edges">`;for(let n=0;n<12;n++){const [x0,y0]=P(n*30,20),[x1,y1]=P(n*30,125);s+=`<line class="edge" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>`;}s+=`</g>`;
+ s+=`<g id="roomlabels">`;for(let n=0;n<12;n++){const [x,y]=P(n*30+15,72);s+=`<text class="roomlabel" data-room="${n}" x="${x}" y="${y}">${n||12}</text>`;}s+=`</g>`;
+ for(let n=1;n<=12;n++){const [x,y]=P(n*30,104);s+=`<image href="${GEM_IMG[n]}" x="${x-17}" y="${y-17}" width="34" height="34"/>`;}
+ s+=`<g id="ghost" class="ghost hidden"><line id="gh" class="hand-h" x1="0" y1="0" x2="0" y2="-62" stroke="${HOUR}"/><line id="gm" class="hand-m" x1="0" y1="0" x2="0" y2="-112" stroke="${MINUTE}"/></g>`;
+ s+=`<g id="hm"><line class="hand-m" x1="0" y1="14" x2="0" y2="-112"/><g class="badge" transform="translate(0 -100)"><circle r="11" fill="${MINUTE}"/><text>分</text></g></g>`;
+ s+=`<g id="hh"><line class="hand-h" x1="0" y1="10" x2="0" y2="-60"/><g class="badge" transform="translate(0 -50)"><circle r="13" fill="${HOUR}"/><text>時</text></g></g>`;
+ s+=`<circle r="7" class="pin"/>`;
+ $('dial').innerHTML=s;
+}
+function draw(){
+ const L=lesson,room=Math.floor(ms(t)/60);
+ $('hh').setAttribute('transform',`rotate(${ms(t)/2})`);$("hm").setAttribute("transform",`rotate(${(ms(t)%60)*6})`);
+ $('hh').classList.toggle('hidden',!L.hour);$('hm').classList.toggle('hidden',!L.minute);
+ $('minnums').classList.toggle('hidden',!L.minute);
+ for(const r of document.querySelectorAll('.room')){const on=L.hour&&Number(r.dataset.room)===room;r.setAttribute('fill-opacity',L.hour?(on?.8:.24):.12);}
+ for(const l of document.querySelectorAll('.roomlabel')){const on=Number(l.dataset.room)===room;l.classList.toggle('on',on&&L.hour);l.style.opacity=L.labels&&L.hour?(on?1:.55):0;}
+ const mm=minOf(t);for(const n of document.querySelectorAll('.minnum'))n.classList.toggle('on',Number(n.dataset.min)===mm&&L.minute);
+ $('ghost').classList.toggle('hidden',ghost===null);
+ if(ghost!==null){$('gh').setAttribute('transform',`rotate(${ms(ghost)/2})`);$('gm').setAttribute('transform',`rotate(${minOf(ghost)*6})`);$('gh').classList.toggle('hidden',!L.hour);$('gm').classList.toggle('hidden',!L.minute);}
+ // While setting, the child sees what the hands say; while reading, nothing gives the answer away.
+ const ro=$('readout');
+ if(q&&!q.read&&!answered){const parts=[];if(L.hour)parts.push(`<span class="rh">短い針 → ${hourOf(t)}のへや（${hourOf(t)}時）</span>`);if(L.minute)parts.push(`<span class="rm">長い針 → ${mm}分</span>`);ro.innerHTML=parts.join('');}
+ else ro.innerHTML='';
+}
+// Drag the hand you grab: near the centre it is the short hand, further out the long hand.
+function angleOf(e){const b=$('dial').getBoundingClientRect(),x=e.clientX-b.left-b.width/2,y=e.clientY-b.top-b.height/2;return {a:(Math.atan2(x,-y)*180/Math.PI+360)%360,r:Math.hypot(x,y)/(b.width/2)*160};}
+$('dial').addEventListener('pointerdown',e=>{
+ if(!q||q.read||answered)return;const {a,r}=angleOf(e);
+ let hand=lesson.drag;if(hand==='both')hand=r<72?'hour':'minute';
+ drag={hand,last:a};$('dial').setPointerCapture(e.pointerId);$('dial').classList.add('drag');move(a);
+});
+$('dial').addEventListener('pointermove',e=>{if(drag)move(angleOf(e).a);});
+const end=()=>{if(!drag)return;drag=null;$('dial').classList.remove('drag');
+ if(lesson.drag!=='hour'||lesson.exact)t=Math.round(t/lesson.step)*lesson.step;draw();};
+$('dial').addEventListener('pointerup',end);$('dial').addEventListener('pointercancel',end);
+function move(a){
+ const before=t;
+ if(drag.hand==='hour'){
+  if(lesson.exact)t=Math.floor(a/30)*60;               // snaps into a room at "ちょうど"
+  else if(!lesson.minute)t=a*2;                          // the short hand alone glides freely
+  else t=Math.floor(a/30)*60+minOf(t);                   // keep the minutes, change the room
+ }else{let d=a-drag.last;if(d>180)d-=360;if(d<-180)d+=360;t=ms(t+d/6);}  // the long hand pulls the short hand along
+ drag.last=a;
+ if(Math.floor(ms(before)/60)!==Math.floor(ms(t)/60))tone(740,.06);else if(Math.round(before/5)!==Math.round(t/5)&&drag.hand==='minute')tone(1100,.02,.03);
+ draw();
+}
+
+// ---------- sound and voice ----------
+let ac=null;
+function tone(f,d=.1,g=.07){try{ac??=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),v=ac.createGain();o.frequency.value=f;o.type='triangle';v.gain.setValueAtTime(g,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v).connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch{}}
+function say(s){if(!voice||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s);u.lang='ja-JP';u.rate=.95;speechSynthesis.speak(u);}catch{}}
+$('voice-btn').onclick=()=>{voice=!voice;$('voice-btn').textContent=voice?'🔊 こえ':'🔈 こえ';$('voice-btn').setAttribute('aria-pressed',String(voice));};
+
+// ---------- flow ----------
+function startLesson(i){
+ li=i;lesson=LESSONS[i];qi=0;mistakes=0;hints=0;results=[];$('menu').hidden=true;$('result').hidden=true;
+ $('title').innerHTML=`${i+1}. ${lesson.title}<small id="goal">${lesson.goal}</small>`;
+ ask();
+}
+function ask(){
+ q=make(lesson.qs[qi]);tries=0;answered=false;ghost=null;$('sheet').hidden=true;
+ const who=PEOPLE[qi%PEOPLE.length];
+ if(q.read){t=q.h===null?rnd(12)*60+q.m:ms(q.h*60+q.m);
+  $('task').innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">✈️ ${who.name}の荷物をのせた便が帰ってきた！</div><div class="line">${q.prompt}</div></div>`;
+  $('actions').innerHTML=`<div class="choices">${q.options.map(o=>`<button class="choice" data-key="${o.key}" type="button"${o.gem?` style="border-color:${GEM[o.gem%12]}"`:''}>${o.label}</button>`).join('')}</div>`;
+  for(const b of document.querySelectorAll('.choice'))b.onclick=()=>choose(b);
+ }else{t=q.start;
+  const ticket=q.kind==='setMin'?`<span class="t-m">${q.m}分</span>`:q.kind==='setRoom'?`<span class="t-h">${q.h}時</span>のへや`:html(q.h,q.m);
+  $('task').innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}のちゅうもん</div><div class="ticket">${ticket}</div><div class="line" style="font-size:13px">${q.prompt}</div></div>`;
+  $('actions').innerHTML=`<button class="stamp" id="stamp" type="button">刻印をおす</button>`;$('stamp').onclick=submit;
+  say(q.kind==='setMin'?`${q.m}ふん`:q.kind==='setRoom'?`${q.h}じのへや`:spoken(q.h,q.m));
+ }
+ dots();draw();
+}
+function dots(){$('dots').innerHTML=lesson.qs.map((_,i)=>`<i class="${i<qi?(results[i]?'done':'miss'):i===qi?'now':''}"></i>`).join('');}
+const spoken=(h,m)=>`${h}じ${m?`${m}ふん`:'ちょうど'}`;
+// Explain each hand in turn: which room the short hand is in, which number the long hand points to.
+function steps(time,L=lesson){
+ const h=hourOf(time),m=minOf(time),out=[];
+ if(L.hour)out.push(`<div>短い針は <b class="h">${h}のへや</b> → <b class="h">${h}時</b></div>`);
+ if(L.minute)out.push(`<div>長い針は <b class="m">${m?`${m/5}`:'12'}</b> → <b class="m">${m?`${m}分`:'ちょうど'}</b></div>`);
+ out.push(`<div class="sum">だから ${L.hour&&L.minute?html(h,m):L.hour?`<span class="t-h">${h}時</span>`:`<span class="t-m">${m}分</span>`}！</div>`);
+ return out.join('');
+}
+function correct(){
+ if(q.kind==='setRoom')return hourOf(t)===q.h;
+ if(q.kind==='setMin')return minOf(t)===q.m;
+ return hourOf(t)===q.h&&minOf(t)===q.m;
+}
+function submit(){
+ if(answered)return;const ok=correct();tries++;
+ if(ok){finishQ(true);return;}
+ mistakes++;tone(200,.2,.08);
+ const wrongHour=lesson.hour&&q.h!==null&&hourOf(t)!==q.h,wrongMin=lesson.minute&&q.m!==null&&minOf(t)!==q.m;
+ const why=[wrongHour?`短い針は <b class="h">${hourOf(t)}のへや</b> にいるよ。<b class="h">${q.h}のへや</b>に入れよう。`:'',wrongMin?`長い針は <b class="m">${minOf(t)}分</b> をさしているよ。<b class="m">${q.m}分</b>は外の数字の<b class="m">${q.m}</b>。`:''].filter(Boolean).join('<br>');
+ if(tries>=2){ghost=q.kind==='setMin'?(Math.floor(ms(t)/60)*60+q.m):q.kind==='setRoom'?q.h*60+30:ms(q.h*60+q.m);draw();}
+ sheet(`<h2 class="ng">おしい！</h2><div class="steps"><div>${why}</div>${tries>=2?'<div>点線の針が、正かいの場所だよ。</div>':''}</div><div class="row"><button class="again" id="retry" type="button">もういちど</button></div>`);
+ $('retry').onclick=()=>{$('sheet').hidden=true;};say(tries>=2?'てんせんの はりを みてね':'おしい！ もういちど');
+}
+function choose(b){
+ if(answered)return;const ok=b.dataset.key===q.answer;tries++;
+ if(ok){b.classList.add('right');finishQ(true);return;}
+ mistakes++;b.classList.add('wrong');b.disabled=true;tone(200,.2,.08);
+ const [hh,mm]=b.dataset.key.split(':').map(Number);
+ let why='';
+ if(q.kind==='readRoom')why=`短い針は、数字の <b class="h">${q.h}</b> から <b class="h">${nextH(q.h)}</b> のあいだ。<b class="h">${q.h}のへや</b>の色を見てみよう。`;
+ else if(q.kind==='readMin')why=`長い針がさす外の数字を見てみよう。数字の <b class="m">${q.m/5}</b> は <b class="m">${q.m}分</b>だよ。`;
+ else if(hh!==q.h)why=`短い針はまだ <b class="h">${nextH(q.h)}</b> をこえていないよ。<b class="h">${q.h}のへや</b>にいるね。`;
+ else why=`長い針は外の数字を読もう。<b class="m">${q.m?q.m/5:12}</b> は <b class="m">${q.m?`${q.m}分`:'ちょうど'}</b>。`;
+ sheet(`<h2 class="ng">おしい！</h2><div class="steps"><div>${why}</div></div><div class="row"><button class="again" id="retry" type="button">もういちど えらぶ</button></div>`);
+ $('retry').onclick=()=>{$('sheet').hidden=true;};say('おしい！');
+}
+function finishQ(ok){
+ answered=true;results[qi]=tries===1;draw();tone(880,.12);setTimeout(()=>tone(1320,.18),120);
+ const time=q.kind==='setRoom'?t:q.read?t:t;
+ sheet(`<h2 class="ok">せいかい！</h2><div class="steps">${steps(time)}</div><div class="row"><button class="next" id="next" type="button">${qi+1<lesson.qs.length?'つぎへ':'けっかを見る'}</button></div>`);
+ const h=hourOf(time),m=minOf(time);
+ say(`せいかい！ ${lesson.hour&&lesson.minute?spoken(h,m):lesson.hour?`${h}じ`:`${m}ふん`}`);
+ $('next').onclick=()=>{qi++;if(qi<lesson.qs.length)ask();else finishLesson();};
+}
+function sheet(content){$('sheet-card').innerHTML=content;$('sheet').hidden=false;$('sheet-card').querySelector('button')?.focus();}
+function finishLesson(){
+ const lost=mistakes+hints,stars=lost===0?3:lost<=2?2:1;best[li]=Math.max(best[li]||0,stars);try{localStorage.setItem('clock-lesson-stars',JSON.stringify(best));}catch{}
+ $('sheet').hidden=true;
+ $('result-panel').innerHTML=`<h2>${lesson.title} おしまい！</h2><div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="text-align:center">まちがい ${mistakes}回 · ヒント ${hints}回</p><p style="text-align:center;font-size:13px">★★★ まちがい・ヒントなし　★★ 2回まで</p><div class="lessons"><button class="next" id="again-l" type="button">もういちど</button>${li+1<LESSONS.length?`<button class="next" id="next-l" type="button" style="background:${MINUTE}">つぎのレッスンへ</button>`:''}<button class="again" id="list-l" type="button">レッスンをえらぶ</button></div>`;
+ $('result').hidden=false;$('again-l').onclick=()=>startLesson(li);$('list-l').onclick=showMenu;if($('next-l'))$('next-l').onclick=()=>startLesson(li+1);
+ say(stars===3?'かんぺき！':'よくがんばったね');
+}
+$('hint-btn').onclick=()=>{
+ if(!q||answered)return;hints++;
+ if(q.read){const m=q.m,h=q.h;sheet(`<h2>ヒント</h2><div class="steps">${lesson.hour&&h!==null?`<div>短い針がいる<b class="h">へやの色</b>を見よう。数字から、つぎの数字までが1つのへや。</div>`:''}${lesson.minute?`<div>長い針は<b class="m">外がわの数字</b>を読もう。5、10、15…</div>`:''}</div><div class="row"><button class="again" id="retry" type="button">とじる</button></div>`);}
+ else{ghost=q.kind==='setMin'?(Math.floor(ms(t)/60)*60+q.m):q.kind==='setRoom'?q.h*60+30:ms(q.h*60+q.m);draw();sheet(`<h2>ヒント</h2><div class="steps"><div>点線の針のところに合わせてみよう。</div></div><div class="row"><button class="again" id="retry" type="button">とじる</button></div>`);}
+ $('retry').onclick=()=>{$('sheet').hidden=true;};
+};
+function showMenu(){
+ $('result').hidden=true;$('sheet').hidden=true;
+ $('lessons').innerHTML=LESSONS.map((L,i)=>`<button class="lesson" type="button" data-i="${i}"><span class="no" style="background:${i===2?MINUTE:HOUR}">${i+1}</span><span><b>${L.title}</b><small>${L.goal}</small></span><span class="st">${'★'.repeat(best[i]||0)}${'☆'.repeat(3-(best[i]||0))}</span></button>`).join('');
+ for(const b of document.querySelectorAll('.lesson'))b.onclick=()=>startLesson(Number(b.dataset.i));
+ $('menu').hidden=false;
+}
+$('menu-btn').onclick=showMenu;
+buildDial();lesson=LESSONS[0];q=null;t=3*60+50;draw();showMenu();
+</script>
