@@ -50,7 +50,7 @@ function renderHome(){
   app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.8.2</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
-  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物をあずかろう。荷札の時刻に時計の針を合わせて刻印すると、飛行機が友だちの島へ飛んでいきます。</p><p>短い針は「時の針」。いる宝石のへやが何時かを教えてくれます。長い針は「分の針」。外がわの数字を読みます。文字盤の真ん中近くをなぞると短い針、外がわをなぞると長い針が動きます。</p><p>帰ってきた便には、おへんじの手紙。時計の時刻を読んで、おかえしを受けとろう。時間せいげんはありません。</p><p>36の便をぜんぶ届けると、閉店のない「空の中央便」がひらきます。こちらは時計がどんどん進む、いそがしい一日です。</p>');
+  $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
   $('#home-share').onclick=async()=>{const data={title:'Miracle Clock',text:'ルカと空のとけい便。魔法の時計で、浮遊島へ荷物を届けよう。',url:'https://miracle-clock.vercel.app/'};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(data.url);$('#home-share').textContent='リンクをコピーしました';}}catch(e){if(e.name!=='AbortError')openModal('<h2>友だちに教える</h2><p><a href="https://miracle-clock.vercel.app/">miracle-clock.vercel.app</a></p><p>このリンクをコピーして教えてね。</p>');}};
 }
 function bindSound(){const b=$('.sound');if(b){b.title='音の設定';b.addEventListener('click',audioSettingsDialog);}}
@@ -166,7 +166,7 @@ function startLevel(input,slow=false){
  session=routeSession(paced);session.stage=level;session.slow=slow;
  hand=nextMinute();freeHand=null;picked=null;hold=null;people.clear();tickets.clear();
  const place=level.endless?6:level.id,art=level.endless?5:level.id===5?6:level.id;
- app.innerHTML=`<main class="day-game scene" style="--depot-image:url(assets/depots/${art}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span id="score" class="score">お届け <b id="delivered">0</b>人</span><span id="lost" class="lost">取りこぼし 0</span></div></header><section class="day-strip" aria-label="今日の営業時間"><div class="day-track" id="day-track"></div><div class="day-labels"><span>${timeText(level.open,'period')} 開店</span><span class="now-time" id="now-time"><svg class="now-clock" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18"/><path id="now-h" d="M20 20V10"/><path id="now-m" d="M20 20V5"/><circle cx="20" cy="20" r="2"/></svg><span>いま <b id="now-text"></b></span></span><span>${level.endless?'閉店なし':clockLabel(level.close)+' 閉店'}</span></div></section><section class="shop-floor" aria-label="受付に並ぶお客さん"><svg class="shop-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div class="shop-line" id="shop-line"></div><div class="shop-says" id="shop-says" aria-hidden="true"></div><b id="day-combo" class="day-combo"></b><p class="shop-note" id="shop-note">開店！ お客さんがやってくるよ</p></section><section class="ticket-rail" id="tickets" aria-label="注文票"></section><section class="day-station"><div class="clock-bay"><div class="clock-housing">${dayClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>長押し</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}</div></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></section><div class="day-effects" aria-hidden="true"></div><p class="day-toast" id="feedback" role="status" aria-live="polite"></p></main>`;
+ app.innerHTML=`<main class="day-game scene" style="--depot-image:url(assets/depots/${art}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span id="score" class="score">お届け <b id="delivered">0</b>人</span><span id="lost" class="lost">取りこぼし 0</span></div></header><section class="day-strip" aria-label="今日の営業時間"><div class="day-track" id="day-track"></div><div class="day-labels"><span>${timeText(level.open,'period')} 開店</span><span class="now-time" id="now-time"><svg class="now-clock" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18"/><path id="now-h" d="M20 20V10"/><path id="now-m" d="M20 20V5"/><circle cx="20" cy="20" r="2"/></svg><span>いま <b id="now-text"></b></span></span><span>${level.endless?'閉店なし':clockLabel(level.close)+' 閉店'}</span></div></section><section class="shop-floor" aria-label="受付に並ぶお客さん"><svg class="shop-backdrop" viewBox="${place%2*627} ${Math.floor(place/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><div class="shop-line" id="shop-line"></div><div class="shop-says" id="shop-says" aria-hidden="true"></div><b id="day-combo" class="day-combo"></b><p class="shop-note" id="shop-note">開店！ お客さんがやってくるよ</p></section><section class="ticket-rail" id="tickets" aria-label="注文票"></section><section class="day-station"><div class="clock-bay"><div class="clock-housing">${dayClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印を押す"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small>長押し</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}</div></div><div class="clock-tools"><button class="text-button" id="guide" aria-pressed="${!!level.guide}">分のめもり ${level.guide?'ON':'OFF'}</button><button class="text-button" id="hint">ヒント</button><button class="text-button" id="elements">鉱石</button></div></section><div class="day-effects" aria-hidden="true"></div><p class="day-toast" id="feedback" role="status" aria-live="polite"></p></main>`;
  $('#clock').classList.toggle('show-guide',!!level.guide);$('#pause').onclick=()=>pauseGame();bindSeal();$('#elements').onclick=showElements;
  $('#guide').onclick=e=>{const on=$('#clock').classList.toggle('show-guide');e.currentTarget.textContent=`分のめもり ${on?'ON':'OFF'}`;e.currentTarget.setAttribute('aria-pressed',on);};
  $('#hint').onclick=showHint;
@@ -393,7 +393,7 @@ function showResult(won,stars){
 // No clock runs here. Each stage is three short stories told in six steps; the endless central post keeps the day clock.
 // The screen reuses the day clock's parts: the depot counter, residents, order tickets, the magic clock and its seal.
 const POST_ART=[0,1,2,3,4,6];
-const POST_ASKS=['{t}に とどけてね！','{t}に おねがい！','{t}に まにあうかな？','{t}の便に のせてね'];
+const POST_ASKS=['{t}に届けてほしいんだ。','{t}の便でお願い！','{t}に間に合うかな？','{t}着でお願いできる？'];
 let post=null;
 const postPerson=(c,v)=>({region:c,variant:v,name:v<0?customers[c].name:residents[c][v]});
 const postPlace=c=>customers[c].destination;
@@ -402,7 +402,7 @@ const postPlain=s=>s.replace(/<[^>]+>/g,'');
 const postAt=(deg,r)=>[150+Math.sin(deg*Math.PI/180)*r,150-Math.cos(deg*Math.PI/180)*r].map(n=>Math.round(n*100)/100);
 const postWedge=(a0,a1,r)=>{const [x0,y0]=postAt(a0,r),[x1,y1]=postAt(a1,r);return `M150 150L${x0} ${y0}A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1} ${y1}Z`;};
 function postDetails(level){
- openModal(`<p class="eyebrow">${stageHeading(level)}</p><h2>${level.stageTitle}</h2><p class="start-goal">3人のお客さん · 荷物を送って、おへんじを読もう</p><p class="start-tip">荷札の時刻に針を合わせて、時計の真ん中の刻印をおすと、飛行機が飛んでいくよ。帰ってきた便は、おへんじの時刻を時計で読もう。</p><p class="start-rule">時間せいげんはないよ。短い針は「時」、長い針は「分」。</p><p class="start-stars">★★★ まちがい・ヒントなし · ★★ 2回まで</p><button class="primary" id="open-shop">受付をはじめる</button>`);
+ openModal(`<p class="eyebrow">${stageHeading(level)}</p><h2>${level.stageTitle}</h2><p class="start-goal">お客さん3人 · 荷物を送り出し、返事の時刻を読み解こう</p><p class="start-tip">荷札の時刻に針を合わせて中心の刻印を押すと、配送機が飛び立つ。戻った便は、返事が書かれた時刻を文字盤から読み取ろう。</p><p class="start-rule">時間制限なし。短い針が「時」、長い針が「分」を受け持つ。</p><p class="start-stars">★★★ ミス・ヒントなし · ★★ 2回まで</p><button class="primary" id="open-shop">受付を始める</button>`);
  $('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startPost(level);};
 }
 // The magic clock from the day screen, plus twelve gem "rooms" for the short hand, 時/分 tokens on the hands,
@@ -424,11 +424,11 @@ function startPost(level){
  const senders=[-1,0,1,2].sort(()=>Math.random()-.5).map(v=>postPerson(c,v)),all=postStories[c].map(([item,what,to,reply,gift,giftName])=>({item,what,to,reply,gift,giftName}));
  const fresh=all.filter(x=>!owned.has(x.gift)).sort(()=>Math.random()-.5),seen=all.filter(x=>owned.has(x.gift)).sort(()=>Math.random()-.5);
  post={level,cfg,intro,qi:0,q:null,t:0,pm:false,mistakes:0,hints:0,tries:0,answered:false,helped:false,leaving:false,results:[],gifts:[],drag:null,ghost:null,started:performance.now(),tales:[...fresh,...seen].slice(0,3).map((x,k)=>({...x,who:senders[k]}))};
- app.innerHTML=`<main class="day-game post-mode scene" style="--depot-image:url(assets/depots/${POST_ART[c]}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span class="score">お届け <b id="delivered">0</b>/3</span><span class="post-gifts" id="post-gifts" aria-label="もらったおかえし"></span></div></header>
+ app.innerHTML=`<main class="day-game post-mode scene" style="--depot-image:url(assets/depots/${POST_ART[c]}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span class="score">お届け <b id="delivered">0</b>/3</span><span class="post-gifts" id="post-gifts" aria-label="もらったお返し"></span></div></header>
 <section class="shop-floor post-floor" aria-label="配送所の受付"><svg class="shop-backdrop" viewBox="${c%2*627} ${Math.floor(c/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><img class="post-toto" src="assets/sky-toto.webp" alt="トトじい"><div class="shop-person post-customer" id="post-customer"></div><span class="order-bubble post-bubble" id="post-bubble"></span><img class="post-plane" id="post-plane" src="assets/delivery-plane.webp" alt=""></section>
 <div class="post-talk"><img class="toto" src="assets/sky-toto.webp" alt=""><p id="post-say" aria-live="polite"></p></div>
-<section class="ticket-rail post-rail" id="post-rail" aria-label="荷札とおへんじ"></section>
-<section class="day-station"><div class="clock-bay"><div class="clock-housing">${postClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印をおす"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small id="seal-sub">おす</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}</div></div><div class="clock-tools post-tools"><button class="text-button" id="post-hint" type="button">トトじいに聞く</button></div></section>
+<section class="ticket-rail post-rail" id="post-rail" aria-label="荷札と返事"></section>
+<section class="day-station"><div class="clock-bay"><div class="clock-housing">${postClockMarkup()}<button class="seal-button" id="seal-button" aria-label="時計の中心で刻印を押す"><svg class="seal-engraving" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38"/><path d="M50 8l3 6-3 6-3-6zM50 80l3 6-3 6-3-6zM8 50l6-3 6 3-6 3zM80 50l6-3 6 3-6 3zM29 26q21-13 42 0M29 74q21 13 42 0"/></svg><span>刻印</span><small id="seal-sub">押す</small></button><span class="seal-ripple" aria-hidden="true"></span>${spellMarkup()}</div></div><div class="clock-tools post-tools"><button class="text-button" id="post-hint" type="button">トトじいに聞く</button></div></section>
 <div class="day-effects" aria-hidden="true"></div><div class="post-sheet" id="post-sheet" hidden><div class="post-card parchment" id="post-card"></div></div></main>`;
  $('#pause').onclick=postPause;$('#post-hint').onclick=postHint;$('#seal-button').onclick=postSubmit;
  postBindDial();postAsk(true);window.scrollTo(0,0);
@@ -451,7 +451,7 @@ function postDraw(){
  if(rel){$('#ghost-hour').setAttribute('transform',`rotate(${postMs(q.now)/2} 150 150)`);$('#ghost-minute').setAttribute('transform',`rotate(${postMinOf(q.now)*6} 150 150)`);
   if(e){const a0=postMinOf(q.now)*6;$('#sweep').setAttribute('d',e>=60?`M150 55A95 95 0 1 1 149.99 55Z`:postWedge(a0,a0+e*6,95));}}
  $('#hour-hand').setAttribute('aria-valuenow',postHourOf(t));$('#minute-hand').setAttribute('aria-valuenow',postMinOf(t));$('#minute-hand').setAttribute('aria-valuetext',`${postHourOf(t)}時${postMinOf(t)}分`);
- const seal=$('#seal-button');seal.disabled=!q||q.read||post.answered;seal.classList.toggle('away',!!q?.read);$('#seal-sub').textContent=q?.read?'よむ':'おす';
+ const seal=$('#seal-button');seal.disabled=!q||q.read||post.answered;seal.classList.toggle('away',!!q?.read);$('#seal-sub').textContent=q?.read?'読む':'押す';
 }
 // Drag the hand you grab. Either hand can be taken by its own line; otherwise near the centre is the short hand.
 function postBindDial(){
@@ -478,8 +478,8 @@ function postMove(a){
 }
 function postTag(q){
  if(q.mode==='min')return `<span class="t-m">${q.m}分</span>`;
- if(q.mode==='room')return `<span class="t-h">${q.h}時</span><small>ごろ</small>`;
- if(q.mode==='rel')return `<small>いまから</small><span class="t-m">${postDuration(q.d)}後</span>`;
+ if(q.mode==='room')return `<span class="t-h">${q.h}時</span><small>台</small>`;
+ if(q.mode==='rel')return `<small>今から</small><span class="t-m">${postDuration(q.d)}後</span>`;
  return postTime(q.h,q.m,q.p,q.half);
 }
 // The customer at the counter, drawn with the same sprites and speech bubbles as the day screen.
@@ -493,22 +493,22 @@ function postAsk(first=false){
  const rail=$('#post-rail');rail.className=`ticket-rail post-rail ${read?'reading':'sending'}`;
  if(read){
   post.t=q.t;if(post.cfg.period)post.pm=q.p;
-  postStand(who,q.mode==='rel'?'何分 とんでいたのかな？':`${to.name}から おへんじ！`);
+  postStand(who,q.mode==='rel'?'何分飛んでいたんだろう？':`${to.name}から返事が届いた！`);
   // Three envelopes, each postmarked with a time: only the dial tells which one the reply was written at.
-  rail.innerHTML=q.options.map(o=>{const html=q.mode==='room'?`<span class="t-h">${o.h}時</span><small>ごろ</small>`:q.mode==='min'?`<span class="t-m">${o.m?o.m+'分':'ちょうど'}</span>`:q.mode==='rel'?`<span class="t-m">${postDuration(o.d)}</span>`:postTime(o.h,o.m,o.p,q.half);const n=postPlain(html).length;
+  rail.innerHTML=q.options.map(o=>{const html=q.mode==='room'?`<span class="t-h">${o.h}時</span><small>台</small>`:q.mode==='min'?`<span class="t-m">${o.m?o.m+'分':'ちょうど'}</span>`:q.mode==='rel'?`<span class="t-m">${postDuration(o.d)}</span>`:postTime(o.h,o.m,o.p,q.half);const n=postPlain(html).length;
    return `<button class="day-ticket post-envelope" data-key="${o.key}" type="button"${q.mode==='room'?` style="--tint:${elements[o.h%12].color}"`:''}><span class="post-postmark" aria-hidden="true"></span><strong class="ticket-time ${n>6?'long':n>4?'mid':''}">${html}</strong></button>`;}).join('');
   rail.querySelectorAll('.post-envelope').forEach(b=>b.onclick=()=>postChoose(b));
   postFly('arriving');
-  $('#post-say').innerHTML=q.mode==='rel'?'点線の針が 出発、ふつうの針が 帰ってきた時刻じゃ。分の針は どれだけ進んだかのう？':`${postPlace(tale.to)}の${to.name}が、おへんじを書いた時刻を 時計に刻んでくれたぞ。${q.mode==='min'?'<b class="m">分の針</b>がさす外の数字は？':q.mode==='room'?'<b class="h">時の針</b>は、どの宝石のへやかのう？':post.cfg.period?'針と、午前・午後の窓を よく見るんじゃ。':'時の針のへや、分の針の数字、じゅんばんに読もう。'}`;
+  $('#post-say').innerHTML=q.mode==='rel'?'点線の針が出発、実線の針が帰着の時刻じゃ。分の針はどれだけ進んだかのう？':`${postPlace(tale.to)}の${to.name}が、返事を書いた時刻を文字盤に刻んでくれたぞ。${q.mode==='min'?'<b class="m">分の針</b>が指す数字はどこじゃ？':q.mode==='room'?'<b class="h">時の針</b>はどの宝石の部屋かのう？':post.cfg.period?'針と、午前・午後の窓をよく見るんじゃ。':'時の針の部屋、分の針の数字の順に読むんじゃ。'}`;
   
  }else{
   post.t=q.start;if(post.cfg.period)post.pm=post.cfg.only!==undefined?!!post.cfg.only:Math.random()<.5;
-  const when=postPlain(postTag(q)),line=q.mode==='rel'?`${postDuration(q.d)}後に とどけてね！`:POST_ASKS[Math.floor(Math.random()*POST_ASKS.length)].replace('{t}',when);
+  const when=postPlain(postTag(q)),line=q.mode==='rel'?`${postDuration(q.d)}後に届けてほしいんだ。`:POST_ASKS[Math.floor(Math.random()*POST_ASKS.length)].replace('{t}',when);
   postStand(who,line);
-  rail.innerHTML=`<div class="day-ticket post-order" style="--tint:${regionColors[who.region]}"><span class="post-order-face">${residentFace(who)}</span><span class="post-order-body"><strong class="ticket-time">${postTag(q)}</strong><small>${tale.item} ${tale.what} → ${postPlace(tale.to)}の${to.name}へ${q.mode==='rel'?` · いま ${postHourOf(q.now)}時${postMinOf(q.now)?postMinOf(q.now)+'分':''}`:''}</small></span></div>${post.cfg.period?'<div class="period-toggle post-ampm" role="group" aria-label="午前か午後"><button type="button" data-pm="0">☀️ 午前</button><button type="button" data-pm="1">🌙 午後</button></div>':''}`;
+  rail.innerHTML=`<div class="day-ticket post-order" style="--tint:${regionColors[who.region]}"><span class="post-order-face">${residentFace(who)}</span><span class="post-order-body"><strong class="ticket-time">${postTag(q)}</strong><small>${tale.item} ${tale.what} → ${postPlace(tale.to)}の${to.name}へ${q.mode==='rel'?` · 今 ${postHourOf(q.now)}時${postMinOf(q.now)?postMinOf(q.now)+'分':''}`:''}</small></span></div>${post.cfg.period?'<div class="period-toggle post-ampm" role="group" aria-label="午前か午後"><button type="button" data-pm="0">☀️ 午前</button><button type="button" data-pm="1">🌙 午後</button></div>':''}`;
   rail.querySelectorAll('.post-ampm button').forEach(b=>b.onclick=()=>{post.pm=b.dataset.pm==='1';postPick();postDraw();});postPick();
   $('#post-plane').className='post-plane';
-  $('#post-say').innerHTML=first?post.intro:q.mode==='min'?'<b class="m">分の針</b>を、荷札の数字に合わせるんじゃ。':q.mode==='room'?`<b class="h">時の針</b>を <b class="h">${q.h}のへや</b> に入れておくれ。`:q.mode==='rel'?'点線の針が いまの時刻。そこから分の針を すすめるんじゃ。':post.cfg.period?'針を合わせたら、午前か午後かも えらぶんじゃ。':'針を荷札の時刻に合わせたら、真ん中の刻印じゃ！';
+  $('#post-say').innerHTML=first?post.intro:q.mode==='min'?'<b class="m">分の針</b>を荷札の数字に合わせるんじゃ。':q.mode==='room'?`<b class="h">時の針</b>を<b class="h">${q.h}の部屋</b>に入れておくれ。`:q.mode==='rel'?'点線の針が今の時刻。そこから分の針を進めるんじゃ。':post.cfg.period?'針を合わせたら、午前か午後かも選ぶんじゃ。':'針を荷札の時刻に合わせたら、中心の刻印じゃ！';
   
  }
  postScore();postDraw();
@@ -533,11 +533,11 @@ function postSubmit(){
  if(postCorrect(q,post.t,post.pm,post.cfg)){postDone();return;}
  post.mistakes++;playSound('wrong');$('#clock').animate?.([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'none'}],{duration:260});
  let why;
- if(q.mode==='rel'){const e=postElapsed();why=`いまは <b class="m">${e?postDuration(e):'0分'}</b> すすんだところじゃ。<b class="m">${postDuration(q.d)}</b> すすめておくれ。${q.d>=60?'1時間は 分の針<b>ひとまわり</b>じゃ。':''}`;}
+ if(q.mode==='rel'){const e=postElapsed();why=`今は<b class="m">${e?postDuration(e):'0分'}</b>進めたところじゃ。<b class="m">${postDuration(q.d)}</b>進めておくれ。${q.d>=60?'1時間は分の針の<b>一周</b>じゃ。':''}`;}
  else{const t=post.t,wrongHour=postShowHour()&&q.h!==null&&postHourOf(t)!==q.h,wrongMin=postShowMin()&&q.m!==null&&postMinOf(t)!==q.m,wrongPm=post.cfg.period&&post.pm!==q.p;
-  why=[wrongHour?`時の針は いま <b class="h">${postHourOf(t)}のへや</b> におるぞ。<b class="h">${q.h}のへや</b>に入れておくれ。`:'',wrongMin?`分の針は いま <b class="m">${postMinOf(t)}分</b> じゃ。<b class="m">${q.m}分</b>の場所を さがそう。`:'',wrongPm?`針は ぴったり！ でも荷札は <b>${q.p?'午後':'午前'}</b>じゃよ。${post.cfg.period==='24'&&q.p?`${q.h%12+12}時は 午後${q.h===12?0:q.h}時じゃ。`:''}`:''].filter(Boolean).join('<br>');}
+  why=[wrongHour?`時の針は今<b class="h">${postHourOf(t)}の部屋</b>におるぞ。<b class="h">${q.h}の部屋</b>に入れておくれ。`:'',wrongMin?`分の針は今<b class="m">${postMinOf(t)}分</b>じゃ。<b class="m">${q.m}分</b>の位置を探すんじゃ。`:'',wrongPm?`針はぴったりじゃ！ だが荷札は<b>${q.p?'午後':'午前'}</b>じゃよ。${post.cfg.period==='24'&&q.p?`${q.h%12+12}時は午後${q.h===12?0:q.h}時じゃ。`:''}`:''].filter(Boolean).join('<br>');}
  if(post.tries>=2){post.ghost=postTarget(q,post.t);post.helped=true;postDraw();}
- postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針のところに、わしが印をつけておいたぞ。</p>':''}`,'もういちど','ng');
+ postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
  $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;};
 }
 function postChoose(b){
@@ -545,13 +545,13 @@ function postChoose(b){
  if(b.dataset.key===q.answer){b.classList.add('matching');postDone();return;}
  post.mistakes++;b.classList.add('missed');b.disabled=true;playSound('wrong');
  const [hh,,pp]=b.dataset.key.split(':');let why;
- if(q.mode==='room')why=`時の針は、宝石の <b class="h">${q.h}</b> と <b class="h">${q.h%12+1}</b> のあいだ。<b class="h">${q.h}のへや</b>の色を見てごらん。`;
- else if(q.mode==='min')why=q.m%5===0?`分の針がさす数字を見るんじゃ。宝石の <b class="m">${q.m?q.m/5:12}</b> のところは <b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃよ。`:`分の針は <b class="m">${q.m-q.m%5}</b> から 目もり<b class="m">${q.m%5}</b>つ すすんだところじゃ。`;
- else if(q.mode==='rel')why='点線の分の針から、ふつうの分の針まで 数えてごらん。数字ひとつで<b class="m">5分</b>、ひとまわりで<b class="m">1時間</b>じゃ。';
- else if(post.cfg.period&&pp!==String(q.p))why=`時計の窓を見てごらん。<b>${q.p?'午後':'午前'}</b>と書いてあるぞ。`;
- else if(Number(hh)!==q.h)why=`時の針は、まだ <b class="h">${q.h%12+1}</b> をこえておらん。<b class="h">${q.h}のへや</b>におるのう。`;
- else why=`分の針は数字で読むんじゃ。<b class="m">${q.m?(q.m%5?`${Math.floor(q.m/5)}と目もり${q.m%5}つ`:q.m/5):12}</b> のところは <b class="m">${q.m?q.m+'分':'ちょうど'}</b>。`;
- postSheet(q.mode==='rel'?'その時間じゃないみたい':'この封筒じゃないみたい',`<p>${why}</p>`,'もういちど えらぶ','ng');
+ if(q.mode==='room')why=`時の針は宝石の<b class="h">${q.h}</b>と<b class="h">${q.h%12+1}</b>の間。<b class="h">${q.h}の部屋</b>の色を見るんじゃ。`;
+ else if(q.mode==='min')why=q.m%5===0?`分の針が指す数字を見るんじゃ。宝石の<b class="m">${q.m?q.m/5:12}</b>の位置は<b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃよ。`:`分の針は<b class="m">${q.m-q.m%5}分</b>から目盛り<b class="m">${q.m%5}</b>つ進んだ位置じゃ。`;
+ else if(q.mode==='rel')why='点線の分の針から実線の分の針まで数えるんじゃ。数字一つで<b class="m">5分</b>、一周で<b class="m">1時間</b>じゃ。';
+ else if(post.cfg.period&&pp!==String(q.p))why=`文字盤の窓を見るんじゃ。<b>${q.p?'午後':'午前'}</b>と書いてあるぞ。`;
+ else if(Number(hh)!==q.h)why=`時の針はまだ<b class="h">${q.h%12+1}</b>を越えておらん。<b class="h">${q.h}の部屋</b>におるのう。`;
+ else why=`分の針は数字で読むんじゃ。<b class="m">${q.m?(q.m%5?`${Math.floor(q.m/5)}と目盛り${q.m%5}つ`:q.m/5):12}</b>の位置は<b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃ。`;
+ postSheet(q.mode==='rel'?'その時間ではないようじゃ':'この封筒ではないようじゃ',`<p>${why}</p>`,'選び直す','ng');
  $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;};
 }
 // The seal's spell burst and the parcel stamp from the day screen, for every right answer.
@@ -569,12 +569,12 @@ function postDone(){
   post.gifts.push(tale.gift);record.gifts=record.gifts||[];const isNew=!record.gifts.includes(tale.gift);if(isNew)record.gifts.push(tale.gift);
   playSound('win');postCelebrate(`${tale.gift} ${tale.giftName}！`);postStand(tale.who,'わあ、ありがとう！','served');
   const letter=`<div class="post-letter"><p class="eyebrow">${postPlace(tale.to)}の${to.name}より</p><p>${tale.reply}</p><strong class="post-gift"><span>${tale.gift}</span> ${tale.giftName}${isNew?' <em>NEW!</em>':''}</strong></div>`;
-  postSheet(`${tale.who.name}に おへんじを わたしたぞ！`,`<p class="sum">${q.mode==='rel'?`${postNamed()} の空の旅じゃった。`:`${postNamed()}に 書いた手紙じゃ。`}</p>`,last?'今日の日誌をつける':'つぎのお客さん','ok',letter);
+  postSheet(`${tale.who.name}に返事を渡したぞ！`,`<p class="sum">${q.mode==='rel'?`${postNamed()}の空の旅じゃった。`:`${postNamed()}に書かれた手紙じゃ。`}</p>`,last?'今日の日誌をつける':'次のお客さん','ok',letter);
   
  }else{
   playSound('imprint');setTimeout(()=>playSound('send'),250);postCelebrate('いってらっしゃい！');postFly('leaving-off');
-  postStand(tale.who,`${tale.item} ${postPlace(tale.to)}まで おねがい！`,'served');
-  postSheet(`ぴったりじゃ！ 飛んでいけ〜`,`<p class="sum">${postNamed()}の便、${postPlace(tale.to)}へ 出発じゃ！</p>`,'おへんじを まつ ✉️','ok');
+  postStand(tale.who,`${postPlace(tale.to)}まで、よろしくね！`,'served');
+  postSheet('ぴったりじゃ！ 飛んでいけ！',`<p class="sum">${postNamed()}の便、${postPlace(tale.to)}へ出発じゃ！</p>`,'返事を待つ ✉️','ok');
   
  }
  postScore();
@@ -582,12 +582,12 @@ function postDone(){
 }
 function postHint(){
  if(!post?.q||post.answered||!$('#post-sheet').hidden)return;const q=post.q,cfg=post.cfg;post.hints++;post.helped=true;
- if(q.read)postSheet('どれ、わしが見てみよう',q.mode==='rel'?'<p>点線の分の針から、数字をひとつずつ数えてごらん。数字ひとつで5分じゃ。</p>':`${postShowHour()?'<p><b class="h">時の針</b>がいる宝石のへやを見るんじゃ。宝石から、つぎの宝石までがひとつのへや。</p>':''}${postShowMin()?'<p><b class="m">分の針</b>は、さしている数字を5、10、15…と読むんじゃ。</p>':''}${cfg.period?'<p>午前か午後かは、時計の<b>窓</b>に書いてあるぞ。</p>':''}`,'わかった！');
- else{post.ghost=postTarget(q,post.t);postDraw();postSheet('どれ、わしが印をつけよう',`<p>点線の針のところに合わせてごらん。${cfg.period?`窓は <b>${q.p?'午後':'午前'}</b>じゃ。`:''}</p>`,'わかった！');}
+ if(q.read)postSheet('どれ、わしが見てみよう',q.mode==='rel'?'<p>点線の分の針から、数字を一つずつ数えるんじゃ。数字一つで5分じゃ。</p>':`${postShowHour()?'<p><b class="h">時の針</b>がいる宝石の部屋を見るんじゃ。宝石から次の宝石までが一つの部屋じゃ。</p>':''}${postShowMin()?'<p><b class="m">分の針</b>は、指している数字を5、10、15…と読むんじゃ。</p>':''}${cfg.period?'<p>午前か午後かは、文字盤の<b>窓</b>に書いてあるぞ。</p>':''}`,'わかった');
+ else{post.ghost=postTarget(q,post.t);postDraw();postSheet('どれ、わしが印をつけよう',`<p>点線の針の位置に合わせてみるんじゃ。${cfg.period?`窓は<b>${q.p?'午後':'午前'}</b>じゃ。`:''}</p>`,'わかった');}
  $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;};
 }
 function postPause(){
- openModal(`<p class="eyebrow">MIRACLE CLOCK</p><h2>ひとやすみ</h2><p>お客さんは急がないよ。ゆっくりもどってきてね。</p><button class="primary" id="resume">つづける</button><button class="secondary sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button><button class="secondary quit-button" id="quit" aria-label="配送所えらびにもどる">配送所へ</button>`,false);
+ openModal(`<p class="eyebrow">MIRACLE CLOCK</p><h2>ひとやすみ</h2><p>お客さんは待っていてくれます。</p><button class="primary" id="resume">続ける</button><button class="secondary sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button><button class="secondary quit-button" id="quit" aria-label="配送所えらびにもどる">配送所へ</button>`,false);
  $('.modal').classList.add('pause-modal');$('#resume').onclick=closeModal;$('#quit').onclick=renderMap;bindSound();
 }
 function postFinish(){
@@ -597,7 +597,7 @@ function postFinish(){
  if(stages.filter(t=>t.id===l.id).every(t=>record.stages.includes(t.stageId))&&!record.cleared.includes(l.id))record.cleared.push(l.id);
  record.updated=Date.now();persistRecords();syncProgress();playSound('win');
  const alone=post.results.filter(Boolean).length,shelf=(record.gifts||[]).length;
- openModal(`<div class="result-character"><img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ"></div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${stageHeading(l)}</p><h2>${stars===3?'見事な配達じゃ！':stars===2?'よう届けたのう！':'今日の配達、おしまい！'}</h2><p class="post-result-gifts" aria-label="今日のおかえし">${post.gifts.join(' ')}</p><p class="day-result-main">3つの荷物を届けて、3通のおへんじ · ひとりでぴったり ${alone} / 6</p><div class="star-result" data-stars="${stars}"><strong aria-label="${stars}つ星">${starText(stars)}</strong><p>まちがい ${post.mistakes}回 · ヒント ${post.hints}回</p><small>★★★ まちがい・ヒントなし · ★★ 2回まで<br>たからだな ${shelf} / ${postGiftCount()}${record.stars[id]?` · 最高評価 ${starText(record.stars[id].stars)}`:''}</small></div><button class="primary" id="result-main">${l.number===6?'章クリアへ ▸':'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">星をふやしに、もう一度</button>`,false);
+ openModal(`<div class="result-character"><img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ"></div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${stageHeading(l)}</p><h2>${stars===3?'見事な配達じゃ！':stars===2?'よう届けたのう！':'今日の配達、おしまい！'}</h2><p class="post-result-gifts" aria-label="今日のお返し">${post.gifts.join(' ')}</p><p class="day-result-main">荷物3つ・返事3通 · 一発正解 ${alone} / 6</p><div class="star-result" data-stars="${stars}"><strong aria-label="${stars}つ星">${starText(stars)}</strong><p>ミス ${post.mistakes}回 · ヒント ${post.hints}回</p><small>★★★ ミス・ヒントなし · ★★ 2回まで<br>お返しコレクション ${shelf} / ${postGiftCount()}${record.stars[id]?` · 最高評価 ${starText(record.stars[id].stars)}`:''}</small></div><button class="primary" id="result-main">${l.number===6?'章クリアへ ▸':'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">星をふやしに、もう一度</button>`,false);
  $('.result-modal').classList.add('victory-result');$('.result-modal').insertAdjacentHTML('afterbegin',victoryEffects());
  const leave=onDone=>{closeModal();if(l.number===6)showChapterCompletion(l,onDone);else onDone();};
  $('#result-main').onclick=()=>leave(()=>{renderMap();if(l.stageId<35)chooseLevel(stages[l.stageId+1]);else renderPreparations();});
