@@ -59,30 +59,30 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
-    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-choice[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#post-stamp').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
-    assert.equal(await page.locator('.post-task .post-tag').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-tag').textContent(),/^\d+時ごろ$/,'the first stage asks for the short hand only');
-    assert.equal(await page.locator('.post-gem').count(),12);assert.equal(await page.locator('#post-hm').isVisible(),false,'the long hand waits until the short hand is known');
-    const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#post-dial').boundingBox();
-    {const cx=dial.x+dial.width/2,cy=dial.y+dial.height/2,r=dial.width*50/320,a=(want*30+15)*Math.PI/180;await page.mouse.move(cx+r*Math.sin(a+1),cy-r*Math.cos(a+1));await page.mouse.down();for(let i=10;i>=0;i--)await page.mouse.move(cx+r*Math.sin(a+i/10),cy-r*Math.cos(a+i/10));await page.mouse.up();}
+    assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時ごろ$/,'the first stage asks for the short hand only');
+    assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
+    const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#clock').boundingBox();
+    {const cx=dial.x+dial.width/2,cy=dial.y+dial.height/2,r=dial.width*50/300,a=(want*30+15)*Math.PI/180;await page.mouse.move(cx+r*Math.sin(a+1),cy-r*Math.cos(a+1));await page.mouse.down();for(let i=10;i>=0;i--)await page.mouse.move(cx+r*Math.sin(a+i/10),cy-r*Math.cos(a+i/10));await page.mouse.up();}
     assert.equal(await page.evaluate(()=>postHourOf(post.t)),want,'dragging near the centre moves the short hand into a gem room');
     assert.match(await page.locator('#post-readout').innerText(),new RegExp(`${want}のへや`));
-    await page.locator('#post-stamp').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),/時の針は/,'Toto reads the hands one by one');
+    await page.locator('#seal-button').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),/時の針は/,'Toto reads the hands one by one');
     await page.screenshot({path:`artifacts/${name}-post-sent.png`,animations:'disabled'});
     await page.locator('#post-go').click();await page.waitForFunction(()=>post.qi===1&&!post.answered);
-    assert.equal(await page.locator('.post-choice').count(),3,'the reply comes with three envelopes');
-    const wrongKey=await page.evaluate(()=>post.q.options.find(o=>o.key!==post.q.answer).key);await page.locator(`.post-choice[data-key="${wrongKey}"]`).click();
-    await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-choice[data-key="${wrongKey}"]`).isDisabled(),true);
+    assert.equal(await page.locator('.post-envelope').count(),3,'the reply comes with three envelopes');
+    const wrongKey=await page.evaluate(()=>post.q.options.find(o=>o.key!==post.q.answer).key);await page.locator(`.post-envelope[data-key="${wrongKey}"]`).click();
+    await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-envelope[data-key="${wrongKey}"]`).isDisabled(),true);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
       await page.setViewportSize(size);
-      for(const selector of ['#post-dial','#post-actions','#post-task','#pause','#post-hint']){
+      for(const selector of ['#clock','#post-rail','.post-talk','.post-floor','#pause','#post-hint']){
         const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-post-${size.width}x${size.height}.png`});
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-choice[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
+    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/3通のおへんじ/);
@@ -90,10 +90,10 @@ try {
     await page.locator('#pause').click();await page.locator('#quit').click();
     // Later chapters: the 午前/午後 window and "in N minutes" orders.
     await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    assert.match(await page.locator('.post-tag').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);
+    assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);
     await page.locator('#pause').click();await page.locator('#quit').click();
     await page.locator('[data-stage="33"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    assert.match(await page.locator('.post-tag').textContent(),/いまから/);assert.equal(await page.locator('#post-now').isVisible(),true,'dashed hands mark now');
+    assert.match(await page.locator('.post-order .ticket-time').textContent(),/いまから/);assert.equal(await page.evaluate(()=>document.querySelector('#ghost-hands').classList.contains('show')),true,'dashed hands mark now');
     await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-post-relative.png`});await page.setViewportSize({width:390,height:844});
     await page.locator('#pause').click();await page.locator('#quit').click();
     // Drive chapter-final result routing through the puzzle.
@@ -127,7 +127,7 @@ try {
     for(const hand of ['hour','minute'])assert.equal(await page.locator(`#${hand}-hand .hand-art image`).getAttribute('clip-path'),`url(#${hand}-art-crop)`,'atlas clipping must be explicit before glow filters');
     // One real lap of the finger turns the long hand once: the short hand follows by an hour.
     const b=await page.locator('#clock').boundingBox();
-    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*40/300,beforeMinute=await page.evaluate(()=>aimed());
+    const cx=b.x+b.width/2,cy=b.y+b.height/2,r=b.width*40/300,beforeMinute=await page.evaluate(()=>{hand=Math.floor(session.now)+40;renderDay();return aimed();});
     await page.mouse.move(cx,cy-r);await page.mouse.down();
     for(let i=1;i<=36;i++){const a=i*Math.PI/18;await page.mouse.move(cx+r*Math.sin(a),cy-r*Math.cos(a));}
     await page.mouse.up();
