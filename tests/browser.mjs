@@ -66,8 +66,8 @@ try {
     const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#clock').boundingBox();
     {const cx=dial.x+dial.width/2,cy=dial.y+dial.height/2,r=dial.width*50/300,a=(want*30+15)*Math.PI/180;await page.mouse.move(cx+r*Math.sin(a+1),cy-r*Math.cos(a+1));await page.mouse.down();for(let i=10;i>=0;i--)await page.mouse.move(cx+r*Math.sin(a+i/10),cy-r*Math.cos(a+i/10));await page.mouse.up();}
     assert.equal(await page.evaluate(()=>postHourOf(post.t)),want,'dragging near the centre moves the short hand into a gem room');
-    assert.match(await page.locator('#post-readout').innerText(),new RegExp(`${want}のへや`));
-    await page.locator('#seal-button').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),/時の針は/,'Toto reads the hands one by one');
+    assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),String(want));
+    await page.locator('#seal-button').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),new RegExp(`${want}時の便`),'Toto names the time in the story');
     await page.screenshot({path:`artifacts/${name}-post-sent.png`,animations:'disabled'});
     await page.locator('#post-go').click();await page.waitForFunction(()=>post.qi===1&&!post.answered);
     assert.equal(await page.locator('.post-envelope').count(),3,'the reply comes with three envelopes');

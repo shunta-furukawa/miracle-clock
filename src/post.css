@@ -64,10 +64,7 @@
 .post-mode .seal-button:disabled{opacity:1}
 
 .post-tools{justify-content:center;align-items:center;flex-wrap:wrap;row-gap:2px}
-.post-readout{display:flex;gap:5px;margin:0;min-height:22px}
-.post-readout span{background:#fff8e9;border-radius:12px;padding:2px 8px;font-size:11.5px;font-weight:900;border:1.5px solid}
-.post-readout .rh{border-color:#1f6f72;color:#1f6f72}.post-readout .rm{border-color:#b3582f;color:#b3582f}
-.post-tools{flex-wrap:nowrap;gap:8px}.post-tools .text-button{white-space:nowrap}
+.post-tools{gap:8px}.post-tools .text-button{white-space:nowrap}
 
 /* Toto's word after each step, and the letter that comes with a reply. */
 .post-sheet{position:absolute;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:center;padding:0 max(10px,var(--safe-r,0px)) max(10px,var(--safe-b,0px)) max(10px,var(--safe-l,0px))}
@@ -115,7 +112,6 @@
  .post-order{min-height:0;padding:3px 8px}.post-order-face{width:28px;height:28px}.post-order .ticket-time{font-size:17px}.post-order-body>small{font-size:9.5px}
  .post-ampm button{min-height:24px;padding:2px 8px;font-size:11px}
  .post-envelope{min-height:44px;padding:4px}.post-envelope .ticket-time{font-size:15px}
- .post-readout span{font-size:10px}
- .post-card{max-height:86dvh;padding:6px 10px;grid-template-columns:40px 1fr}.post-card-toto{width:40px;height:40px}.post-steps{font-size:12.5px}.post-card h2{font-size:15px}.post-card>button{min-height:38px}
+  .post-card{max-height:86dvh;padding:6px 10px;grid-template-columns:40px 1fr}.post-card-toto{width:40px;height:40px}.post-steps{font-size:12.5px}.post-card h2{font-size:15px}.post-card>button{min-height:38px}
  .post-letter p:not(.eyebrow){font-size:12px;line-height:1.45}
 }
