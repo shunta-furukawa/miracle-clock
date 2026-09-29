@@ -1,0 +1,150 @@
+/* The depot puzzle: Toto, the customer at the counter, the gem-room dial and the answer.
+   Portrait stacks them with the dial taking the spare height; landscape puts the dial on the left. */
+.post-game{--safe-l:env(safe-area-inset-left,0px);--safe-r:env(safe-area-inset-right,0px);--safe-b:env(safe-area-inset-bottom,0px);--hour:#1f6f72;--minute:#c0592b;
+ position:relative;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;
+ padding:0 max(12px,var(--safe-r)) max(8px,var(--safe-b)) max(12px,var(--safe-l));
+ background:linear-gradient(#1d3a2cc8,#16301fe6),var(--depot-image) center/cover no-repeat,#1d3a2c;color:#2f3a33}
+.post-game>*{flex-shrink:0}
+.post-game .day-top{margin:0 calc(-1*max(12px,var(--safe-r))) 0 calc(-1*max(12px,var(--safe-l)));padding-left:max(12px,var(--safe-l));padding-right:max(12px,var(--safe-r))}
+.post-game .t-h,.post-game b.h{color:var(--hour)}.post-game .t-m,.post-game b.m{color:var(--minute)}
+
+/* Today's parcels: a box for each send, an envelope for each reply that turns into its gift. */
+.post-parcels{display:flex;gap:4px;justify-content:center;align-items:center;min-height:26px}
+.post-parcels i{font-style:normal;font-size:16px;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#fff6dc22;opacity:.45}
+.post-parcels i.done{opacity:1;background:#fff6dc44}
+.post-parcels i.now{opacity:1;outline:2px solid #fff;outline-offset:1px}
+.post-parcels i.gift{opacity:1;background:#ffe9a8;animation:post-pop .5s}
+.post-parcels b{color:#fff6dc66;font-size:10px}
+
+.post-toto{display:flex;align-items:flex-end;gap:6px}
+.post-toto .toto{width:50px;height:50px;object-fit:cover;object-position:50% 15%;border-radius:50%;background:#f3e3bd;border:2px solid #e2bf73;flex-shrink:0}
+.post-bubble{position:relative;flex:1;margin:0;background:#fffaf0;border:2px solid #e2bf73;border-radius:14px;padding:5px 10px;font-size:13.5px;font-weight:700;line-height:1.5}
+.post-bubble::before{content:'';position:absolute;left:-9px;bottom:12px;border:8px solid transparent;border-right-color:#e2bf73;border-left:0}
+
+/* The customer at the counter, and the island behind each flight and letter. */
+.post-task{display:flex;align-items:center;gap:10px;background:#fbf3df;border:2px solid #b98a3e;border-radius:16px;padding:6px 12px;box-shadow:0 4px 0 #0003;min-height:78px}
+.post-task.story{background:linear-gradient(90deg,#fbf3dfee 25%,#fbf3dfc0 60%,#fbf3df66),var(--island) center/cover}
+.post-task.arrive{animation:post-walkin .45s ease-out}.post-task.leave{animation:post-walkout .5s ease-in forwards}
+.post-portrait{width:58px;height:58px;flex-shrink:0}
+.post-say,.post-letter{flex:1;min-width:0;display:grid;gap:1px}
+.post-who{font-size:12px;color:#6f6a58}
+.post-item{font-size:12px;color:#7a5725;font-weight:700}
+.post-line{margin:0;font-size:14.5px;font-weight:700;line-height:1.45}
+.post-tag{justify-self:start;display:inline-flex;align-items:baseline;gap:2px;background:#fff8e6;border:2px solid #b98a3e;border-radius:6px 14px 14px 6px;padding:1px 12px 1px 18px;font-size:24px;font-weight:900;position:relative}
+.post-tag::before{content:'';position:absolute;left:6px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;border:2px solid #b98a3e}
+.post-thanks{margin:0;font-size:17px;color:#2f8a4f;font-weight:900}
+.post-thanks em{font-style:normal;font-size:12px;color:#c08a1c}
+.post-letter{background:#fffdf6;border:1.5px solid #e2bf73;border-radius:10px;padding:5px 10px}
+.post-letter small{font-size:11px;color:#6f6a58;font-weight:700}
+.post-letter p{margin:0;font-size:13.5px;font-weight:700;line-height:1.5}
+.post-gift{display:inline-block;font-size:28px;vertical-align:middle;animation:post-gift .7s cubic-bezier(.3,1.6,.5,1)}
+
+/* The dial: twelve gem-coloured rooms, hour badge on the short hand, minute badge on the long one. */
+.post-dial-wrap{position:relative;flex:1 1 auto;min-height:150px;display:grid;place-items:center}
+#post-dial{height:100%;max-height:100%;width:auto;max-width:100%;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;display:block;filter:drop-shadow(0 6px 10px #0006)}
+#post-dial.dragging{cursor:grabbing}
+.post-rim{fill:#6b4a26;stroke:#e2bf73;stroke-width:3}.post-minring{fill:#3b2a17}
+.post-minnum{font-size:11px;font-weight:900;fill:#ffb07d;text-anchor:middle;dominant-baseline:central}
+.post-minnum.on{fill:#fff;font-size:13px}
+.post-tick{stroke:#a07c4a;stroke-width:1}.post-tick.big{stroke:#ffcf8a;stroke-width:2}
+.post-face{fill:#fffaf0}
+.post-room{fill-opacity:.24;stroke:#fff;stroke-width:1.2;transition:fill-opacity .25s}.post-room.on{fill-opacity:.8}
+.post-roomlabel{font-size:12px;font-weight:900;text-anchor:middle;dominant-baseline:central;fill:#0007;opacity:.55;transition:opacity .25s}
+.post-roomlabel.on{fill:#000c;font-size:15px;opacity:1}
+.post-edge{stroke:#fff;stroke-width:2}
+.post-hand-h{stroke:var(--hour);stroke-width:9;stroke-linecap:round}
+.post-hand-m{stroke:var(--minute);stroke-width:5;stroke-linecap:round}
+.post-badge circle{stroke:#fff;stroke-width:2.5}
+.post-badge text{fill:#fff;font-size:12px;font-weight:900;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.post-pin{fill:#4a3417;stroke:#e2bf73;stroke-width:2}
+.post-ghost line{stroke-dasharray:5 5;opacity:.7}
+.post-plate rect{fill:#fff8e6;stroke:#b98a3e;stroke-width:2}
+.post-plate text{font-size:14px;font-weight:900;text-anchor:middle;dominant-baseline:central;fill:#2f3a33}
+.post-now line{stroke:#6f6a58;stroke-dasharray:4 4;stroke-linecap:round;opacity:.85}
+.post-sweep{fill:#ffcf5a;fill-opacity:.55;pointer-events:none}.post-sweep.full{fill-opacity:.25}
+.post-ghost,.post-plate,.post-now,.post-sweep{display:none}
+.post-ghost.show,.post-plate.show,.post-now.show,.post-sweep.show{display:inline}
+#post-dial.no-hour #post-hh,#post-dial.no-hour #post-ghost-h,#post-dial.no-minute #post-hm,#post-dial.no-minute #post-ghost-m,#post-dial.no-minute #post-minnums{display:none}
+#post-dial.no-hour .post-room{fill-opacity:.12}
+#post-dial.no-labels .post-roomlabel,#post-dial.no-hour .post-roomlabel{opacity:0}
+
+.post-readout{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;min-height:26px}
+.post-readout span{background:#fbf3df;border-radius:14px;padding:2px 10px;font-size:13px;font-weight:900;border:2px solid transparent}
+.post-readout .rh{border-color:var(--hour);color:var(--hour)}.post-readout .rm{border-color:var(--minute);color:var(--minute)}
+
+/* Planes leave from the dial and come home to the counter. */
+.post-plane{position:absolute;width:120px;pointer-events:none;z-index:5;left:50%;top:50%;margin:-40px 0 0 -60px;opacity:0}
+.post-plane.go{animation:post-takeoff 1.3s ease-in forwards}
+.post-plane.home{animation:post-landing 1.1s ease-out forwards}
+.post-sparks{position:absolute;inset:0;pointer-events:none;z-index:6}
+.post-sparks i{position:absolute;left:50%;top:50%;font-style:normal;font-size:20px;animation:post-spark .9s ease-out forwards}
+
+/* Answers: the seal (with the 午前/午後 switch) or three envelopes. */
+.post-actions{display:grid;gap:6px}
+.post-stamp{min-height:54px;font-size:19px;margin:0;width:100%}
+.post-ampm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.post-ampm button{background:#fbf3df;border:2px solid #b98a3e;border-radius:14px;min-height:42px;font-size:16px;font-weight:900}
+.post-ampm button[aria-pressed="true"]{background:#2a5d8a;color:#fff;border-color:#e2bf73}
+.post-ampm button[data-pm="0"][aria-pressed="true"]{background:#e3a321;color:#3b2a17}
+.post-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.post-choice{background:#fbf3df;border:2px solid var(--gem,#b98a3e);border-radius:14px;padding:4px 3px 6px;box-shadow:0 4px 0 #0003;display:grid;justify-items:center;gap:2px;min-height:64px}
+.post-choice>b{font-size:22px;line-height:1}
+.post-choice>span{white-space:nowrap;font-size:17px;font-weight:900;background:#fff8e6;border:1.5px solid #b98a3e;border-radius:4px 10px 10px 4px;padding:0 8px}
+.post-choice>span.mid{font-size:15px}.post-choice>span.long{font-size:13px;padding:1px 5px}
+.post-choice.right{background:#dff3e3;border-color:#2f8a4f}.post-choice.wrong{background:#fde2dc;border-color:#c0392b;opacity:.7}
+.post-hint{align-self:center;display:flex;align-items:center;gap:6px;background:#fff6dc1a;border:1px solid #fff6dc66;color:#fff6dc;border-radius:18px;padding:2px 12px 2px 3px;font-size:13px;font-weight:700;min-height:36px}
+.post-hint .toto{width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:50% 15%;background:#f3e3bd}
+
+/* Toto's word after each step. */
+.post-sheet{position:absolute;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;padding:0 12px max(12px,var(--safe-b))}
+.post-sheet[hidden]{display:none}
+.post-card{width:100%;max-width:520px;background:#fbf3df;border:3px solid #b98a3e;border-radius:20px;padding:10px 14px 12px;box-shadow:0 -6px 30px #0006;animation:post-up .25s ease-out;display:grid;grid-template-columns:48px 1fr;gap:4px 10px;max-height:70dvh;overflow:auto}
+.post-card>.toto{width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:50% 15%;background:#f3e3bd;border:2px solid #e2bf73}
+.post-card-body{min-width:0}.post-card-body small{font-size:11px;color:#6f6a58;font-weight:700}
+.post-card h2{margin:0 0 2px;font-size:19px;font-weight:900;line-height:1.35}
+.post-card h2.ok{color:#2f8a4f}.post-card h2.ng{color:#c0392b}
+.post-steps{display:grid;gap:2px;font-size:15px;font-weight:700;line-height:1.5}.post-steps p{margin:0}
+.post-steps .sum{font-size:18px;font-weight:900}
+.post-card>button{grid-column:1/-1;margin:4px 0 0;min-height:48px;width:100%}
+.post-game .primary:hover{transform:none}
+.post-result-gifts{font-size:30px;margin:0;text-align:center}
+
+@keyframes post-up{from{transform:translateY(30px);opacity:0}}
+@keyframes post-pop{50%{transform:scale(1.15)}}
+@keyframes post-walkin{from{transform:translateX(60px);opacity:0}}
+@keyframes post-walkout{to{transform:translateX(-80px);opacity:0}}
+@keyframes post-gift{0%{transform:scale(0) rotate(-30deg)}100%{transform:scale(1)}}
+@keyframes post-spark{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.1);opacity:0}}
+@keyframes post-takeoff{0%{opacity:1;transform:translate(0,0) scale(.5)}30%{opacity:1;transform:translate(20px,-20px) scale(.7) rotate(-8deg)}100%{opacity:0;transform:translate(260px,-260px) scale(1) rotate(-14deg)}}
+@keyframes post-landing{0%{opacity:0;transform:translate(260px,-60px) scale(1) rotate(-6deg)}25%{opacity:1}100%{opacity:0;transform:translate(-110px,-230px) scale(.35) rotate(4deg)}}
+@media (prefers-reduced-motion:reduce){.post-game *{animation:none!important;transition:none!important}.post-plane{opacity:0!important}}
+
+@media(orientation:portrait) and (max-height:700px){
+ .post-game{gap:4px}.post-toto .toto{width:40px;height:40px}.post-bubble{font-size:12.5px;padding:4px 8px}
+ .post-task{min-height:64px;padding:4px 10px}.post-portrait{width:48px;height:48px}.post-tag{font-size:20px}.post-line{font-size:13.5px}
+ .post-stamp{min-height:46px}.post-choice{min-height:56px}.post-hint{min-height:32px}
+}
+@media(orientation:portrait) and (min-width:700px){
+ .post-game{padding-left:max(24px,calc((100vw - 600px)/2));padding-right:max(24px,calc((100vw - 600px)/2))}
+ .post-game .day-top{margin-left:calc(-1*max(24px,calc((100vw - 600px)/2)));margin-right:calc(-1*max(24px,calc((100vw - 600px)/2)));padding-left:max(24px,calc((100vw - 600px)/2));padding-right:max(24px,calc((100vw - 600px)/2))}
+}
+/* Landscape: the dial on the left; the story and the answer on the right. */
+@media(orientation:landscape){
+ .post-game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto auto;column-gap:14px;row-gap:5px}
+ .post-game .day-top{grid-column:1/-1}
+ .post-dial-wrap{grid-column:1;grid-row:2/-1;min-height:0;height:100%}
+ .post-parcels{grid-column:2;grid-row:2}.post-toto{grid-column:2;grid-row:3}.post-task{grid-column:2;grid-row:4}
+ .post-readout{grid-column:2;grid-row:6}.post-actions{grid-column:2;grid-row:7}.post-hint{grid-column:2;grid-row:8}
+ .post-sheet{left:auto;width:min(54%,560px)}
+}
+@media(orientation:landscape) and (max-height:500px){
+ .post-game .day-top{padding-top:max(3px,env(safe-area-inset-top,0px));padding-bottom:3px}.post-game .day-top .subtle{min-height:34px}
+ .post-parcels{min-height:20px}.post-parcels i{width:20px;height:20px;font-size:12px}
+ .post-toto .toto{width:32px;height:32px}.post-bubble{font-size:11.5px;padding:3px 8px;line-height:1.4}
+ .post-task{min-height:0;padding:3px 8px;gap:6px}.post-portrait{width:40px;height:40px}.post-line,.post-letter p{font-size:12px}.post-tag{font-size:17px}.post-item{font-size:10.5px}
+ .post-readout{min-height:0}.post-readout span{font-size:11px}
+ .post-stamp{min-height:40px;font-size:16px}.post-ampm button{min-height:34px;font-size:13px}.post-choice{min-height:48px}.post-choice>b{font-size:16px}.post-hint{min-height:30px;font-size:12px}
+ .post-item,.post-who,.post-say:has(.post-tag) .post-line{display:none}.post-stamp{white-space:nowrap;font-size:14px;padding:0 6px}.post-ampm button{white-space:nowrap;font-size:12px;padding:0 4px}.post-bubble{max-height:46px;overflow:auto}
+ .post-actions:has(.post-ampm){grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:stretch}.post-actions>*{min-width:0}.post-ampm{gap:4px}
+ .post-card{max-height:84dvh;padding:6px 10px}.post-steps{font-size:13px}.post-card h2{font-size:16px}.post-card>button{min-height:40px}
+}

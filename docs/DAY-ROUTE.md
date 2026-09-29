@@ -1,6 +1,6 @@
 # 一日便（ルール試作）
 
-0.6.0 で本編に採用（0.5 の「ラッシュ」を置き換え）。ルール本体は `src/route.js`、36便とエンドレスの設定は `src/day.js`、プレイ画面は `src/app.js` と `src/day.css`。ルールだけを試せる試作ページ `/prototype/index.html` も残している。
+0.6.0 で本編に採用（0.5 の「ラッシュ」を置き換え）。0.8.0 からは36ステージを「配送所の受付」パズル（[DEPOT-PUZZLE.md](DEPOT-PUZZLE.md)）にし、このルールは中央便（エンドレス）だけで使う。ルール本体は `src/route.js`、36便とエンドレスの設定は `src/day.js`、プレイ画面は `src/app.js` と `src/day.css`。ルールだけを試せる試作ページ `/prototype/index.html` も残している。
 
 ## ねらい
 

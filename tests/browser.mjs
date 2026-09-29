@@ -58,6 +58,52 @@ try {
       await page.screenshot({path:`artifacts/${name}-start-summary-${size.width}x${size.height}.png`});
     }
     await page.setViewportSize({width:390,height:844});
+    // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-choice[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#post-stamp').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    await page.locator('#open-shop').click();
+    assert.equal(await page.locator('.post-task .post-tag').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-tag').textContent(),/^\d+時ごろ$/,'the first stage asks for the short hand only');
+    assert.equal(await page.locator('.post-gem').count(),12);assert.equal(await page.locator('#post-hm').isVisible(),false,'the long hand waits until the short hand is known');
+    const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#post-dial').boundingBox();
+    {const cx=dial.x+dial.width/2,cy=dial.y+dial.height/2,r=dial.width*50/320,a=(want*30+15)*Math.PI/180;await page.mouse.move(cx+r*Math.sin(a+1),cy-r*Math.cos(a+1));await page.mouse.down();for(let i=10;i>=0;i--)await page.mouse.move(cx+r*Math.sin(a+i/10),cy-r*Math.cos(a+i/10));await page.mouse.up();}
+    assert.equal(await page.evaluate(()=>postHourOf(post.t)),want,'dragging near the centre moves the short hand into a gem room');
+    assert.match(await page.locator('#post-readout').innerText(),new RegExp(`${want}のへや`));
+    await page.locator('#post-stamp').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),/時の針は/,'Toto reads the hands one by one');
+    await page.screenshot({path:`artifacts/${name}-post-sent.png`,animations:'disabled'});
+    await page.locator('#post-go').click();await page.waitForFunction(()=>post.qi===1&&!post.answered);
+    assert.equal(await page.locator('.post-choice').count(),3,'the reply comes with three envelopes');
+    const wrongKey=await page.evaluate(()=>post.q.options.find(o=>o.key!==post.q.answer).key);await page.locator(`.post-choice[data-key="${wrongKey}"]`).click();
+    await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-choice[data-key="${wrongKey}"]`).isDisabled(),true);
+    for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
+      await page.setViewportSize(size);
+      for(const selector of ['#post-dial','#post-actions','#post-task','#pause','#post-hint']){
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
+        assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
+      }
+      assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-post-${size.width}x${size.height}.png`});
+    }
+    await page.setViewportSize({width:390,height:844});
+    await page.locator(`.post-choice[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
+    await page.locator('#pause').click();await page.locator('#resume').click();
+    await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
+    assert.match(await page.locator('.day-result-main').innerText(),/3通のおへんじ/);
+    await page.locator('#retry-stage').click();assert.equal(await page.evaluate(()=>post.qi),0,'retry opens a fresh day');
+    await page.locator('#pause').click();await page.locator('#quit').click();
+    // Later chapters: the 午前/午後 window and "in N minutes" orders.
+    await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
+    assert.match(await page.locator('.post-tag').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);
+    await page.locator('#pause').click();await page.locator('#quit').click();
+    await page.locator('[data-stage="33"]').click();await skipDialogue();await page.locator('#open-shop').click();
+    assert.match(await page.locator('.post-tag').textContent(),/いまから/);assert.equal(await page.locator('#post-now').isVisible(),true,'dashed hands mark now');
+    await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-post-relative.png`});await page.setViewportSize({width:390,height:844});
+    await page.locator('#pause').click();await page.locator('#quit').click();
+    // Drive chapter-final result routing through the puzzle.
+    await page.locator('[data-stage="35"]').click();await skipDialogue();await page.locator('#open-shop').click();
+    await finishPost();assert.equal(await page.locator('.story-dialog').count(),0,'results appear before chapter ending');
+    await page.locator('#retry-stage').click();assert.equal(await page.locator('.story-dialog').count(),0,'retry goes straight back to the stage');
+    await finishPost();await page.locator('#result-main').click();await page.locator('.story-dialog').waitFor();
+    await page.locator('.story-skip').click();await page.locator('#reward-install').waitFor();await page.locator('#reward-install').click();await page.locator('#reward-done').waitFor();await page.locator('#reward-done').click();
+    // The endless central post keeps the day clock: "now" runs by itself.
+    await page.locator('#back-map').click();await page.locator('#endless').click();await skipDialogue();
     assert.equal(await page.locator('#dispatch').count(),0,'only the central seal submits deliveries');
     await page.clock.install();
     await page.locator('#open-shop').click();
@@ -65,11 +111,11 @@ try {
     assert.equal(await page.locator('.shop-person').count(),0,'shop opens empty');
     assert.match(await page.locator('#shop-note').innerText(),/開店/);
     const aimedText=()=>page.locator('#minute-hand').getAttribute('aria-valuetext');
-    assert.equal(await page.evaluate(()=>aimed()===Math.floor(session.now)+1),true,'the long hand rests on the first minute after now');assert.match(await aimedText(),/^7時\d+分$/);
+    assert.equal(await page.evaluate(()=>aimed()===Math.floor(session.now)+1),true,'the long hand rests on the first minute after now');assert.match(await aimedText(),/^6時\d+分$/);
     await page.clock.runFor(700);
     assert.equal(await page.locator('.shop-person').count(),1);assert.equal(await page.locator('.day-ticket').count(),1,'each visitor pins one ticket');
-    assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.order-bubble').first().innerText(),/午前|午後/,'the customer says it their own way');
-    assert.equal(await page.locator('.day-pin').count(),0,'an order more than an hour ahead of the long hand has no pin yet');
+    assert.match(await page.locator('.day-ticket').first().innerText(),/^\d+時(\d+分)?\n/,'tickets read one plain way');assert.match(await page.locator('.order-bubble').first().innerText(),/時|分/,'the customer says it their own way');
+    assert.equal(await page.locator('.day-pin').count(),await page.evaluate(()=>routePins(session).filter(p=>p.target>=aimed()&&p.target<aimed()+60).length),'only orders within an hour of the long hand are pinned');
     await page.evaluate(()=>{hand=routePins(session)[0].target-5;renderDay();});assert.equal(await page.locator('.day-pin').count(),1,'orders within the next sixty minutes are pinned at the long hand position');
     await page.evaluate(()=>{hand=nextMinute();renderDay();});
     await page.clock.runFor(6000);
@@ -112,7 +158,7 @@ try {
     const deliveredBefore=Number(await page.locator('#delivered').innerText());await page.mouse.up();
     assert.equal(Number(await page.locator('#delivered').innerText()),deliveredBefore+caught);assert.ok(caught>=1);
     assert.match(await page.locator('#seal-button').innerText(),/あと\d+分/,'the seal rests while the plane is away');assert.equal(await page.locator('#plane-back').isVisible(),true);
-    await page.evaluate(f=>{hand=f;},sweepFrom);await page.clock.runFor(Math.ceil(span*10/60*1000)+400);
+    await page.evaluate(f=>{hand=f;},sweepFrom);await page.clock.runFor(Math.ceil(span*(await page.evaluate(()=>session.level.hourSeconds))/60*1000)+400);for(let i=0;i<10&&/あと/.test(await page.locator('#seal-button').innerText());i++)await page.clock.runFor(500);
     assert.match(await page.locator('#seal-button').innerText(),/長押し/,'the plane returns after the swept minutes');
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
@@ -126,32 +172,14 @@ try {
     // Pausing freezes the day, the line and every deadline.
     await page.locator('#pause').click();const frozen=await page.evaluate(()=>[session.now,session.queue.length,session.missed]);await page.clock.runFor(20000);
     assert.deepEqual(await page.evaluate(()=>[session.now,session.queue.length,session.missed]),frozen,'pause freezes the day');await page.locator('#resume').click();
-    // Leaving orders alone lets their time pass: they are counted, never a game over.
-    await page.clock.runFor(30000);
+    // Leaving orders alone lets their time pass: they are counted as missed.
+    await page.clock.runFor(8000);
     assert.doesNotMatch(await page.locator('#lost').innerText(),/取りこぼし 0$/,'unstamped orders are missed when their time comes');
-    assert.equal(await page.evaluate(()=>session.status),'playing');
-    async function finishCurrent(target=page){for(let i=0;i<600&&await target.evaluate(()=>session.status==='playing');i++){await target.clock.runFor(400);if(await target.evaluate(()=>session.status==='playing'&&session.queue.length>0))await stampEarliest(target);}await target.clock.runFor(1600);await target.locator('#result-main').waitFor();}
-    await finishCurrent();
+    await page.locator('#pause').click();await page.locator('#quit').click();await page.locator('#result-main').waitFor();
     assert.match(await page.locator('.rush-result').innerText(),/COMBO · 最大 \d+人まとめて/);
     assert.match(await page.locator('.day-result-main').innerText(),/お届け \d+人 \/ 来店 \d+人/);
-    assert.equal(await page.locator('.chapter-ending').count(),0,'stage result precedes chapter ending');
-    await page.locator((await page.locator('#retry-stage').count())?'#retry-stage':'#result-main').click();assert.equal(await page.locator('.shop-person').count(),0,'retry opens a fresh day');assert.equal(await page.locator('#delivered').innerText(),'0');
-    await page.locator('#pause').click();await page.locator('#quit').click();
-    // Later chapters mix notations of the same time: 24-hour and "in N hours" tickets.
-    await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    await page.clock.runFor(30000);
-    const later=(await page.locator('.day-ticket').allInnerTexts()).join(' ');assert.match(later,/\d時/);
-    await page.locator('#pause').click();await page.locator('#quit').click();
-    await page.locator('[data-stage="35"]').click();await skipDialogue();await page.locator('#open-shop').click();
-    await page.clock.runFor(12000);
-    const tickets=(await page.locator('.day-ticket').allInnerTexts()).join(' ');assert.doesNotMatch(tickets,/後|午前|午後|受付/,'tickets never make the child convert');assert.match(tickets,/\d+時/);
-    await page.setViewportSize({width:568,height:320});await page.screenshot({path:`artifacts/${name}-day-relative.png`});
-    await page.setViewportSize({width:390,height:844});
-    // Drive chapter-final result routing through the real stamp button.
-    await finishCurrent();assert.equal(await page.locator('.story-dialog').count(),0,'results appear before chapter ending');
-    await page.locator('#retry-stage').click();assert.equal(await page.locator('.story-dialog').count(),0,'retry goes straight back to the stage');
-    await finishCurrent();await page.locator('#result-main').click();await page.locator('.story-dialog').waitFor();
-    await page.locator('.story-skip').click();await page.locator('#reward-install').waitFor();
+    await page.locator('#result-main').click();assert.equal(await page.locator('.shop-person').count(),0,'retry opens a fresh day');assert.equal(await page.locator('#delivered').innerText(),'0');
+    await page.locator('#pause').click();await page.locator('#quit').click();await page.locator('#result-map').click();
     // Three isolated diaries, legacy migration, dialogue layout and deliberate deletion.
     const diary=await browser.newPage({viewport:{width:393,height:852},isMobile:true,hasTouch:true});
     diary.on('pageerror',e=>errors.push(e.message));
@@ -207,18 +235,18 @@ try {
     await unavailable.goto('http://127.0.0.1:4173');await unavailable.locator('#start').click();await unavailable.locator('[data-slot="0"]').click();await unavailable.locator('.opening-skip').click();await unavailable.locator('.story-skip').click();
     assert.match(await unavailable.locator('.save-warning').innerText(),/保存できません/);
     await unavailable.close();
-    // A fresh diary advances by stages; pausing never costs a customer.
+    // A fresh diary advances by stages.
     const beginner=await browser.newPage({viewport:{width:393,height:852},reducedMotion:'reduce'});
     beginner.on('pageerror',e=>errors.push(e.message));
     await beginner.addInitScript(()=>localStorage.setItem('miracle-clock.records.v2',JSON.stringify({version:2,revision:0,active:0,slots:[{cleared:[],stages:[],stars:{},endless:{best:0,total:0},introSeen:true},null,null]})));
-    await beginner.clock.install();await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
+    await beginner.goto('http://127.0.0.1:4173');await beginner.locator('#start').click();await beginner.locator('[data-slot="0"]').click();
     assert.equal(await beginner.locator('[data-stage="1"]').isDisabled(),true);assert.equal(await beginner.locator('#endless').isDisabled(),true);
     await beginner.locator('[data-stage="0"]').click();await beginner.locator('#chapter-begin').click();await beginner.locator('.story-skip').click();await beginner.locator('#open-shop').click();
-    await beginner.clock.runFor(3000);await beginner.locator('#pause').click();await beginner.clock.runFor(120000);await beginner.locator('#resume').click();
-    await finishCurrent(beginner);
-    assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','prompt stamping delivers everyone');
+    await beginner.locator('#pause').click();await beginner.locator('#resume').click();
+    await finishPost(beginner);
+    assert.equal(await beginner.locator('.star-result').getAttribute('data-stars'),'3','first-try answers earn three stars');
     await beginner.locator('#result-map').click();assert.equal(await beginner.locator('[data-stage="1"]').isEnabled(),true);assert.equal(await beginner.locator('[data-stage="2"]').isDisabled(),true);
     assert.match(await beginner.locator('[data-stage="0"]').innerText(),/★★★/);await beginner.screenshot({path:`artifacts/${name}-campaign-stars.png`});await beginner.close();
-    assert.deepEqual(errors,[]);await browser.close();console.log(name+': chapter, rewards, day clock, batch stamping, controls, responsive layout and chapter routing PASS');
+    assert.deepEqual(errors,[]);await browser.close();console.log(name+': chapter, rewards, depot puzzle, endless day clock, batch stamping, controls, responsive layout and chapter routing PASS');
   }
 }finally{server.kill();}
