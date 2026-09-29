@@ -15,13 +15,13 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 .top h1 small{display:block;font-size:11px;font-weight:700;opacity:.8;letter-spacing:.12em}
 .chip{border:1px solid #d9b56b;background:#fff6dc22;color:#fff6dc;border-radius:20px;padding:6px 11px;font-size:12px;font-weight:700;min-height:36px;white-space:nowrap}
 
-/* Today's parcels: one box per customer, stamped when delivered. */
-.parcels{display:flex;gap:6px;justify-content:center}
-.parcels i{width:22px;height:18px;border-radius:4px;background:#c9a877;border:1px solid #7a5725;position:relative;opacity:.55;font-style:normal;font-size:11px;line-height:17px;text-align:center;color:#fff}
-.parcels i::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:2px solid #8a6231}
-.parcels i.done{opacity:1;background:#e9c98f}.parcels i.done::after{content:'✓';position:relative;font-weight:900;color:var(--good)}
-.parcels i.help{opacity:1;background:#e9c98f}.parcels i.help::after{content:'✓';position:relative;font-weight:900;color:#c08a1c}
-.parcels i.now{opacity:1;outline:2px solid #fff;outline-offset:2px}
+/* Today's parcels: a box for each send, an envelope for each reply that turns into its gift. */
+.parcels{display:flex;gap:4px;justify-content:center;align-items:center;min-height:28px}
+.parcels i{font-style:normal;font-size:17px;width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:#fff6dc22;opacity:.45}
+.parcels i.done{opacity:1;background:#fff6dc44}
+.parcels i.now{opacity:1;outline:2px solid #fff;outline-offset:1px}
+.parcels i.gift{opacity:1;background:#ffe9a8;animation:pop .5s}
+.parcels b{color:#fff6dc66;font-size:10px}
 
 /* Toto talks from the counter. */
 .toto-row{display:flex;align-items:flex-end;gap:6px;min-height:58px}
@@ -73,11 +73,27 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 .plane.go{animation:takeoff 1.3s ease-in forwards}
 .plane.home{animation:landing 1.1s ease-out forwards}
 
+/* The story: a flight to another island, and a letter that comes back. */
+.task.story{background:linear-gradient(90deg,#fbf3dfee 25%,#fbf3dfc0 60%,#fbf3df66),var(--island) center/cover}
+.task .item{font-size:13px;color:var(--brass-d);font-weight:700}
+.letter{flex:1;min-width:0;background:#fffdf6;border:1.5px solid #e2bf73;border-radius:10px;padding:6px 10px;box-shadow:0 2px 0 #0001;position:relative}
+.letter .from{font-size:11px;color:var(--muted);font-weight:700}
+.letter .body{font-size:14px;font-weight:700;line-height:1.5}
+.gift-pop{display:inline-block;font-size:30px;vertical-align:middle;animation:gift .7s cubic-bezier(.3,1.6,.5,1)}
+.sparks{position:absolute;inset:0;pointer-events:none;z-index:6}
+.sparks i{position:absolute;left:50%;top:50%;font-style:normal;font-size:20px;animation:spark .9s ease-out forwards}
+@keyframes gift{0%{transform:scale(0) rotate(-30deg)}100%{transform:scale(1)}}
+@keyframes spark{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.1);opacity:0}}
+.shelf{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0 0;padding:8px;background:#fff;border:2px dashed #e6d3a6;border-radius:14px}
+.shelf i{font-style:normal;font-size:22px;width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:#fdf6e4}
+.shelf i.no{filter:grayscale(1) brightness(1.6);opacity:.35}
+.shelf-title{text-align:center;font-size:12px;font-weight:700;color:var(--brass-d);margin-top:10px}
+
 /* Answers. */
 .actions{display:grid;gap:8px}
 .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .choice{background:var(--paper);border:2px solid var(--brass);border-radius:14px;padding:6px 4px 8px;box-shadow:0 4px 0 #0003;display:grid;justify-items:center;gap:2px}
-.choice img{width:48px;height:48px;object-fit:contain}
+.choice .env{font-size:26px;line-height:1}
 .choice small{font-size:11px;color:var(--muted);font-weight:700}
 .choice span{font-size:18px;font-weight:900;background:#fff8e6;border:1.5px solid var(--brass);border-radius:4px 10px 10px 4px;padding:0 8px}
 .choice.right{background:#dff3e3;border-color:var(--good)}.choice.wrong{background:#fde2dc;border-color:var(--bad);opacity:.7}
@@ -156,9 +172,10 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
   <div class="inner">
    <span class="eyebrow">配達日誌 ・ 森の配送所</span>
    <h2>空のとけい便、開店じゃ！</h2>
-   <p>魔法の時計には、ふたりの係がいるんじゃ。<b style="color:var(--hour)">時の針（短い針）</b>は何時か、<b style="color:var(--minute)">分の針（長い針）</b>は何分かを受けもっておる。</p>
+   <p>森のみんなの荷物を、ほかの島の友だちへ。おへんじには、すてきなおかえしが入っておるぞ。魔法の時計には、ふたりの係がいるんじゃ。<b style="color:var(--hour)">時の針（短い針）</b>は何時か、<b style="color:var(--minute)">分の針（長い針）</b>は何分かを受けもっておる。</p>
    <div class="legend"><span><i style="background:var(--hour)"></i>時の針</span><span><i style="background:var(--minute)"></i>分の針</span></div>
    <div class="days" id="days"></div>
+   <div id="menu-shelf"></div>
    <p style="font-size:12px;color:var(--muted);text-align:center">お客さんは急がないよ。ゆっくり針を合わせてね。</p>
   </div>
  </div>
@@ -185,28 +202,48 @@ const ms=t=>(((t%720)+720)%720);
 const text=(h,m)=>`${h}時${m?`${m}分`:''}`;
 const html=(h,m)=>`<span class="t-h">${h}時</span>${m===null?'':m?`<span class="t-m">${m}分</span>`:'<span class="t-m">ちょうど</span>'}`;
 const nextH=h=>h%12+1,prevH=h=>(h+10)%12+1;
-document.documentElement.style.setProperty('--depot',`url(${ART.depot})`);
+document.documentElement.style.setProperty('--depot',`url(${ART.islands[0]})`);
 for(const id of ['toto-face','hint-face','menu-toto'])$(id).src=ART.toto;
 $('plane').src=ART.plane;$('menu-plane').src=ART.plane;
 
-// Six days at the forest depot: meet each hand alone, then put them together.
+// Six days at the forest depot. Each customer sends a parcel (set the hands), then the plane
+// brings back the reply, stamped with the time it was written (read the hands).
+const SEND=k=>k==='setRoom'?'readRoom':k==='setMin'?'readMin':'readHM';
+const pairs=k=>[k,SEND(k),k,SEND(k),k,SEND(k)];
 const DAYS=[
  {title:'はじめての受付',note:'時の針だけで「◯時ごろ」',hour:true,minute:false,labels:true,step:60,drag:'hour',
-  intro:'今日は<b class="h">時の針</b>だけ動かすぞ。時の針がいる<b class="h">宝石のへや</b>が、何時かを教えてくれるんじゃ。',qs:['readRoom','setRoom','readRoom','setRoom','readRoom']},
+  intro:'今日は<b class="h">時の針</b>だけ動かすぞ。時の針がいる<b class="h">宝石のへや</b>が、何時かを教えてくれるんじゃ。',qs:pairs('setRoom')},
  {title:'ちょうどの便',note:'分の針がてっぺんなら「ちょうど」',hour:true,minute:true,labels:true,step:60,drag:'hour',exact:true,
-  intro:'<b class="m">分の針</b>がてっぺんの12にいたら「<b class="m">ちょうど</b>」の便じゃ。時の針をへやの入口に合わせよう。',qs:['setExact','readHM','setExact','readHM','setExact']},
+  intro:'<b class="m">分の針</b>がてっぺんの12にいたら「<b class="m">ちょうど</b>」の便じゃ。時の針をへやの入口に合わせよう。',qs:pairs('setExact')},
  {title:'分の針のしごと',note:'分の針は外がわの数字を読む',hour:false,minute:true,labels:false,step:5,drag:'minute',
-  intro:'今日は<b class="m">分の針</b>の番じゃ。長い針は、時計の<b class="m">外がわの数字</b>を読む。5、10、15…と進むぞ。',qs:['readMin','setMin','readMin','setMin','readMin']},
+  intro:'今日は<b class="m">分の針</b>の番じゃ。長い針は、時計の<b class="m">外がわの数字</b>を読む。5、10、15…と進むぞ。',qs:pairs('setMin')},
  {title:'半の便',note:'30分は、時の針がへやのまん中',hour:true,minute:true,labels:true,step:30,drag:'both',
-  intro:'「半」は<b class="m">30分</b>。分の針が下の6にいるとき、<b class="h">時の針</b>はへやのまん中にいるんじゃ。',qs:['setHM','readHM','setHM','readHM','setHM']},
+  intro:'「半」は<b class="m">30分</b>。分の針が下の6にいるとき、<b class="h">時の針</b>はへやのまん中にいるんじゃ。',qs:pairs('setHM')},
  {title:'5分きざみの便',note:'時の針はへや、分の針は外の数字',hour:true,minute:true,labels:true,step:5,drag:'both',
-  intro:'いそがしくなってきたのう。<b class="h">時の針はへや</b>、<b class="m">分の針は外の数字</b>。ふたりの係を分けて読むんじゃ。',qs:['setHM','readHM','setHM','readHM','setHM','readHM']},
+  intro:'いそがしくなってきたのう。<b class="h">時の針はへや</b>、<b class="m">分の針は外の数字</b>。ふたりの係を分けて読むんじゃ。',qs:pairs('setHM')},
  {title:'ひとりで受付',note:'へやの数字はしまっておくよ',hour:true,minute:true,labels:false,step:5,drag:'both',
-  intro:'今日はへやの数字をしまっておくぞ。宝石の色と針をよく見れば、ルカならだいじょうぶじゃ。',qs:['readHM','readHM','setHM','readHM','readHM','setHM']}
+  intro:'今日はへやの数字をしまっておくぞ。宝石の色と針をよく見れば、ルカならだいじょうぶじゃ。',qs:pairs('setHM')}
+];
+// Friends on the other islands; island is the depot art index.
+const FRIENDS={シェル:{place:'港',island:1},クリム:{place:'結晶の洞窟',island:2},フレア:{place:'工房',island:3},フウ:{place:'雲の島',island:4},スナリ:{place:'砂丘の温室',island:5}};
+const STORIES=[
+ {item:'🌱',what:'花のたね',to:'シェル',reply:'たね、ありがとう！ 港の窓べで育てるわ。おかえしに、きれいな貝がらを入れたよ。',gift:'🐚',giftName:'貝がら'},
+ {item:'🍯',what:'はちみつ',to:'クリム',reply:'あまくて元気が出たよ！ 洞窟で光る石を見つけたから、どうぞ。',gift:'💎',giftName:'光る石'},
+ {item:'🧣',what:'あみもののマフラー',to:'フウ',reply:'ふわふわで あったかい！ 雲のわたあめを つめてみたよ。',gift:'☁️',giftName:'雲のわたあめ'},
+ {item:'🍄',what:'きのこスープのレシピ',to:'フレア',reply:'さっそく作ったよ、おいしい！ ぜんまいで動くおもちゃをあげる。',gift:'⚙️',giftName:'ぜんまいのおもちゃ'},
+ {item:'🌰',what:'どんぐりクッキー',to:'スナリ',reply:'サクサク！ 温室でさいたサボテンの花をおくるね。',gift:'🌵',giftName:'サボテンの花'},
+ {item:'📷',what:'森の写真',to:'シェル',reply:'森って きれいね！ 灯台の絵はがきを入れておくわ。',gift:'🖼️',giftName:'灯台の絵はがき'},
+ {item:'🎐',what:'風りん',to:'フウ',reply:'チリンって いい音！ 虹のかけらを ひとつどうぞ。',gift:'🌈',giftName:'虹のかけら'},
+ {item:'🫖',what:'森のハーブティー',to:'スナリ',reply:'いいかおり！ 砂時計をおくるね。時間をはかるのにつかってね。',gift:'⏳',giftName:'砂時計'},
+ {item:'🔔',what:'こわれたベル',to:'フレア',reply:'なおしておいたよ！ ぴかぴかになったベル、どうぞ。',gift:'🛎️',giftName:'ぴかぴかのベル'},
+ {item:'🍎',what:'森のりんご',to:'クリム',reply:'しゃりしゃり！ 結晶のランプをあげるね。夜の配達に。',gift:'🏮',giftName:'結晶のランプ'},
+ {item:'🪶',what:'きれいな羽根',to:'フウ',reply:'風にのせて遊んだよ！ 流れ星のかけらを見つけたんだ。',gift:'🌠',giftName:'流れ星のかけら'},
+ {item:'🧺',what:'ピクニックのおべんとう',to:'シェル',reply:'みんなで食べたわ！ 真珠をひとつぶ、おすそわけ。',gift:'🦪',giftName:'真珠'}
 ];
 const ASKS=['{t}に とどけてね！','{t}に おねがい！','{t}に まにあうかな？','{t}の便に のせてください'];
-let day=null,di=0,qi=0,q=null,t=0,mistakes=0,hints=0,tries=0,answered=false,results=[],voice=true,drag=null,ghost=null,helped=false;
+let day=null,di=0,qi=0,q=null,t=0,mistakes=0,hints=0,tries=0,answered=false,results=[],voice=true,drag=null,ghost=null,helped=false,tales=[],gotToday=[];
 let best={};try{best=JSON.parse(localStorage.getItem('clock-lesson-stars')||'{}');}catch{}
+let shelf=[];try{shelf=JSON.parse(localStorage.getItem('clock-lesson-gifts')||'[]');}catch{}
 const toto=s=>{$('toto-say').innerHTML=s;};
 
 // ---------- parcels ----------
@@ -294,30 +331,34 @@ function fly(kind){const p=$('plane');p.className='plane';void p.offsetWidth;p.c
 // ---------- the working day ----------
 const spoken=(h,m)=>`${h}じ${m?`${m}ふん`:'ちょうど'}`;
 const tagOf=q=>q.kind==='setMin'?`<span class="t-m">${q.m}分</span>`:q.kind==='setRoom'?`<span class="t-h">${q.h}時</span>ごろ`:html(q.h,q.m);
+const said=time=>day.hour&&day.minute?spoken(hourOf(time),minOf(time)):day.hour?`${hourOf(time)}じ`:`${minOf(time)}ふん`;
+const islandOf=tale=>ART.islands[FRIENDS[tale.to].island];
 function startDay(i){
- di=i;day=DAYS[i];qi=0;mistakes=0;hints=0;results=[];$('menu').hidden=true;$('result').hidden=true;
+ di=i;day=DAYS[i];qi=0;mistakes=0;hints=0;results=[];gotToday=[];$('menu').hidden=true;$('result').hidden=true;
+ // Three senders from the forest, each with a parcel for a friend; unseen gifts come first.
+ const senders=shuffle(PEOPLE.slice()),fresh=shuffle(STORIES.filter(x=>!shelf.includes(x.gift))),old=shuffle(STORIES.filter(x=>shelf.includes(x.gift)));
+ tales=[...fresh,...old].slice(0,3).map((x,k)=>({...x,who:senders[k]}));
  $('title').innerHTML=`森の配送所 ${i+1}日目<small>${day.title}</small>`;
  ask(true);
 }
 function ask(first=false){
  q=make(day.qs[qi]);tries=0;answered=false;helped=false;ghost=null;$('sheet').hidden=true;
- const task=$('task');task.className='task';void task.offsetWidth;task.classList.add('arrive');
+ const tale=tales[Math.floor(qi/2)],who=tale.who,friend=FRIENDS[tale.to];q.tale=tale;
+ const task=$('task');task.className='task';task.style.removeProperty('--island');void task.offsetWidth;task.classList.add('arrive');
  if(q.read){
   t=q.h===null?rnd(12)*60+q.m:ms(q.h*60+q.m);
-  // Every choice is a customer waiting for their parcel; the plane's clock tells whose it is.
-  const faces=shuffle(PEOPLE.slice());q.options.forEach((o,i)=>o.who=faces[i]);
-  q.owner=q.options.find(o=>o.key===q.answer).who;
-  task.innerHTML=`<img src="${ART.plane}" alt=""><div class="say"><div class="who">✈️ 配達の便が帰ってきた</div><div class="line">荷物に時計の刻印がついてるよ。だれの荷物かな？</div></div>`;
-  $('actions').innerHTML=`<div class="choices">${q.options.map(o=>`<button class="choice" data-key="${o.key}" type="button"${o.gem?` style="border-color:${GEM[o.gem%12]}"`:''}><img src="${o.who.img}" alt=""><small>${o.who.name}</small><span>${o.label}</span></button>`).join('')}</div>`;
+  task.classList.add('story');task.style.setProperty('--island',`url(${islandOf(tale)})`);
+  task.innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}</div><div class="line">${tale.to}から おへんじが帰ってきた！ 手紙の時刻は なんじかな？</div></div>`;
+  $('actions').innerHTML=`<div class="choices">${q.options.map(o=>`<button class="choice" data-key="${o.key}" type="button"${o.gem?` style="border-color:${GEM[o.gem%12]}"`:''}><b class="env">✉️</b><span>${o.label}</span></button>`).join('')}</div>`;
   for(const b of document.querySelectorAll('.choice'))b.onclick=()=>choose(b);
   fly('home');
-  toto(first?day.intro:q.kind==='readMin'?'<b class="m">分の針</b>がさしておる外の数字を見るんじゃ。':q.kind==='readRoom'?'<b class="h">時の針</b>は、どの宝石のへやにおるかのう？':'時の針のへやと、分の針の外の数字。順番に見てみよう。');
-  say(first?'':'だれの にもつかな？');
+  toto(`${friend.place}の${tale.to}が、おへんじを書いた時刻を時計に刻んでくれたぞ。${q.kind==='readMin'?'<b class="m">分の針</b>がさす外の数字は？':q.kind==='readRoom'?'<b class="h">時の針</b>は、どの宝石のへやかのう？':'時の針のへや、分の針の外の数字、じゅんばんに読もう。'}`);
+  say(`${tale.to}から おへんじだ！ なんじに かいたのかな？`);
  }else{
-  t=q.start;const who=PEOPLE[qi%PEOPLE.length];q.who=who;
+  t=q.start;
   const spokenTag=q.kind==='setMin'?`${q.m}ふん`:q.kind==='setRoom'?`${q.h}じごろ`:spoken(q.h,q.m);
-  const line=pick(ASKS).replace('{t}',q.kind==='setMin'?`${q.m}分`:q.kind==='setRoom'?`${q.h}時ごろ`:text(q.h,q.m)||`${q.h}時`);
-  task.innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}</div><div class="line">${line}</div><div class="tag">${tagOf(q)}</div></div>`;
+  const when=q.kind==='setMin'?`${q.m}分`:q.kind==='setRoom'?`${q.h}時ごろ`:text(q.h,q.m)||`${q.h}時`;
+  task.innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}</div><div class="item">${tale.item} ${tale.what} → ${friend.place}の${tale.to}へ</div><div class="line">${pick(ASKS).replace('{t}',when)}</div><div class="tag">${tagOf(q)}</div></div>`;
   $('actions').innerHTML=`<button class="stamp" id="stamp" type="button">刻印して 飛ばす ✈️</button>`;$('stamp').onclick=submit;
   $('plane').className='plane';
   toto(first?day.intro:q.kind==='setMin'?'<b class="m">分の針</b>を、荷札の数字に合わせるんじゃ。':q.kind==='setRoom'?`<b class="h">時の針</b>を <b class="h">${q.h}のへや</b> に入れておくれ。`:'針を荷札の時刻に合わせたら、刻印じゃ！');
@@ -325,7 +366,17 @@ function ask(first=false){
  }
  parcels();draw();
 }
-function parcels(){$('parcels').innerHTML=day.qs.map((_,i)=>`<i class="${i<qi?(results[i]?'done':'help'):i===qi?'now':''}"></i>`).join('');}
+function parcels(){
+ $('parcels').innerHTML=day.qs.map((k,i)=>{const tale=tales[Math.floor(i/2)],send=i%2===0;
+  const icon=send?(i<qi||(i===qi&&answered)?tale.item:'📦'):(i<qi||(i===qi&&answered)?tale.gift:'✉️');
+  const cls=!send&&(i<qi||(i===qi&&answered))?'gift':i<qi||(i===qi&&answered)?'done':i===qi?'now':'';
+  return `${i&&send?'<b>·</b>':''}<i class="${cls}">${icon}</i>`;}).join('');
+}
+function burst(marks){
+ const box=document.createElement('div');box.className='sparks';
+ box.innerHTML=Array.from({length:10},(_,k)=>{const a=k/10*Math.PI*2,r=90+rnd(40);return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px">${marks[k%marks.length]}</i>`;}).join('');
+ document.querySelector('.dial-wrap').appendChild(box);setTimeout(()=>box.remove(),1000);
+}
 // Toto reads each hand in turn: which room the short hand is in, which number the long hand points to.
 function steps(time,L=day){
  const h=hourOf(time),m=minOf(time),out=[];
@@ -360,35 +411,38 @@ function choose(b){
  else if(q.kind==='readMin')why=`分の針がさす外の数字を見るんじゃ。宝石の <b class="m">${q.m/5}</b> のところは <b class="m">${q.m}分</b>じゃよ。`;
  else if(hh!==q.h)why=`時の針は、まだ <b class="h">${nextH(q.h)}</b> をこえておらん。<b class="h">${q.h}のへや</b>におるのう。`;
  else why=`分の針は外の数字で読むんじゃ。<b class="m">${q.m?q.m/5:12}</b> のところは <b class="m">${q.m?`${q.m}分`:'ちょうど'}</b>。`;
- const who=[...document.querySelectorAll('.choice')].indexOf(b);
- sheet(`${q.options[who].who.name}の荷物じゃないみたい`,`<div>${why}</div>`,'もういちど えらぶ','ng');
+ sheet('この封筒じゃないみたい',`<div>${why}</div>`,'もういちど えらぶ','ng');
  $('sheet-go').onclick=()=>{$('sheet').hidden=true;};say('おっと、ちがうみたい');
 }
 function finishQ(){
  answered=true;results[qi]=tries===1&&!helped;draw();tone(880,.12);setTimeout(()=>tone(1320,.18),120);
- const h=hourOf(t),m=minOf(t),last=qi+1>=day.qs.length;
- const said=day.hour&&day.minute?spoken(h,m):day.hour?`${h}じ`:`${m}ふん`;
+ const tale=q.tale,friend=FRIENDS[tale.to],last=qi+1>=day.qs.length,task=$('task');
  if(q.read){
-  sheet(`${q.owner.name}の荷物じゃ！`,steps(t),last?'今日の日誌をつける':'つぎの便へ','ok');
-  $('task').innerHTML=`<img src="${q.owner.img}" alt=""><div class="say"><div class="who">${q.owner.name}</div><div class="thanks">とどいた！ ありがとう！</div></div>`;
-  say(`${said}。${q.owner.name}の にもつだ！`);
+  // The letter opens: the friend's reply and a gift for the collection.
+  gotToday.push(tale.gift);const isNew=!shelf.includes(tale.gift);if(isNew){shelf.push(tale.gift);try{localStorage.setItem('clock-lesson-gifts',JSON.stringify(shelf));}catch{}}
+  task.innerHTML=`<img src="${tale.who.img}" alt=""><div class="letter"><div class="from">✉️ ${friend.place}の${tale.to}より</div><div class="body">${tale.reply}</div><div class="thanks"><span class="gift-pop">${tale.gift}</span> ${tale.giftName}${isNew?' <small style="color:#c08a1c">NEW!</small>':''}</div></div>`;
+  burst([tale.gift,'✨']);setTimeout(()=>tone(1568,.2,.05),260);
+  sheet(`${tale.who.name}に おへんじを わたしたぞ！`,steps(t),last?'今日の日誌をつける':'つぎのお客さん','ok');
+  say(`${said(t)}。${tale.to}から、${tale.giftName}が とどいたよ！`);
  }else{
-  fly('go');$('task').querySelector('.line').outerHTML=`<div class="thanks">いってらっしゃーい！</div>`;
-  sheet('ぴったりじゃ！ 飛んでいけ〜',steps(t),last?'今日の日誌をつける':'つぎのお客さん','ok');
-  say(`${said}。いってらっしゃい！`);
+  fly('go');burst(['✨','⭐']);
+  task.classList.add('story');task.style.setProperty('--island',`url(${islandOf(tale)})`);
+  task.innerHTML=`<img src="${tale.who.img}" alt=""><div class="say"><div class="who">${tale.who.name}</div><div class="item">✈️ ${tale.item} ${tale.what}は ${friend.place}へ</div><div class="thanks">いってらっしゃーい！</div></div>`;
+  sheet(`ぴったりじゃ！ ${friend.place}まで飛んでいけ〜`,steps(t),'おへんじを まつ ✉️','ok');
+  say(`${said(t)}。いってらっしゃい！`);
  }
- results[qi]=results[qi];parcels();
- $('sheet-go').onclick=()=>{qi++;const task=$('task');task.classList.add('leave');setTimeout(()=>{if(qi<day.qs.length)ask();else finishDay();},q.read?0:350);};
+ parcels();
+ $('sheet-go').onclick=()=>{qi++;task.classList.add('leave');setTimeout(()=>{if(qi<day.qs.length)ask();else finishDay();},q.read?350:0);};
 }
 function sheet(title,body,go,cls=''){
  $('sheet-card').innerHTML=`<img src="${ART.toto}" alt=""><div class="body"><div class="name">トトじい</div><h2 class="${cls}">${title}</h2><div class="steps">${body}</div></div><div class="row"><button class="${cls==='ok'?'next':'again'}" id="sheet-go" type="button">${go}</button></div>`;
  $('sheet').hidden=false;$('sheet-go').focus();
 }
+const shelfMarkup=()=>`<div class="shelf-title">たからだな ${shelf.length} / ${STORIES.length}</div><div class="shelf">${STORIES.map(x=>`<i class="${shelf.includes(x.gift)?'':'no'}" title="${shelf.includes(x.gift)?x.giftName:'？'}">${shelf.includes(x.gift)?x.gift:'？'}</i>`).join('')}</div>`;
 function finishDay(){
  const lost=mistakes+hints,stars=lost===0?3:lost<=2?2:1;best[di]=Math.max(best[di]||0,stars);try{localStorage.setItem('clock-lesson-stars',JSON.stringify(best));}catch{}
- const alone=results.filter(Boolean).length;
  $('sheet').hidden=true;
- $('result-panel').innerHTML=`<div class="scene"><img class="luka-plane" src="${ART.plane}" alt=""><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">配達日誌 ・ ${di+1}日目</span><h2>今日の配達、おしまい！</h2><div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="text-align:center">${day.qs.length}こ の荷物を ぜんぶ届けたよ<br><small>ひとりで ぴったり：${alone}こ</small></p><p style="text-align:center;font-weight:700">トトじい「${stars===3?'見事じゃ！ 時の針と分の針、すっかり仲良しじゃのう。':stars===2?'よう届けたのう。針の係、だいぶ見えてきたぞ。':'今日もよう働いた！ 明日もいっしょに届けような。'}」</p><div class="days"><button class="next" id="again-d" type="button">この日をもういちど</button>${di+1<DAYS.length?`<button class="next" id="next-d" type="button" style="background:${MINUTE}">${di+2}日目へ ▸</button>`:''}<button class="again" id="list-d" type="button">日誌にもどる</button></div></div>`;
+ $('result-panel').innerHTML=`<div class="scene"><img class="luka-plane" src="${ART.plane}" alt=""><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">配達日誌 ・ ${di+1}日目</span><h2>今日の配達、おしまい！</h2><div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="text-align:center">3つの荷物をとどけて、3通のおへんじが来たよ<br><span style="font-size:30px">${gotToday.join(' ')}</span></p><p style="text-align:center;font-weight:700">トトじい「${stars===3?'見事じゃ！ 時の針と分の針、すっかり仲良しじゃのう。':stars===2?'よう届けたのう。針の係、だいぶ見えてきたぞ。':'今日もよう働いた！ 明日もいっしょに届けような。'}」</p>${shelfMarkup()}<div class="days"><button class="next" id="again-d" type="button">この日をもういちど</button>${di+1<DAYS.length?`<button class="next" id="next-d" type="button" style="background:${MINUTE}">${di+2}日目へ ▸</button>`:''}<button class="again" id="list-d" type="button">日誌にもどる</button></div></div>`;
  $('result').hidden=false;$('again-d').onclick=()=>startDay(di);$('list-d').onclick=showMenu;if($('next-d'))$('next-d').onclick=()=>startDay(di+1);
  say(stars===3?'みごとじゃ！':'よう とどけたのう');
 }
@@ -402,6 +456,7 @@ function showMenu(){
  $('result').hidden=true;$('sheet').hidden=true;
  $('days').innerHTML=DAYS.map((L,i)=>`<button class="day" type="button" data-i="${i}"><span class="no" style="background:${i===2?MINUTE:HOUR}">${i+1}<br>日目</span><span><b>${L.title}</b><small>${L.note}</small></span><span class="st">${'★'.repeat(best[i]||0)}${'☆'.repeat(3-(best[i]||0))}</span></button>`).join('');
  for(const b of document.querySelectorAll('.day'))b.onclick=()=>startDay(Number(b.dataset.i));
+ $('menu-shelf').innerHTML=shelfMarkup();
  $('menu').hidden=false;
 }
 $('menu-btn').onclick=showMenu;
