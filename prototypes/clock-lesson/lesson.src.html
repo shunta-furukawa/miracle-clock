@@ -1,4 +1,4 @@
-<title>森の配送所</title>
+<title>空のとけい便</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
 <style>
@@ -91,11 +91,12 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 
 /* Answers. */
 .actions{display:grid;gap:8px}
-.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .choice{background:var(--paper);border:2px solid var(--brass);border-radius:14px;padding:6px 4px 8px;box-shadow:0 4px 0 #0003;display:grid;justify-items:center;gap:2px}
 .choice .env{font-size:26px;line-height:1}
 .choice small{font-size:11px;color:var(--muted);font-weight:700}
-.choice span{font-size:18px;font-weight:900;background:#fff8e6;border:1.5px solid var(--brass);border-radius:4px 10px 10px 4px;padding:0 8px}
+.choice>span{white-space:nowrap;font-size:17px;font-weight:900;background:#fff8e6;border:1.5px solid var(--brass);border-radius:4px 10px 10px 4px;padding:0 8px}
+.choice>span.long{font-size:13px;padding:1px 5px}.choice>span.mid{font-size:15px}
 .choice.right{background:#dff3e3;border-color:var(--good)}.choice.wrong{background:#fde2dc;border-color:var(--bad);opacity:.7}
 .stamp{background:linear-gradient(#2a7a78,#1b5557);color:#fff6dc;border:2px solid #e2bf73;border-radius:16px;font-size:20px;font-weight:900;min-height:58px;box-shadow:0 4px 0 #0f3436}
 .stamp:active{transform:translateY(2px);box-shadow:0 2px 0 #0f3436}
@@ -147,12 +148,58 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 @keyframes bob{50%{transform:translateY(-6px)}}
 .pop{animation:pop .35s}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.plane{opacity:0!important}}
+
+/* Sprites cut from the residents sheet. */
+.portrait{width:62px;height:62px;flex-shrink:0;display:block}
+.task .portrait{width:62px;height:62px}
+/* Morning and afternoon: a window on the dial and a switch by the seal. */
+.ampm-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ampm-pick button{background:var(--paper);border:2px solid var(--brass);border-radius:14px;min-height:44px;font-size:16px;font-weight:900}
+.ampm-pick button[aria-pressed="true"]{background:#2a5d8a;color:#fff;border-color:#e2bf73}
+.ampm-pick button[data-pm="0"][aria-pressed="true"]{background:#e3a321;color:#3b2a17}
+.plate rect{fill:#fff8e6;stroke:#b98a3e;stroke-width:2}
+.plate text{font-size:14px;font-weight:900;text-anchor:middle;dominant-baseline:central;fill:#2f3a33}
+.now-ghost line{stroke:#6f6a58;stroke-dasharray:4 4;stroke-linecap:round;opacity:.85}
+.sweep{fill:#ffcf5a;fill-opacity:.55;pointer-events:none}
+.sweep.full{fill-opacity:.25}
+
+/* The map of six depots and the central post they build together. */
+.map-head{height:150px;background:var(--central) center 40%/cover;position:relative}
+.map-head .toto-say{position:absolute;left:10px;right:86px;bottom:10px;background:#fffaf0ee;border:2px solid #e2bf73;border-radius:12px;padding:5px 9px;font-size:12.5px;font-weight:700;line-height:1.45}
+.map-head img{position:absolute;right:6px;bottom:-4px;width:84px}
+.prep{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0 2px}
+.prep span{font-size:11px;font-weight:700;border-radius:10px;padding:3px 8px;background:#eee4cc;color:#8f8672}
+.prep span.got{background:#2f8a4f;color:#fff}
+.chapters{display:grid;gap:10px;margin-top:10px}
+.chapter{border:2px solid color-mix(in srgb,var(--c) 60%,#e6d3a6);border-radius:16px;background:#fff;overflow:hidden}
+.chapter-top{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;padding:8px 10px;background:linear-gradient(90deg,#fffffff0 55%,#ffffff99),var(--art) center/cover;border:0;width:100%;text-align:left}
+.chapter-top .portrait{width:60px;height:60px}
+.chapter-top b{font-size:16px;display:block}
+.chapter-top small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
+.chapter-top i{font-style:normal;color:var(--c);font-size:11px;font-weight:900;letter-spacing:.1em}
+.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:8px 10px 10px}
+.stage{border:2px solid #e6d3a6;background:#fffaf0;border-radius:10px;min-height:48px;padding:3px 0;display:grid;justify-items:center;align-content:center;gap:1px}
+.stage b{font-size:13px}.stage small{font-size:9px;color:#d09a1c;letter-spacing:-1px}
+.stage.cleared{background:color-mix(in srgb,var(--c) 18%,#fff);border-color:var(--c)}
+.stage.next{outline:2px solid var(--c);outline-offset:1px}
+
+/* Chapter dialogue. */
+.talk{display:grid;gap:8px;margin:10px 0}
+.talk .line{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:end}
+.talk .line.me{grid-template-columns:1fr 52px}
+.talk .line .portrait,.talk .line img{width:52px;height:52px;object-fit:contain}
+.talk .say{background:#fff;border:2px solid #e6d3a6;border-radius:12px;padding:6px 10px;font-size:14px;font-weight:700;line-height:1.5}
+.talk .say small{display:block;font-size:11px;color:var(--muted)}
+.talk .me .say{background:#eef6f2;border-color:#a8cfc0}
+.reward{margin:8px 0;padding:10px;border-radius:14px;background:#fff6dc;border:2px dashed var(--brass);text-align:center;font-weight:700;line-height:1.6}
+.reward b{font-size:20px;display:block;color:var(--brass-d)}
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><image id="atlas" width="1024" height="1536"/></defs></svg>
 <main class="app" id="app">
  <header class="top">
-  <button class="chip" id="menu-btn" type="button">📒 日誌</button>
-  <h1 id="title">森の配送所<small>LUCA &amp; TOTO'S AIR POST</small></h1>
+  <button class="chip" id="menu-btn" type="button">🗺️ 地図</button>
+  <h1 id="title">空のとけい便<small>LUCA &amp; TOTO'S AIR POST</small></h1>
   <button class="chip" id="voice-btn" type="button" aria-pressed="true">🔊 こえ</button>
  </header>
  <div class="parcels" id="parcels" aria-label="今日の荷物"></div>
@@ -168,13 +215,12 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 
 <div class="overlay" id="menu">
  <div class="panel">
-  <div class="scene"><img class="luka-plane" id="menu-plane" alt=""><img id="menu-toto" alt="トトじい"></div>
+  <div class="map-head"><p class="toto-say" id="map-say"></p><img id="map-toto" alt="トトじい"></div>
   <div class="inner">
-   <span class="eyebrow">配達日誌 ・ 森の配送所</span>
-   <h2>空のとけい便、開店じゃ！</h2>
-   <p>森のみんなの荷物を、ほかの島の友だちへ。おへんじには、すてきなおかえしが入っておるぞ。魔法の時計には、ふたりの係がいるんじゃ。<b style="color:var(--hour)">時の針（短い針）</b>は何時か、<b style="color:var(--minute)">分の針（長い針）</b>は何分かを受けもっておる。</p>
-   <div class="legend"><span><i style="background:var(--hour)"></i>時の針</span><span><i style="background:var(--minute)"></i>分の針</span></div>
-   <div class="days" id="days"></div>
+   <span class="eyebrow">THE JOURNEY TO CENTRAL AIR POST</span>
+   <h2>6つの配送所をひらこう</h2>
+   <div class="prep" id="prep"></div>
+   <div class="chapters" id="chapters"></div>
    <div id="menu-shelf"></div>
    <p style="font-size:12px;color:var(--muted);text-align:center">お客さんは急がないよ。ゆっくり針を合わせてね。</p>
   </div>
@@ -187,8 +233,7 @@ button:focus-visible{outline:3px solid #ffcf5a;outline-offset:3px}
 
 <script>
 const GEM_IMG=__GEMS__;      // index 1..12 → gem artwork with its numeral
-const PEOPLE=__PEOPLE__;     // [{name,img}]
-const ART=__ART__;           // {toto,depot,plane}
+const ART=__ART__;           // {toto,plane,luka,atlas,central,islands[6]}
 // Miracle Mine gem colours; index is the hour (12 uses index 0).
 const GEM=['#eee9dc','#1468c1','#f1c84a','#c24627','#087c61','#b96a11','#9cdbeb','#343e89','#b64276','#b3a1e6','#83cfb5','#dc9656'];
 const HOUR='#1f6f72',MINUTE='#c0592b';
@@ -199,77 +244,147 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[
 const hourOf=t=>Math.floor(((t%720)+720)%720/60)||12;
 const minOf=t=>((Math.round(t)%60)+60)%60;
 const ms=t=>(((t%720)+720)%720);
-const text=(h,m)=>`${h}時${m?`${m}分`:''}`;
-const html=(h,m)=>`<span class="t-h">${h}時</span>${m===null?'':m?`<span class="t-m">${m}分</span>`:'<span class="t-m">ちょうど</span>'}`;
 const nextH=h=>h%12+1,prevH=h=>(h+10)%12+1;
+const FIVES=[5,10,15,20,25,30,35,40,45,50,55],ONES=Array.from({length:60},(_,i)=>i).filter(i=>i%5);
 document.documentElement.style.setProperty('--depot',`url(${ART.islands[0]})`);
-for(const id of ['toto-face','hint-face','menu-toto'])$(id).src=ART.toto;
-$('plane').src=ART.plane;$('menu-plane').src=ART.plane;
+document.documentElement.style.setProperty('--central',`url(${ART.central})`);
+document.getElementById('atlas').setAttribute('href',ART.atlas);
+for(const id of ['toto-face','hint-face','map-toto'])$(id).src=ART.toto;
+$('plane').src=ART.plane;
 
-// Six days at the forest depot. Each customer sends a parcel (set the hands), then the plane
-// brings back the reply, stamped with the time it was written (read the hands).
-const SEND=k=>k==='setRoom'?'readRoom':k==='setMin'?'readMin':'readHM';
-const pairs=k=>[k,SEND(k),k,SEND(k),k,SEND(k)];
-const DAYS=[
- {title:'はじめての受付',note:'時の針だけで「◯時ごろ」',hour:true,minute:false,labels:true,step:60,drag:'hour',
-  intro:'今日は<b class="h">時の針</b>だけ動かすぞ。時の針がいる<b class="h">宝石のへや</b>が、何時かを教えてくれるんじゃ。',qs:pairs('setRoom')},
- {title:'ちょうどの便',note:'分の針がてっぺんなら「ちょうど」',hour:true,minute:true,labels:true,step:60,drag:'hour',exact:true,
-  intro:'<b class="m">分の針</b>がてっぺんの12にいたら「<b class="m">ちょうど</b>」の便じゃ。時の針をへやの入口に合わせよう。',qs:pairs('setExact')},
- {title:'分の針のしごと',note:'分の針は外がわの数字を読む',hour:false,minute:true,labels:false,step:5,drag:'minute',
-  intro:'今日は<b class="m">分の針</b>の番じゃ。長い針は、時計の<b class="m">外がわの数字</b>を読む。5、10、15…と進むぞ。',qs:pairs('setMin')},
- {title:'半の便',note:'30分は、時の針がへやのまん中',hour:true,minute:true,labels:true,step:30,drag:'both',
-  intro:'「半」は<b class="m">30分</b>。分の針が下の6にいるとき、<b class="h">時の針</b>はへやのまん中にいるんじゃ。',qs:pairs('setHM')},
- {title:'5分きざみの便',note:'時の針はへや、分の針は外の数字',hour:true,minute:true,labels:true,step:5,drag:'both',
-  intro:'いそがしくなってきたのう。<b class="h">時の針はへや</b>、<b class="m">分の針は外の数字</b>。ふたりの係を分けて読むんじゃ。',qs:pairs('setHM')},
- {title:'ひとりで受付',note:'へやの数字はしまっておくよ',hour:true,minute:true,labels:false,step:5,drag:'both',
-  intro:'今日はへやの数字をしまっておくぞ。宝石の色と針をよく見れば、ルカならだいじょうぶじゃ。',qs:pairs('setHM')}
+// ---------- the six depots (same order and stage names as the main game) ----------
+// Sprite boxes in queue-residents.webp: [region][column], column 0 is the depot's guide.
+const BOX=[[[26,12,228,250],[300,46,170,218],[530,10,208,254],[776,14,232,250]],[[32,268,224,226],[292,278,184,218],[514,272,224,226],[784,272,216,228]],[[16,498,240,230],[284,534,196,194],[500,502,238,228],[770,502,238,228]],[[18,736,254,228],[290,788,194,176],[490,734,252,232],[756,738,258,228]],[[10,972,258,236],[288,1004,200,206],[506,976,246,234],[768,972,244,236]],[[20,1216,248,296],[294,1228,194,282],[520,1222,246,290],[786,1216,228,296]]];
+function portrait(p,cls='portrait'){const [x,y,w,h]=BOX[p.region][p.col],S=Math.max(w,h);return `<svg class="${cls}" viewBox="0 0 ${S} ${S}" role="img" aria-label="${p.name}"><svg x="${(S-w)/2}" y="${S-h}" width="${w}" height="${h}" viewBox="${x} ${y} ${w} ${h}"><use href="#atlas"/></svg></svg>`;}
+const S=(title,cfg,intro)=>({title,cfg,intro});
+const CH=[
+ {name:'森の配送所',place:'こもれびの森',guide:'モス',people:['ふたば','カシじい','さくらばあ'],color:'#628d4a',skill:'ちょうどの時刻',reward:'受付カウンター',thanks:'森のみんなで、中央配送所のカウンターをつくったよ。',
+  talk:['花のたねを、港の友だちに送りたいんだ。3時に届けてくれる？','うん！ 短い針を3に、長い針を12に合わせるよ。','森のみんなにも知らせてくるよ。ここへ荷物を持ってくればいいんだね。'],
+  end:['たねが届いたって！ 港でも、森の花が咲くのが楽しみだな。','時計の針と、約束の時刻。ちょっと仲よくなれた気がする！'],
+  stories:[['🌱','花のたね',1,'たね、ありがとう！ 港の窓べで育てるわ。おかえしに、きれいな貝がらを入れたよ。','🐚','貝がら'],['🍯','森のはちみつ',2,'あまくて元気が出たよ！ 洞窟で光る石を見つけたから、どうぞ。','💎','光る石'],['🍵','花のお茶',4,'いいかおり！ 雲のわたあめを つめてみたよ。','☁️','雲のわたあめ'],['🍄','きのこスープのレシピ',3,'さっそく作ったよ、おいしい！ ぜんまいのおもちゃをあげる。','⚙️','ぜんまいのおもちゃ'],['🌰','どんぐりクッキー',5,'サクサク！ 温室でさいたサボテンの花をおくるね。','🌵','サボテンの花'],['🧣','あみもののマフラー',4,'ふわふわで あったかい！ 虹のかけらを ひとつどうぞ。','🌈','虹のかけら']],
+  stages:[
+   S('短い針を見つけよう',{mode:'room',drag:'hour',labels:true},'森の配送所、開店じゃ！ 時計の<b class="h">短い針</b>は<b class="h">時の針</b>。時の針がいる<b class="h">宝石のへや</b>が、何時かを教えてくれるんじゃ。'),
+   S('いろんな「時」',{mode:'room',drag:'hour',labels:true},'へやは、宝石の数字から つぎの宝石まで。時の針が数字をこえたら、もう つぎのへやじゃ。'),
+   S('森のおひる便',{mode:'hm',pool:[0],drag:'hour',exact:true,labels:true,step:60},'<b class="m">長い針</b>は<b class="m">分の針</b>。分の針がてっぺんの12にいたら「<b class="m">ちょうど</b>」の便じゃ。'),
+   S('12時をこえて',{mode:'hm',pool:[0],hours:[10,11,12,1,2],drag:'hour',exact:true,labels:true,step:60},'12のへやは、12から1のあいだ。12時の つぎは、また1時にもどるんじゃ。'),
+   S('森のにぎわい',{mode:'hm',pool:[0],drag:'hour',exact:true,labels:true,step:60},'お客さんがふえてきたのう。時の針のへやを、ひとつずつ たしかめよう。'),
+   S('森の配達係',{mode:'hm',pool:[0],drag:'hour',exact:true,labels:false,step:60},'今日はへやの数字をしまっておくぞ。宝石の色と時の針を よく見るんじゃ。')]},
+ {name:'港の配送所',place:'しおかぜの港',guide:'シェル',people:['ピンクル','ウズ','パールばあ'],color:'#449ca8',skill:'30分・「半」',reward:'荷物棚',thanks:'荷物が増えても安心ね。港から丈夫な棚を贈るわ。',
+  talk:['お茶の時間に、真珠の贈りものを届けたいの。3時半ってお願いできる？','3時半は3時30分。長い針は6、短い針は3と4の間だね。','そうそう。港のみんなの贈りものも、この受付に持ってくるわ。'],
+  end:['ありがとう！ ちょうどお茶をいれたところに届いたそうよ。','「半」は30分。贈りものの時間もぴったりだったね！'],
+  stories:[['🎁','貝がらの贈りもの',0,'森の机に かざったよ！ 四つ葉を見つけたから、おすそわけ。','🍀','四つ葉'],['🍓','海のジャム',3,'パンにぬって食べたよ！ 小さなスパナを作ったんだ。','🔧','小さなスパナ'],['📿','真珠の飾り',2,'洞窟で きらきら光ってるよ！ すいしょう玉をどうぞ。','🔮','すいしょう玉'],['🐟','ほしざかな',5,'温室のみんなで食べたよ。ハーブのたばを入れたね。','🌿','ハーブのたば'],['🗺️','海の地図',4,'雲の上から 海が見えたよ！ たこを おくるね。','🪁','たこ'],['🫧','しゃぼん玉のもと',0,'森じゅう しゃぼん玉だらけ！ さくらのしおりをどうぞ。','🌸','さくらのしおり']],
+  stages:[
+   S('長い針は6',{mode:'min',pool:[0,30],drag:'minute',step:30,labels:false},'港では「半」がよく出てくるぞ。<b class="m">分の針</b>が下の<b class="m">6</b>にいたら<b class="m">30分</b>。6分じゃないぞ！'),
+   S('半の約束',{mode:'hm',pool:[30],half:1,drag:'both',step:30,labels:true},'「3時半」は3時30分。分の針が6のとき、<b class="h">時の針</b>は3と4の<b class="h">まん中</b>におるんじゃ。'),
+   S('ぴったりと半',{mode:'hm',pool:[0,30],half:.5,drag:'both',step:30,labels:true},'ちょうどと半が まざってくるぞ。分の針は12か6、時の針はへやの入口か まん中じゃ。'),
+   S('港の朝じたく',{mode:'hm',pool:[0,30],hours:[5,6,7,8,9],half:.5,drag:'both',step:30,labels:true},'港の朝は はやい。時の針が どのへやにいるか、よく見ておくれ。'),
+   S('お茶会の便',{mode:'hm',pool:[0,30],half:.5,drag:'both',step:30,labels:true},'お茶会の注文じゃ。「半」と「30分」は おなじ時刻じゃよ。'),
+   S('港の配達係',{mode:'hm',pool:[0,30],half:.5,drag:'both',step:30,labels:false},'今日はへやの数字をしまっておくぞ。港の配達係の うでの見せどころじゃ。')]},
+ {name:'結晶の配送所',place:'きらめきの洞窟',guide:'クリム',people:['コハク','アメル','ローズじい'],color:'#9b7bbe',skill:'15分・45分',reward:'案内灯',thanks:'遠くからでも見えるように、結晶の案内灯を贈るよ。',
+  talk:['結晶の明かりを15分ずつの時間に届けたいんだ。手伝ってくれる？','15分なら長い針は3、30分は6、45分は9だね。','洞窟の仲間も結晶を送るよ。ここで時刻の刻印をお願いするね。'],
+  end:['島のあちこちに明かりがともったよ。約束の時間を守ってくれてありがとう！','時計を4つに分けて考えると、15分の場所が見つけやすいね。'],
+  stories:[['🏮','小さな結晶灯',1,'夜の港が あかるくなったわ！ 真珠をひとつぶ どうぞ。','🦪','真珠'],['🪨','鉱石の標本',3,'いい石だね！ ぴかぴかにみがいたベルを おくるよ。','🛎️','ぴかぴかのベル'],['💠','虹色の結晶',4,'雲に うつして遊んだよ！ 流れ星のかけらをどうぞ。','🌠','流れ星のかけら'],['🍄','光るきのこ',0,'森の夜道に ぴったり！ どんぐりを 入れておくね。','🌰','どんぐり'],['🔔','鉱石のすず',5,'すずしい音！ 砂時計をおくるね。','⏳','砂時計'],['🕯️','結晶のろうそく',1,'灯台の絵はがきを かいてみたの。','🖼️','灯台の絵はがき']],
+  stages:[
+   S('15分の光',{mode:'min',pool:[0,15,30,45],drag:'minute',step:15,labels:false},'時計を<b class="m">4つ</b>に分けると、分の針は 12、3、6、9。<b class="m">3</b>のところが<b class="m">15分</b>じゃ。'),
+   S('45分の光',{mode:'hm',pool:[15,45],drag:'both',step:15,labels:true},'分の針が<b class="m">9</b>なら<b class="m">45分</b>。そのとき時の針は、つぎの数字に だいぶ近づいておるぞ。'),
+   S('4つに分けよう',{mode:'hm',pool:[0,15,30,45],drag:'both',step:15,labels:true},'12、3、6、9。分の針が どこにいるか、4つのうちから えらぶんじゃ。'),
+   S('次の時へ',{mode:'hm',pool:[45],drag:'both',step:15,labels:true},'45分は まちがえやすいぞ。時の針は つぎの数字のすぐ手前。でも<b class="h">まだ前のへや</b>におるんじゃ。'),
+   S('結晶灯の便',{mode:'hm',pool:[0,15,30,45],drag:'both',step:15,labels:true},'結晶灯の注文が いっぱいじゃ。時の針はへや、分の針は4つの場所。'),
+   S('結晶の配達係',{mode:'hm',pool:[0,15,30,45],drag:'both',step:15,labels:false},'へやの数字をしまっておくぞ。洞窟の明かりのように、よく見てのう。')]},
+ {name:'工房の配送所',place:'あかねの工房',guide:'フレア',people:['チロ','ゴン','ガンじい'],color:'#bd7c3c',skill:'5分から1分',reward:'仕分け機',thanks:'たくさんの荷物もおまかせ！ 工房特製の仕分け機だよ。',
+  talk:['組み立て中の飛行機に部品を届けたいんだ。細かい時刻でも頼めるかい？','5分ずつ数えて、それから小さな目盛りも読んでみるよ。','頼もしいね。職人たちの荷物はここで預かって、配送機に託そう。'],
+  end:['部品がそろったよ！ 職人たちも待ちぼうけにならずにすんだ。','小さな目盛りも大事な約束なんだね。1分ずつ、よく見よう。'],
+  stories:[['⚙️','真鍮の歯車',2,'洞窟のトロッコが動いたよ！ 結晶のかざりをどうぞ。','💠','結晶のかざり'],['🪔','手作りのランタン',0,'森の夜が あったかい！ りんごを入れたよ。','🍎','森のりんご'],['🔩','飛行機の部品',4,'雲の飛行機が 直ったよ！ きれいな羽根をどうぞ。','🪶','きれいな羽根'],['🕰️','なおした時計',1,'港の時計が また動いたわ！ ガラスの魚をどうぞ。','🐠','ガラスの魚'],['🧸','ぜんまい人形',5,'温室で おどってるよ！ ひまわりを おくるね。','🌻','ひまわり'],['🔑','ふしぎなかぎ',2,'洞窟の宝箱が あいたよ！ 結晶の指輪をどうぞ。','💍','結晶の指輪']],
+  stages:[
+   S('5分ずつ数えよう',{mode:'min',pool:FIVES,drag:'minute',step:5,labels:false},'分の針は、数字をひとつ進むと<b class="m">5分</b>。5、10、15…と 数えるんじゃ。'),
+   S('数字の間を読む',{mode:'hm',pool:FIVES,drag:'both',step:5,labels:true},'時の針が数字と数字の<b class="h">あいだ</b>にいたら、へやの数字を読む。つぎの数字じゃないぞ。'),
+   S('工房の5分便',{mode:'hm',pool:FIVES,drag:'both',step:5,labels:true},'工房は いそがしい！ 時の針はへや、分の針は外の数字じゃ。'),
+   S('小さな目盛り',{mode:'min',pool:ONES,drag:'minute',step:1,labels:false},'数字のあいだの<b class="m">小さな目盛り</b>は1分ずつ。近くの5分から、1つ、2つ…と 数えるんじゃ。'),
+   S('1分の約束',{mode:'hm',pool:ONES,drag:'both',step:1,labels:true},'1分きざみの注文じゃ。まず時の針のへや、つぎに分の針の目盛り。'),
+   S('工房の配達係',{mode:'hm',pool:[...FIVES,...ONES],drag:'both',step:1,labels:false},'へやの数字をしまっておくぞ。職人のように、目盛りを1つずつ見るんじゃ。')]},
+ {name:'雲の配送所',place:'雲の展望台',guide:'フウ',people:['ワタ','ソヨ','シロばあ'],color:'#6c9dbc',skill:'午前・午後・24時間',reward:'通信塔',thanks:'どの島からも声が届くよ。雲の通信塔を使ってね。',
+  talk:['朝の手紙と夜の手紙、同じ9時でも届く時間が違うんだよ。','午前と午後を確かめよう。夜の9時は、24時間の言い方だと21時だね。','うん。雲の仲間もここに手紙を持ってくるから、お願いね。'],
+  end:['朝の便も夜の便も、ちゃんと届いたよ！ おやすみの手紙も間に合った。','針だけでなく、午前と午後も確かめる。これで安心だね！'],
+  stories:[['💌','風のたより',0,'森のみんなで読んだよ！ たなばたのささを おくるね。','🎋','たなばたのささ'],['🛏️','雲のクッション',2,'ふかふかで ねむれた！ 月の石をどうぞ。','🌙','月の石'],['🗺️','星の地図',3,'地図で 星をさがしたよ！ 手作りの望遠鏡をどうぞ。','🔭','手作りの望遠鏡'],['🎐','風りん',1,'チリンって いい音！ 波の音のびんを おくるわ。','🫙','波の音のびん'],['🪁','雲のたこ',5,'砂丘の空に あがったよ！ すいかを どうぞ。','🍉','すいか'],['⭐','星のかけら',0,'森の夜が きれい！ ふくろうの置物を作ったよ。','🦉','ふくろうの置物']],
+  stages:[
+   S('午前のお届け',{mode:'hm',pool:[0,30],period:true,only:0,drag:'both',step:30,labels:true},'同じ針の形でも、朝と夜の2回あるんじゃ。夜の0時から お昼の12時までが<b>午前</b>。時計の窓を見てごらん。'),
+   S('午後のお届け',{mode:'hm',pool:[0,30],period:true,only:1,drag:'both',step:30,labels:true},'お昼の12時から 夜の12時までが<b>午後</b>。刻印の前に「午後」をえらぶんじゃ。'),
+   S('朝と夜をえらぶ',{mode:'hm',pool:FIVES,period:true,drag:'both',step:5,labels:true},'午前か午後か、荷札を よく見るんじゃ。針を合わせたら、窓もたしかめよう。'),
+   S('ふたつの12時',{mode:'hm',pool:[0,30],hours:[12,11,1],period:true,drag:'both',step:30,labels:true},'12のへやは とくべつ。夜中は<b>午前0時</b>、お昼は<b>午後0時</b>とよぶんじゃ。'),
+   S('24時間の時計',{mode:'hm',pool:FIVES,period:'24',drag:'both',step:5,labels:true},'<b>18時</b>は 午後6時。午後の時刻は、12をたして よぶこともあるんじゃ。'),
+   S('雲の配達係',{mode:'hm',pool:FIVES,period:'24',drag:'both',step:5,labels:false},'へやの数字をしまっておくぞ。24時間の荷札も、雲の配達係なら だいじょうぶじゃ。')]},
+ {name:'砂丘の温室配送所',place:'砂丘の温室',guide:'スナリ',people:['ポポ','ネム','サフランばあ'],color:'#c48b76',skill:'何分後・何時間後',reward:'開所看板',thanks:'最後はぼくらの看板！ 花を飾って、中央配送所をひらこう！',
+  talk:['ようこそ！ この苗は、今から15分後に友だちの温室へ届けたいんだ。','受付の時計から15分進めれば、お届けする時刻になるんだね。','そう！ ぼくはスナリ。砂丘のトビネズミ族のみんなも、苗やお茶を送りに来るよ。'],
+  end:['苗もお茶も、ちょうどいい時間に届いたよ！ 温室のみんなも喜んでる。','何分後も何時間後も、いまの時刻から考えればいいんだね！'],
+  stories:[['🫖','砂丘のお茶',4,'雲の上で お茶会したよ！ ふうせんを おくるね。','🎈','ふうせん'],['🌱','芽吹いた苗',0,'森に植えたよ！ 木の実を つめておいたね。','🫐','木の実'],['🌺','香りのたね',1,'港に花がさいたわ！ イルカの置物をどうぞ。','🐬','イルカの置物'],['🏺','砂のつぼ',3,'工房に かざったよ！ 小さな置き時計をあげる。','⏰','小さな置き時計'],['🌵','小さなサボテン',2,'洞窟でも元気だよ！ ほしくずのびんを どうぞ。','✨','ほしくずのびん'],['🍪','デーツのおかし',4,'みんなで食べたよ！ はとの手紙をおくるね。','🕊️','はとの手紙']],
+  stages:[
+   S('15分後、30分後',{mode:'rel',dur:[15,30],nows:[0],drag:'both',step:15,labels:true},'砂丘の注文は「いまから何分後」。<b>点線の針が いま</b>。そこから分の針を すすめるんじゃ。'),
+   S('ひとまわり先へ',{mode:'rel',dur:[30,45,60],nows:[0,15,30],drag:'both',step:15,labels:true},'分の針が<b>ひとまわり</b>すると<b>60分</b>、つまり1時間じゃ。時の針は となりのへやに うつるぞ。'),
+   S('時をまたぐ苗',{mode:'rel',dur:[20,30,40],nows:[40,45,50],drag:'both',step:5,labels:true},'分の針が12をこえると、時の針も つぎのへやへ。時をまたいでも あわてずにのう。'),
+   S('何時間後？',{mode:'rel',dur:[60,120,180],nows:[0,10,20,30],drag:'both',step:5,labels:true},'「2時間後」は、時の針が<b class="h">へや2つぶん</b>すすむ。分の針は 同じ場所にもどるんじゃ。'),
+   S('温室の出荷便',{mode:'rel',dur:[15,25,45,90],nows:[0,10,20,30,40,50],drag:'both',step:5,labels:true},'出荷便は いろんな時間じゃ。いまの針から、じゅんばんに すすめよう。'),
+   S('明日への約束',{mode:'rel',dur:[20,35,50,75,120],nows:[5,15,25,35,45],drag:'both',step:5,labels:false},'へやの数字をしまっておくぞ。いまの時刻から考えれば、どんな約束も届けられるんじゃ。')]}
 ];
-// Friends on the other islands; island is the depot art index.
-const FRIENDS={シェル:{place:'港',island:1},クリム:{place:'結晶の洞窟',island:2},フレア:{place:'工房',island:3},フウ:{place:'雲の島',island:4},スナリ:{place:'砂丘の温室',island:5}};
-const STORIES=[
- {item:'🌱',what:'花のたね',to:'シェル',reply:'たね、ありがとう！ 港の窓べで育てるわ。おかえしに、きれいな貝がらを入れたよ。',gift:'🐚',giftName:'貝がら'},
- {item:'🍯',what:'はちみつ',to:'クリム',reply:'あまくて元気が出たよ！ 洞窟で光る石を見つけたから、どうぞ。',gift:'💎',giftName:'光る石'},
- {item:'🧣',what:'あみもののマフラー',to:'フウ',reply:'ふわふわで あったかい！ 雲のわたあめを つめてみたよ。',gift:'☁️',giftName:'雲のわたあめ'},
- {item:'🍄',what:'きのこスープのレシピ',to:'フレア',reply:'さっそく作ったよ、おいしい！ ぜんまいで動くおもちゃをあげる。',gift:'⚙️',giftName:'ぜんまいのおもちゃ'},
- {item:'🌰',what:'どんぐりクッキー',to:'スナリ',reply:'サクサク！ 温室でさいたサボテンの花をおくるね。',gift:'🌵',giftName:'サボテンの花'},
- {item:'📷',what:'森の写真',to:'シェル',reply:'森って きれいね！ 灯台の絵はがきを入れておくわ。',gift:'🖼️',giftName:'灯台の絵はがき'},
- {item:'🎐',what:'風りん',to:'フウ',reply:'チリンって いい音！ 虹のかけらを ひとつどうぞ。',gift:'🌈',giftName:'虹のかけら'},
- {item:'🫖',what:'森のハーブティー',to:'スナリ',reply:'いいかおり！ 砂時計をおくるね。時間をはかるのにつかってね。',gift:'⏳',giftName:'砂時計'},
- {item:'🔔',what:'こわれたベル',to:'フレア',reply:'なおしておいたよ！ ぴかぴかになったベル、どうぞ。',gift:'🛎️',giftName:'ぴかぴかのベル'},
- {item:'🍎',what:'森のりんご',to:'クリム',reply:'しゃりしゃり！ 結晶のランプをあげるね。夜の配達に。',gift:'🏮',giftName:'結晶のランプ'},
- {item:'🪶',what:'きれいな羽根',to:'フウ',reply:'風にのせて遊んだよ！ 流れ星のかけらを見つけたんだ。',gift:'🌠',giftName:'流れ星のかけら'},
- {item:'🧺',what:'ピクニックのおべんとう',to:'シェル',reply:'みんなで食べたわ！ 真珠をひとつぶ、おすそわけ。',gift:'🦪',giftName:'真珠'}
-];
+const ART_OF=[0,1,2,3,4,5];   // ART.islands index per depot
 const ASKS=['{t}に とどけてね！','{t}に おねがい！','{t}に まにあうかな？','{t}の便に のせてください'];
-let day=null,di=0,qi=0,q=null,t=0,mistakes=0,hints=0,tries=0,answered=false,results=[],voice=true,drag=null,ghost=null,helped=false,tales=[],gotToday=[];
-let best={};try{best=JSON.parse(localStorage.getItem('clock-lesson-stars')||'{}');}catch{}
-let shelf=[];try{shelf=JSON.parse(localStorage.getItem('clock-lesson-gifts')||'[]');}catch{}
+const person=(c,col)=>({region:c,col,name:col?CH[c].people[col-1]:CH[c].guide});
+const sid=(c,n)=>c*6+n;
+
+let rec={stars:{},gifts:[],rewards:[],met:[]};try{rec={...rec,...JSON.parse(localStorage.getItem('clock-post-v1')||'{}')};}catch{}
+const save=()=>{try{localStorage.setItem('clock-post-v1',JSON.stringify(rec));}catch{}};
+let ci=0,si=0,stage=null,cfg=null,qi=0,q=null,t=0,pm=false,mistakes=0,hints=0,tries=0,answered=false,results=[],voice=true,drag=null,ghost=null,helped=false,tales=[],gotToday=[];
 const toto=s=>{$('toto-say').innerHTML=s;};
 
-// ---------- parcels ----------
-function lateMinute(step){const pool=step>=30?[0,30]:[5,10,15,20,25,30,35,40,45,50,55];return Math.random()<.5?pick(pool.filter(m=>m>=40)):pick(pool);}
-function make(kind){
- const h=1+rnd(12),step=day.step;
- if(kind==='readRoom'){const m=pick([10,20,35,45,50,55]);return {kind,read:true,h,m,answer:`${h}`,options:shuffle([h,nextH(h),prevH(h)]).map(x=>({key:`${x}`,label:`${x}時ごろ`,gem:x}))};}
- if(kind==='setRoom')return {kind,read:false,h,m:null,start:ms((h+4+rnd(6))*60+25)};
- if(kind==='setExact')return {kind,read:false,h,m:0,start:ms((h+3+rnd(7))*60)};
- if(kind==='readMin'){const m=5*(1+rnd(11));const opts=[m,m/5,m+(m<55?5:-5)];return {kind,read:true,h:null,m,answer:`${m}`,options:shuffle(opts).map(x=>({key:`${x}`,label:`${x}分`}))};}
- if(kind==='setMin'){const m=5*(1+rnd(11));return {kind,read:false,h:null,m,start:ms(rnd(12)*60+((m+30)%60))};}
- const m=step===60?0:step===30?pick([0,30]):lateMinute(step);
- if(kind==='readHM'){
-  // Tempting wrong tags: the next hour (hour hand past the numeral) and the numeral read as minutes.
-  const opts=[{h,m},{h:nextH(h),m},m?{h,m:m/5!==m&&Number.isInteger(m/5)?m/5:(m+5)%60}:{h:prevH(h),m}];
-  const seen=new Set();const options=shuffle(opts.filter(o=>{const k=`${o.h}:${o.m}`;if(seen.has(k))return false;seen.add(k);return true;})).map(o=>({key:`${o.h}:${o.m}`,label:text(o.h,o.m)||`${o.h}時`}));
-  return {kind,read:true,h,m,answer:`${h}:${m}`,options};
+// ---------- time words ----------
+const minWord=m=>m?`${m}分`:'ちょうど';
+const durWord=d=>d>=60?`${Math.floor(d/60)}時間${d%60?`${d%60}分`:''}`:`${d}分`;
+function hourWord(h,p,c=cfg){if(c.period==='24')return `${h%12+(p?12:0)}`;if(c.period)return `${p?'午後':'午前'}${h===12?0:h}`;return `${h}`;}
+// A time as a coloured label: hour part teal, minute part orange.
+function label(h,m,p,half=false,c=cfg){
+ if(c.mode==='min')return `<span class="t-m">${minWord(m)}</span>`;
+ const mm=m===0?(c.period?'':'<span class="t-m">ちょうど</span>'):m===30&&half?'<span class="t-m">半</span>':`<span class="t-m">${m}分</span>`;
+ return `<span class="t-h">${hourWord(h,p,c)}時</span>${mm}`;
+}
+const plain=s=>s.replace(/<[^>]+>/g,'');
+function spoken(h,m,p,half=false){
+ const hh=cfg.period==='24'?`${h%12+(p?12:0)}じ`:cfg.period?`${p?'ごご':'ごぜん'}${h===12?0:h}じ`:`${h}じ`;
+ return hh+(m===0?'':m===30&&half?'はん':`${m}ふん`);
+}
+
+// ---------- questions ----------
+function uniq(list,key){const seen=new Set();return list.filter(o=>{const k=key(o);if(seen.has(k))return false;seen.add(k);return true;});}
+function make(read){
+ const c=cfg,h=c.hours?pick(c.hours):1+rnd(12),m=pick(c.pool||[0]),p=c.period?(c.only!==undefined?!!c.only:Math.random()<.5):false;
+ const half=c.half?Math.random()<c.half:false;
+ if(c.mode==='room'){
+  if(read){const mm=pick([10,20,35,45,50,55]);return {read,mode:'room',h,m:mm,t:h*60+mm,answer:`${h}`,options:shuffle([h,nextH(h),prevH(h)]).map(x=>({key:`${x}`,html:`<span class="t-h">${x}時</span>ごろ`,gem:x}))};}
+  return {read,mode:'room',h,m:null,start:ms((h+4+rnd(6))*60+25)};
  }
- return {kind:'setHM',read:false,h,m,start:ms((h+4+rnd(6))*60+(m+25)%60)};
+ if(c.mode==='min'){
+  if(read){const miss=m%5===0?(m?m/5:12):m-m%5;const opts=uniq([m,miss,(m+5)%60,(m+55)%60,(m+15)%60],x=>x).slice(0,3);
+   return {read,mode:'min',h:null,m,t:rnd(12)*60+m,answer:`${m}`,options:shuffle(opts).map(x=>({key:`${x}`,html:`<span class="t-m">${minWord(x)}</span>`}))};}
+  return {read,mode:'min',h:null,m,start:ms(rnd(12)*60+((m+25)%60))};
+ }
+ if(c.mode==='rel'){
+  const now=ms((1+rnd(12))*60+pick(c.nows)),d=pick(c.dur);
+  if(read){const st=d>=60&&d%60===0?60:c.step>=15?15:5;const opts=uniq([d,d+st,d-st,d+2*st].filter(x=>x>0),x=>x).slice(0,3);
+   return {read,mode:'rel',now,d,t:now+d,answer:`${d}`,options:shuffle(opts).map(x=>({key:`${x}`,html:`<span class="t-m">${durWord(x)}</span>`}))};}
+  return {read,mode:'rel',now,d,start:now};
+ }
+ if(read){
+  const third=c.period?{h,m,p:!p}:m%5===0&&m>0?{h,m:m/5,p}:m===0?{h:prevH(h),m,p}:{h,m:m-m%5,p};
+  const opts=uniq([{h,m,p},{h:nextH(h),m,p},third],o=>`${o.h}:${o.m}:${o.p}`);
+  return {read,mode:'hm',h,m,p,half,t:h*60+m,answer:`${h}:${m}:${p}`,options:shuffle(opts).map(o=>({key:`${o.h}:${o.m}:${o.p}`,html:label(o.h,o.m,o.p,half)}))};
+ }
+ return {read,mode:'hm',h,m,p,half,start:ms((h+4+rnd(6))*60+(m+25)%60)};
 }
 
 // ---------- the dial ----------
 const P=(deg,r)=>[Math.sin(deg*Math.PI/180)*r,-Math.cos(deg*Math.PI/180)*r];
 function wedge(a0,a1,r){const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);return `M0 0L${x0} ${y0}A${r} ${r} 0 0 1 ${x1} ${y1}Z`;}
+function band(a0,a1,r0,r1){const [x0,y0]=P(a0,r1),[x1,y1]=P(a1,r1),[x2,y2]=P(a1,r0),[x3,y3]=P(a0,r0),big=a1-a0>180?1:0;return `M${x0} ${y0}A${r1} ${r1} 0 ${big} 1 ${x1} ${y1}L${x2} ${y2}A${r0} ${r0} 0 ${big} 0 ${x3} ${y3}Z`;}
 function buildDial(){
- let s=`<circle r="156" class="rim"/><circle r="146" class="minring"/>`;
+ let s=`<circle r="156" class="rim"/><circle r="146" class="minring"/><path id="sweep-full" class="sweep full hidden" d="${band(0,359.9,127,146)}"/><path id="sweep" class="sweep"/>`;
  for(let i=0;i<60;i++){const big=i%5===0,[x0,y0]=P(i*6,big?128:133),[x1,y1]=P(i*6,145);s+=`<line class="mintick${big?' big':''}" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>`;}
  s+=`<g id="minnums">`;for(let i=0;i<12;i++){const [x,y]=P(i*30,137);s+=`<text class="minnum" data-min="${i*5}" x="${x}" y="${y}">${i*5}</text>`;}s+=`</g>`;
  s+=`<circle r="126" class="face"/><g id="rooms">`;
@@ -277,44 +392,57 @@ function buildDial(){
  s+=`</g><g id="edges">`;for(let n=0;n<12;n++){const [x0,y0]=P(n*30,20),[x1,y1]=P(n*30,125);s+=`<line class="edge" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>`;}s+=`</g>`;
  s+=`<g id="roomlabels">`;for(let n=0;n<12;n++){const [x,y]=P(n*30+15,72);s+=`<text class="roomlabel" data-room="${n}" x="${x}" y="${y}">${n||12}</text>`;}s+=`</g>`;
  for(let n=1;n<=12;n++){const [x,y]=P(n*30,104);s+=`<image href="${GEM_IMG[n]}" x="${x-17}" y="${y-17}" width="34" height="34"/>`;}
+ s+=`<g id="plate" class="plate hidden" transform="translate(0 44)"><rect x="-34" y="-13" width="68" height="26" rx="8"/><text id="plate-text">午前</text></g>`;
+ s+=`<g id="nowg" class="now-ghost hidden"><line id="nh" x1="0" y1="0" x2="0" y2="-58" stroke-width="7"/><line id="nm" x1="0" y1="0" x2="0" y2="-110" stroke-width="4"/></g>`;
  s+=`<g id="ghost" class="ghost hidden"><line id="gh" class="hand-h" x1="0" y1="0" x2="0" y2="-62" stroke="${HOUR}"/><line id="gm" class="hand-m" x1="0" y1="0" x2="0" y2="-112" stroke="${MINUTE}"/></g>`;
  s+=`<g id="hm"><line class="hand-m" x1="0" y1="14" x2="0" y2="-112"/><g class="badge" transform="translate(0 -100)"><circle r="11" fill="${MINUTE}"/><text>分</text></g></g>`;
  s+=`<g id="hh"><line class="hand-h" x1="0" y1="10" x2="0" y2="-60"/><g class="badge" transform="translate(0 -50)"><circle r="13" fill="${HOUR}"/><text>時</text></g></g>`;
  s+=`<circle r="7" class="pin"/>`;
  $('dial').innerHTML=s;
 }
+const showHour=()=>cfg.mode!=='min',showMin=()=>cfg.mode!=='room';
+const elapsed=()=>q&&q.mode==='rel'?ms(t-q.now):0;
 function draw(){
- const L=day,room=Math.floor(ms(t)/60);
+ const room=Math.floor(ms(t)/60),H=showHour(),M=showMin();
  $('hh').setAttribute('transform',`rotate(${ms(t)/2})`);$('hm').setAttribute('transform',`rotate(${(ms(t)%60)*6})`);
- $('hh').classList.toggle('hidden',!L.hour);$('hm').classList.toggle('hidden',!L.minute);
- $('minnums').classList.toggle('hidden',!L.minute);
- for(const r of document.querySelectorAll('.room')){const on=L.hour&&Number(r.dataset.room)===room;r.setAttribute('fill-opacity',L.hour?(on?.8:.24):.12);}
- for(const l of document.querySelectorAll('.roomlabel')){const on=Number(l.dataset.room)===room;l.classList.toggle('on',on&&L.hour);l.style.opacity=L.labels&&L.hour?(on?1:.55):0;}
- const mm=minOf(t);for(const n of document.querySelectorAll('.minnum'))n.classList.toggle('on',Number(n.dataset.min)===mm&&L.minute);
+ $('hh').classList.toggle('hidden',!H);$('hm').classList.toggle('hidden',!M);$('minnums').classList.toggle('hidden',!M);
+ for(const r of document.querySelectorAll('.room')){const on=H&&Number(r.dataset.room)===room;r.setAttribute('fill-opacity',H?(on?.8:.24):.12);}
+ for(const l of document.querySelectorAll('.roomlabel')){const on=Number(l.dataset.room)===room;l.classList.toggle('on',on&&H);l.style.opacity=cfg.labels&&H?(on?1:.55):0;}
+ const mm=minOf(t);for(const n of document.querySelectorAll('.minnum'))n.classList.toggle('on',Number(n.dataset.min)===mm&&M);
  $('ghost').classList.toggle('hidden',ghost===null);
- if(ghost!==null){$('gh').setAttribute('transform',`rotate(${ms(ghost)/2})`);$('gm').setAttribute('transform',`rotate(${minOf(ghost)*6})`);$('gh').classList.toggle('hidden',!L.hour);$('gm').classList.toggle('hidden',!L.minute);}
+ if(ghost!==null){$('gh').setAttribute('transform',`rotate(${ms(ghost)/2})`);$('gm').setAttribute('transform',`rotate(${minOf(ghost)*6})`);$('gh').classList.toggle('hidden',!H);$('gm').classList.toggle('hidden',!M);}
+ // The window says 午前 or 午後; while reading it shows the plane's time, while setting the switch.
+ $('plate').classList.toggle('hidden',!cfg.period);if(cfg.period)$('plate-text').textContent=pm?'🌙 午後':'☀️ 午前';
+ // Relative orders: the dashed hands stay at "now" and a golden band shows how far the minute hand went.
+ const rel=q&&q.mode==='rel',e=elapsed();
+ $('nowg').classList.toggle('hidden',!rel);$('sweep').classList.toggle('hidden',!rel||!e);$('sweep-full').classList.toggle('hidden',!rel||e<60);
+ if(rel){$('nh').setAttribute('transform',`rotate(${ms(q.now)/2})`);$('nm').setAttribute('transform',`rotate(${minOf(q.now)*6})`);
+  if(e){const a0=minOf(q.now)*6,span=e%60||60;$('sweep').setAttribute('d',band(a0,a0+Math.min(span*6,359.9),127,146));}}
  // While setting, the child sees what the hands say; while reading, nothing gives the answer away.
  const ro=$('readout');
- if(q&&!q.read&&!answered){const parts=[];if(L.hour)parts.push(`<span class="rh">時の針 → ${hourOf(t)}のへや</span>`);if(L.minute)parts.push(`<span class="rm">分の針 → ${mm}分</span>`);ro.innerHTML=parts.join('');}
+ if(q&&!q.read&&!answered){const parts=[];
+  if(rel){parts.push(`<span class="rh">いま ${plain(label(hourOf(q.now),minOf(q.now),false))}</span>`,`<span class="rm">→ ${e?durWord(e):'0分'} すすんだ</span>`);}
+  else{if(H)parts.push(`<span class="rh">時の針 → ${hourOf(t)}のへや</span>`);if(M)parts.push(`<span class="rm">分の針 → ${mm}分</span>`);}
+  ro.innerHTML=parts.join('');}
  else ro.innerHTML='';
 }
 // Drag the hand you grab: near the centre it is the short hand, further out the long hand.
 function angleOf(e){const b=$('dial').getBoundingClientRect(),x=e.clientX-b.left-b.width/2,y=e.clientY-b.top-b.height/2;return {a:(Math.atan2(x,-y)*180/Math.PI+360)%360,r:Math.hypot(x,y)/(b.width/2)*160};}
 $('dial').addEventListener('pointerdown',e=>{
  if(!q||q.read||answered)return;const {a,r}=angleOf(e);
- let hand=day.drag;if(hand==='both')hand=r<72?'hour':'minute';
+ let hand=cfg.drag;if(hand==='both')hand=r<72?'hour':'minute';
  drag={hand,last:a};$('dial').setPointerCapture(e.pointerId);$('dial').classList.add('drag');move(a);
 });
 $('dial').addEventListener('pointermove',e=>{if(drag)move(angleOf(e).a);});
 const end=()=>{if(!drag)return;drag=null;$('dial').classList.remove('drag');
- if(day.drag!=='hour'||day.exact)t=Math.round(t/day.step)*day.step;draw();};
+ const step=cfg.step||60;if(cfg.drag!=='hour'||cfg.exact)t=Math.round(t/step)*step;draw();};
 $('dial').addEventListener('pointerup',end);$('dial').addEventListener('pointercancel',end);
 function move(a){
  const before=t;
  if(drag.hand==='hour'){
-  if(day.exact)t=Math.floor(a/30)*60;                    // snaps into a room at "ちょうど"
-  else if(!day.minute)t=a*2;                             // the short hand alone glides freely
-  else t=Math.floor(a/30)*60+minOf(t);                   // keep the minutes, change the room
+  if(cfg.exact)t=Math.floor(a/30)*60;                   // snaps into a room at "ちょうど"
+  else if(cfg.mode==='room')t=a*2;                        // the short hand alone glides freely
+  else t=Math.floor(a/30)*60+minOf(t);                    // keep the minutes, change the room
  }else{let d=a-drag.last;if(d>180)d-=360;if(d<-180)d+=360;t=ms(t+d/6);}  // the long hand pulls the short hand along
  drag.last=a;
  if(Math.floor(ms(before)/60)!==Math.floor(ms(t)/60))tone(740,.06);else if(Math.round(before/5)!==Math.round(t/5)&&drag.hand==='minute')tone(1100,.02,.03);
@@ -324,79 +452,88 @@ function move(a){
 // ---------- sound, voice and planes ----------
 let ac=null;
 function tone(f,d=.1,g=.07){try{ac??=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),v=ac.createGain();o.frequency.value=f;o.type='triangle';v.gain.setValueAtTime(g,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v).connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch{}}
-function say(s){if(!voice||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s);u.lang='ja-JP';u.rate=.95;speechSynthesis.speak(u);}catch{}}
+function say(s){if(!voice||!s||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s);u.lang='ja-JP';u.rate=.95;speechSynthesis.speak(u);}catch{}}
 $('voice-btn').onclick=()=>{voice=!voice;$('voice-btn').textContent=voice?'🔊 こえ':'🔈 こえ';$('voice-btn').setAttribute('aria-pressed',String(voice));};
 function fly(kind){const p=$('plane');p.className='plane';void p.offsetWidth;p.classList.add(kind);}
-
-// ---------- the working day ----------
-const spoken=(h,m)=>`${h}じ${m?`${m}ふん`:'ちょうど'}`;
-const tagOf=q=>q.kind==='setMin'?`<span class="t-m">${q.m}分</span>`:q.kind==='setRoom'?`<span class="t-h">${q.h}時</span>ごろ`:html(q.h,q.m);
-const said=time=>day.hour&&day.minute?spoken(hourOf(time),minOf(time)):day.hour?`${hourOf(time)}じ`:`${minOf(time)}ふん`;
-const islandOf=tale=>ART.islands[FRIENDS[tale.to].island];
-function startDay(i){
- di=i;day=DAYS[i];qi=0;mistakes=0;hints=0;results=[];gotToday=[];$('menu').hidden=true;$('result').hidden=true;
- // Three senders from the forest, each with a parcel for a friend; unseen gifts come first.
- const senders=shuffle(PEOPLE.slice()),fresh=shuffle(STORIES.filter(x=>!shelf.includes(x.gift))),old=shuffle(STORIES.filter(x=>shelf.includes(x.gift)));
- tales=[...fresh,...old].slice(0,3).map((x,k)=>({...x,who:senders[k]}));
- $('title').innerHTML=`森の配送所 ${i+1}日目<small>${day.title}</small>`;
- ask(true);
-}
-function ask(first=false){
- q=make(day.qs[qi]);tries=0;answered=false;helped=false;ghost=null;$('sheet').hidden=true;
- const tale=tales[Math.floor(qi/2)],who=tale.who,friend=FRIENDS[tale.to];q.tale=tale;
- const task=$('task');task.className='task';task.style.removeProperty('--island');void task.offsetWidth;task.classList.add('arrive');
- if(q.read){
-  t=q.h===null?rnd(12)*60+q.m:ms(q.h*60+q.m);
-  task.classList.add('story');task.style.setProperty('--island',`url(${islandOf(tale)})`);
-  task.innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}</div><div class="line">${tale.to}から おへんじが帰ってきた！ 手紙の時刻は なんじかな？</div></div>`;
-  $('actions').innerHTML=`<div class="choices">${q.options.map(o=>`<button class="choice" data-key="${o.key}" type="button"${o.gem?` style="border-color:${GEM[o.gem%12]}"`:''}><b class="env">✉️</b><span>${o.label}</span></button>`).join('')}</div>`;
-  for(const b of document.querySelectorAll('.choice'))b.onclick=()=>choose(b);
-  fly('home');
-  toto(`${friend.place}の${tale.to}が、おへんじを書いた時刻を時計に刻んでくれたぞ。${q.kind==='readMin'?'<b class="m">分の針</b>がさす外の数字は？':q.kind==='readRoom'?'<b class="h">時の針</b>は、どの宝石のへやかのう？':'時の針のへや、分の針の外の数字、じゅんばんに読もう。'}`);
-  say(`${tale.to}から おへんじだ！ なんじに かいたのかな？`);
- }else{
-  t=q.start;
-  const spokenTag=q.kind==='setMin'?`${q.m}ふん`:q.kind==='setRoom'?`${q.h}じごろ`:spoken(q.h,q.m);
-  const when=q.kind==='setMin'?`${q.m}分`:q.kind==='setRoom'?`${q.h}時ごろ`:text(q.h,q.m)||`${q.h}時`;
-  task.innerHTML=`<img src="${who.img}" alt=""><div class="say"><div class="who">${who.name}</div><div class="item">${tale.item} ${tale.what} → ${friend.place}の${tale.to}へ</div><div class="line">${pick(ASKS).replace('{t}',when)}</div><div class="tag">${tagOf(q)}</div></div>`;
-  $('actions').innerHTML=`<button class="stamp" id="stamp" type="button">刻印して 飛ばす ✈️</button>`;$('stamp').onclick=submit;
-  $('plane').className='plane';
-  toto(first?day.intro:q.kind==='setMin'?'<b class="m">分の針</b>を、荷札の数字に合わせるんじゃ。':q.kind==='setRoom'?`<b class="h">時の針</b>を <b class="h">${q.h}のへや</b> に入れておくれ。`:'針を荷札の時刻に合わせたら、刻印じゃ！');
-  say(spokenTag);
- }
- parcels();draw();
-}
-function parcels(){
- $('parcels').innerHTML=day.qs.map((k,i)=>{const tale=tales[Math.floor(i/2)],send=i%2===0;
-  const icon=send?(i<qi||(i===qi&&answered)?tale.item:'📦'):(i<qi||(i===qi&&answered)?tale.gift:'✉️');
-  const cls=!send&&(i<qi||(i===qi&&answered))?'gift':i<qi||(i===qi&&answered)?'done':i===qi?'now':'';
-  return `${i&&send?'<b>·</b>':''}<i class="${cls}">${icon}</i>`;}).join('');
-}
 function burst(marks){
  const box=document.createElement('div');box.className='sparks';
  box.innerHTML=Array.from({length:10},(_,k)=>{const a=k/10*Math.PI*2,r=90+rnd(40);return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px">${marks[k%marks.length]}</i>`;}).join('');
  document.querySelector('.dial-wrap').appendChild(box);setTimeout(()=>box.remove(),1000);
 }
+
+// ---------- a working day: three sends, three replies ----------
+const tagOf=q=>q.mode==='min'?`<span class="t-m">${q.m}分</span>`:q.mode==='room'?`<span class="t-h">${q.h}時</span>ごろ`:q.mode==='rel'?`いまから <span class="t-m">${durWord(q.d)}後</span>`:label(q.h,q.m,q.p,q.half);
+const spokenTag=q=>q.mode==='min'?`${q.m}ふん`:q.mode==='room'?`${q.h}じごろ`:q.mode==='rel'?`いまから ${durWord(q.d).replace('時間','じかん').replace('分','ふん')}ご`:spoken(q.h,q.m,q.p,q.half);
+function startStage(c,n){
+ ci=c;si=n;stage=CH[c].stages[n];cfg=stage.cfg;qi=0;mistakes=0;hints=0;results=[];gotToday=[];$('menu').hidden=true;$('result').hidden=true;
+ document.documentElement.style.setProperty('--depot',`url(${ART.islands[ART_OF[c]]})`);
+ // Senders are this depot's guide and residents; unseen gifts come first.
+ const senders=shuffle([0,1,2,3]).map(col=>person(c,col)),all=CH[c].stories.map(([item,what,to,reply,gift,giftName])=>({item,what,to,reply,gift,giftName}));
+ tales=[...shuffle(all.filter(x=>!rec.gifts.includes(x.gift))),...shuffle(all.filter(x=>rec.gifts.includes(x.gift)))].slice(0,3).map((x,k)=>({...x,who:senders[k]}));
+ $('title').innerHTML=`${CH[c].name} ${c+1}-${n+1}<small>${stage.title}</small>`;
+ ask(true);
+}
+function ask(first=false){
+ const read=qi%2===1;q=make(read);tries=0;answered=false;helped=false;ghost=null;$('sheet').hidden=true;
+ const tale=tales[Math.floor(qi/2)],who=tale.who,to=CH[tale.to];q.tale=tale;
+ const task=$('task');task.className='task';task.style.removeProperty('--island');void task.offsetWidth;task.classList.add('arrive');
+ if(read){
+  t=q.t;if(cfg.period)pm=q.p;
+  task.classList.add('story');task.style.setProperty('--island',`url(${ART.islands[ART_OF[tale.to]]})`);
+  const msg=q.mode==='rel'?`${plain(label(hourOf(q.now),minOf(q.now),false))}に 出発した便が帰ってきた！ 何分 とんでいたかな？`:`${to.guide}から おへんじが帰ってきた！ 手紙の時刻は なんじかな？`;
+  task.innerHTML=`${portrait(who)}<div class="say"><div class="who">${who.name}</div><div class="line">${msg}</div></div>`;
+  $('actions').innerHTML=`<div class="choices">${q.options.map(o=>`<button class="choice" data-key="${o.key}" type="button"${o.gem?` style="border-color:${GEM[o.gem%12]}"`:''}><b class="env">${q.mode==='rel'?'⏱️':'✉️'}</b><span class="${plain(o.html).length>6?'long':plain(o.html).length>4?'mid':''}">${o.html}</span></button>`).join('')}</div>`;
+  for(const b of document.querySelectorAll('.choice'))b.onclick=()=>choose(b);
+  fly('home');
+  toto(q.mode==='rel'?'点線の針が 出発の時刻、ふつうの針が 帰ってきた時刻じゃ。分の針が どれだけ進んだかのう？':`${to.place}の${to.guide}が、おへんじを書いた時刻を時計に刻んでくれたぞ。${q.mode==='min'?'<b class="m">分の針</b>がさす外の数字は？':q.mode==='room'?'<b class="h">時の針</b>は、どの宝石のへやかのう？':cfg.period?'針と、午前・午後の窓をよく見るんじゃ。':'時の針のへや、分の針の外の数字、じゅんばんに読もう。'}`);
+  say(q.mode==='rel'?'なんぷん とんでいたかな？':`${to.guide}から おへんじだ！ なんじに かいたのかな？`);
+ }else{
+  t=q.start;if(cfg.period)pm=cfg.only!==undefined?!!cfg.only:Math.random()<.5;
+  const when=plain(tagOf(q));
+  const line=q.mode==='rel'?`いまは ${plain(label(hourOf(q.now),minOf(q.now),false))}。${durWord(q.d)}後に とどけてね！`:pick(ASKS).replace('{t}',when);
+  task.innerHTML=`${portrait(who)}<div class="say"><div class="who">${who.name}</div><div class="item">${tale.item} ${tale.what} → ${to.place}の${to.guide}へ</div><div class="line">${line}</div><div class="tag">${tagOf(q)}</div></div>`;
+  $('actions').innerHTML=`${cfg.period?'<div class="ampm-pick"><button type="button" data-pm="0">☀️ 午前</button><button type="button" data-pm="1">🌙 午後</button></div>':''}<button class="stamp" id="stamp" type="button">刻印して 飛ばす ✈️</button>`;$('stamp').onclick=submit;
+  for(const b of document.querySelectorAll('.ampm-pick button'))b.onclick=()=>{pm=b.dataset.pm==='1';tone(pm?520:880,.08);syncPick();draw();};syncPick();
+  $('plane').className='plane';
+  toto(first?stage.intro:q.mode==='min'?'<b class="m">分の針</b>を、荷札の数字に合わせるんじゃ。':q.mode==='room'?`<b class="h">時の針</b>を <b class="h">${q.h}のへや</b> に入れておくれ。`:q.mode==='rel'?'点線の針が いまの時刻。そこから分の針を すすめるんじゃ。':cfg.period?'針を合わせたら、午前か午後かも えらぶんじゃ。':'針を荷札の時刻に合わせたら、刻印じゃ！');
+  say(spokenTag(q));
+ }
+ parcels();draw();
+}
+function syncPick(){for(const b of document.querySelectorAll('.ampm-pick button'))b.setAttribute('aria-pressed',String((b.dataset.pm==='1')===pm));}
+function parcels(){
+ $('parcels').innerHTML=Array.from({length:6},(_,i)=>{const tale=tales[Math.floor(i/2)],send=i%2===0,done=i<qi||(i===qi&&answered);
+  const icon=send?(done?tale.item:'📦'):(done?tale.gift:'✉️');
+  return `${i&&send?'<b>·</b>':''}<i class="${!send&&done?'gift':done?'done':i===qi?'now':''}">${icon}</i>`;}).join('');
+}
 // Toto reads each hand in turn: which room the short hand is in, which number the long hand points to.
-function steps(time,L=day){
+function steps(time){
  const h=hourOf(time),m=minOf(time),out=[];
- if(L.hour)out.push(`<div>時の針は <b class="h">${h}のへや</b> → <b class="h">${h}時</b></div>`);
- if(L.minute)out.push(`<div>分の針は <b class="m">${m?`${m/5}`:'12'}</b> → <b class="m">${m?`${m}分`:'ちょうど'}</b></div>`);
- out.push(`<div class="sum">だから ${L.hour&&L.minute?html(h,m):L.hour?`<span class="t-h">${h}時</span>`:`<span class="t-m">${m}分</span>`}じゃ！</div>`);
+ if(q.mode==='rel'){const n=hourOf(q.now),nm=minOf(q.now);
+  out.push(`<div>出発 <b class="h">${n}時</b><b class="m">${nm?`${nm}分`:'ちょうど'}</b> → とうちゃく <b class="h">${h}時</b><b class="m">${m?`${m}分`:'ちょうど'}</b></div>`);
+  out.push(q.d>=60?`<div>時の針が <b class="h">へや${Math.floor(q.d/60)}つぶん</b>${q.d%60?`、分の針が <b class="m">${q.d%60}分</b>`:''} すすんだ</div>`:`<div>分の針が 数字<b class="m">${q.d/5}</b>こぶん すすんだ</div>`);
+  out.push(`<div class="sum">だから <span class="t-m">${durWord(q.d)}</span>じゃ！</div>`);return out.join('');}
+ if(showHour())out.push(`<div>時の針は <b class="h">${h}のへや</b> → <b class="h">${h}時</b></div>`);
+ if(showMin())out.push(`<div>分の針は <b class="m">${m?`${m%5?`${Math.floor(m/5)}と目もり${m%5}つ`:m/5}`:'12'}</b> → <b class="m">${m?`${m}分`:'ちょうど'}</b></div>`);
+ if(cfg.period)out.push(`<div>窓は <b>${pm?'午後':'午前'}</b>${cfg.period==='24'&&pm?`（午後${h===12?0:h}時は ${h%12+12}時）`:''}</div>`);
+ out.push(`<div class="sum">だから ${cfg.mode==='min'?`<span class="t-m">${minWord(m)}</span>`:cfg.mode==='room'?`<span class="t-h">${h}時</span>`:label(h,m,pm,q.half)}じゃ！</div>`);
  return out.join('');
 }
 function correct(){
- if(q.kind==='setRoom')return hourOf(t)===q.h;
- if(q.kind==='setMin')return minOf(t)===q.m;
- return hourOf(t)===q.h&&minOf(t)===q.m;
+ if(q.mode==='room')return hourOf(t)===q.h;
+ if(q.mode==='min')return minOf(t)===q.m;
+ if(q.mode==='rel')return ms(t)===ms(q.now+q.d);
+ return hourOf(t)===q.h&&minOf(t)===q.m&&(!cfg.period||pm===q.p);
 }
-function ghostTime(){return q.kind==='setMin'?(Math.floor(ms(t)/60)*60+q.m):q.kind==='setRoom'?q.h*60+30:ms(q.h*60+q.m);}
+function ghostTime(){return q.mode==='min'?(Math.floor(ms(t)/60)*60+q.m):q.mode==='room'?q.h*60+30:q.mode==='rel'?ms(q.now+q.d):ms(q.h*60+q.m);}
 function submit(){
  if(answered)return;const ok=correct();tries++;
  if(ok){finishQ();return;}
  mistakes++;tone(200,.2,.08);
- const wrongHour=day.hour&&q.h!==null&&hourOf(t)!==q.h,wrongMin=day.minute&&q.m!==null&&minOf(t)!==q.m;
- const why=[wrongHour?`時の針は いま <b class="h">${hourOf(t)}のへや</b> におるぞ。<b class="h">${q.h}のへや</b>に入れておくれ。`:'',wrongMin?`分の針は いま <b class="m">${minOf(t)}分</b> じゃ。<b class="m">${q.m}分</b>は外の数字の<b class="m">${q.m}</b>じゃよ。`:''].filter(Boolean).join('<br>');
+ let why;
+ if(q.mode==='rel'){const e=elapsed();why=`いまは <b class="m">${e?durWord(e):'0分'}</b> すすんだところじゃ。<b class="m">${durWord(q.d)}</b> すすめておくれ。${q.d>=60?`1時間は 分の針<b>ひとまわり</b>じゃ。`:''}`;}
+ else{const wrongHour=showHour()&&q.h!==null&&hourOf(t)!==q.h,wrongMin=showMin()&&q.m!==null&&minOf(t)!==q.m,wrongPm=cfg.period&&pm!==q.p;
+  why=[wrongHour?`時の針は いま <b class="h">${hourOf(t)}のへや</b> におるぞ。<b class="h">${q.h}のへや</b>に入れておくれ。`:'',wrongMin?`分の針は いま <b class="m">${minOf(t)}分</b> じゃ。<b class="m">${q.m}分</b>の場所を さがそう。`:'',wrongPm?`針は ぴったり！ でも荷札は <b>${q.p?'午後':'午前'}</b>じゃよ。${cfg.period==='24'&&q.p?`${q.h%12+12}時は 午後${q.h===12?0:q.h}時じゃ。`:''}`:''].filter(Boolean).join('<br>');}
  if(tries>=2){ghost=ghostTime();helped=true;draw();}
  sheet('おっと、まだ飛ばせんぞ',`<div>${why}</div>${tries>=2?'<div>点線の針のところに、わしが印をつけておいたぞ。</div>':''}`,'もういちど','ng');
  $('sheet-go').onclick=()=>{$('sheet').hidden=true;};say(tries>=2?'てんせんの はりを みてごらん':'おっと、もういちど');
@@ -405,60 +542,84 @@ function choose(b){
  if(answered)return;const ok=b.dataset.key===q.answer;tries++;
  if(ok){b.classList.add('right');finishQ();return;}
  mistakes++;b.classList.add('wrong');b.disabled=true;tone(200,.2,.08);
- const [hh]=b.dataset.key.split(':').map(Number);
+ const [hh,,pp]=b.dataset.key.split(':');
  let why='';
- if(q.kind==='readRoom')why=`時の針は、宝石の <b class="h">${q.h}</b> と <b class="h">${nextH(q.h)}</b> のあいだ。<b class="h">${q.h}のへや</b>の色を見てごらん。`;
- else if(q.kind==='readMin')why=`分の針がさす外の数字を見るんじゃ。宝石の <b class="m">${q.m/5}</b> のところは <b class="m">${q.m}分</b>じゃよ。`;
- else if(hh!==q.h)why=`時の針は、まだ <b class="h">${nextH(q.h)}</b> をこえておらん。<b class="h">${q.h}のへや</b>におるのう。`;
- else why=`分の針は外の数字で読むんじゃ。<b class="m">${q.m?q.m/5:12}</b> のところは <b class="m">${q.m?`${q.m}分`:'ちょうど'}</b>。`;
- sheet('この封筒じゃないみたい',`<div>${why}</div>`,'もういちど えらぶ','ng');
+ if(q.mode==='room')why=`時の針は、宝石の <b class="h">${q.h}</b> と <b class="h">${nextH(q.h)}</b> のあいだ。<b class="h">${q.h}のへや</b>の色を見てごらん。`;
+ else if(q.mode==='min')why=q.m%5===0?`分の針がさす外の数字を見るんじゃ。宝石の <b class="m">${q.m?q.m/5:12}</b> のところは <b class="m">${minWord(q.m)}</b>じゃよ。`:`分の針は <b class="m">${q.m-q.m%5}</b> から 目もり<b class="m">${q.m%5}</b>つ すすんだところじゃ。`;
+ else if(q.mode==='rel')why=`点線の分の針から、ふつうの分の針まで 数えてごらん。数字ひとつで<b class="m">5分</b>、ひとまわりで<b class="m">1時間</b>じゃ。`;
+ else if(cfg.period&&pp!==String(q.p))why=`時計の窓を見てごらん。<b>${q.p?'午後':'午前'}</b>と書いてあるぞ。`;
+ else if(Number(hh)!==q.h)why=`時の針は、まだ <b class="h">${nextH(q.h)}</b> をこえておらん。<b class="h">${q.h}のへや</b>におるのう。`;
+ else why=`分の針は外の数字で読むんじゃ。<b class="m">${q.m?(q.m%5?`${Math.floor(q.m/5)}と目もり${q.m%5}つ`:q.m/5):12}</b> のところは <b class="m">${minWord(q.m)}</b>。`;
+ sheet(q.mode==='rel'?'その時間じゃないみたい':'この封筒じゃないみたい',`<div>${why}</div>`,'もういちど えらぶ','ng');
  $('sheet-go').onclick=()=>{$('sheet').hidden=true;};say('おっと、ちがうみたい');
 }
 function finishQ(){
  answered=true;results[qi]=tries===1&&!helped;draw();tone(880,.12);setTimeout(()=>tone(1320,.18),120);
- const tale=q.tale,friend=FRIENDS[tale.to],last=qi+1>=day.qs.length,task=$('task');
+ const tale=q.tale,to=CH[tale.to],last=qi+1>=6,task=$('task');
  if(q.read){
-  // The letter opens: the friend's reply and a gift for the collection.
-  gotToday.push(tale.gift);const isNew=!shelf.includes(tale.gift);if(isNew){shelf.push(tale.gift);try{localStorage.setItem('clock-lesson-gifts',JSON.stringify(shelf));}catch{}}
-  task.innerHTML=`<img src="${tale.who.img}" alt=""><div class="letter"><div class="from">✉️ ${friend.place}の${tale.to}より</div><div class="body">${tale.reply}</div><div class="thanks"><span class="gift-pop">${tale.gift}</span> ${tale.giftName}${isNew?' <small style="color:#c08a1c">NEW!</small>':''}</div></div>`;
+  // The letter opens: the friend's reply and a gift for the treasure shelf.
+  gotToday.push(tale.gift);const isNew=!rec.gifts.includes(tale.gift);if(isNew){rec.gifts.push(tale.gift);save();}
+  task.innerHTML=`${portrait(tale.who)}<div class="letter"><div class="from">✉️ ${to.place}の${to.guide}より</div><div class="body">${tale.reply}</div><div class="thanks"><span class="gift-pop">${tale.gift}</span> ${tale.giftName}${isNew?' <small style="color:#c08a1c">NEW!</small>':''}</div></div>`;
   burst([tale.gift,'✨']);setTimeout(()=>tone(1568,.2,.05),260);
   sheet(`${tale.who.name}に おへんじを わたしたぞ！`,steps(t),last?'今日の日誌をつける':'つぎのお客さん','ok');
-  say(`${said(t)}。${tale.to}から、${tale.giftName}が とどいたよ！`);
+  say(`${to.guide}から、${tale.giftName}が とどいたよ！`);
  }else{
   fly('go');burst(['✨','⭐']);
-  task.classList.add('story');task.style.setProperty('--island',`url(${islandOf(tale)})`);
-  task.innerHTML=`<img src="${tale.who.img}" alt=""><div class="say"><div class="who">${tale.who.name}</div><div class="item">✈️ ${tale.item} ${tale.what}は ${friend.place}へ</div><div class="thanks">いってらっしゃーい！</div></div>`;
-  sheet(`ぴったりじゃ！ ${friend.place}まで飛んでいけ〜`,steps(t),'おへんじを まつ ✉️','ok');
-  say(`${said(t)}。いってらっしゃい！`);
+  task.classList.add('story');task.style.setProperty('--island',`url(${ART.islands[ART_OF[tale.to]]})`);
+  task.innerHTML=`${portrait(tale.who)}<div class="say"><div class="who">${tale.who.name}</div><div class="item">✈️ ${tale.item} ${tale.what}は ${to.place}へ</div><div class="thanks">いってらっしゃーい！</div></div>`;
+  sheet(`ぴったりじゃ！ ${to.place}まで飛んでいけ〜`,steps(t),'おへんじを まつ ✉️','ok');
+  say('いってらっしゃい！');
  }
  parcels();
- $('sheet-go').onclick=()=>{qi++;task.classList.add('leave');setTimeout(()=>{if(qi<day.qs.length)ask();else finishDay();},q.read?350:0);};
+ $('sheet-go').onclick=()=>{qi++;task.classList.add('leave');setTimeout(()=>{if(qi<6)ask();else finishStage();},q.read?350:0);};
 }
 function sheet(title,body,go,cls=''){
  $('sheet-card').innerHTML=`<img src="${ART.toto}" alt=""><div class="body"><div class="name">トトじい</div><h2 class="${cls}">${title}</h2><div class="steps">${body}</div></div><div class="row"><button class="${cls==='ok'?'next':'again'}" id="sheet-go" type="button">${go}</button></div>`;
  $('sheet').hidden=false;$('sheet-go').focus();
 }
-const shelfMarkup=()=>`<div class="shelf-title">たからだな ${shelf.length} / ${STORIES.length}</div><div class="shelf">${STORIES.map(x=>`<i class="${shelf.includes(x.gift)?'':'no'}" title="${shelf.includes(x.gift)?x.giftName:'？'}">${shelf.includes(x.gift)?x.gift:'？'}</i>`).join('')}</div>`;
-function finishDay(){
- const lost=mistakes+hints,stars=lost===0?3:lost<=2?2:1;best[di]=Math.max(best[di]||0,stars);try{localStorage.setItem('clock-lesson-stars',JSON.stringify(best));}catch{}
+const allGifts=()=>CH.flatMap(c=>c.stories.map(s=>({gift:s[4],name:s[5]})));
+const shelfMarkup=()=>{const g=allGifts();return `<div class="shelf-title">たからだな ${rec.gifts.length} / ${g.length}</div><div class="shelf">${g.map(x=>`<i class="${rec.gifts.includes(x.gift)?'':'no'}" title="${rec.gifts.includes(x.gift)?x.name:'？'}">${rec.gifts.includes(x.gift)?x.gift:'？'}</i>`).join('')}</div>`;};
+const chapterDone=c=>[0,1,2,3,4,5].every(n=>rec.stars[sid(c,n)]);
+function finishStage(){
+ const lost=mistakes+hints,stars=lost===0?3:lost<=2?2:1,id=sid(ci,si);rec.stars[id]=Math.max(rec.stars[id]||0,stars);
+ const newReward=chapterDone(ci)&&!rec.rewards.includes(ci);if(newReward)rec.rewards.push(ci);save();
  $('sheet').hidden=true;
- $('result-panel').innerHTML=`<div class="scene"><img class="luka-plane" src="${ART.plane}" alt=""><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">配達日誌 ・ ${di+1}日目</span><h2>今日の配達、おしまい！</h2><div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="text-align:center">3つの荷物をとどけて、3通のおへんじが来たよ<br><span style="font-size:30px">${gotToday.join(' ')}</span></p><p style="text-align:center;font-weight:700">トトじい「${stars===3?'見事じゃ！ 時の針と分の針、すっかり仲良しじゃのう。':stars===2?'よう届けたのう。針の係、だいぶ見えてきたぞ。':'今日もよう働いた！ 明日もいっしょに届けような。'}」</p>${shelfMarkup()}<div class="days"><button class="next" id="again-d" type="button">この日をもういちど</button>${di+1<DAYS.length?`<button class="next" id="next-d" type="button" style="background:${MINUTE}">${di+2}日目へ ▸</button>`:''}<button class="again" id="list-d" type="button">日誌にもどる</button></div></div>`;
- $('result').hidden=false;$('again-d').onclick=()=>startDay(di);$('list-d').onclick=showMenu;if($('next-d'))$('next-d').onclick=()=>startDay(di+1);
+ const next=id+1<36?[Math.floor((id+1)/6),(id+1)%6]:null;
+ $('result-panel').innerHTML=`<div class="scene" style="--depot:url(${ART.islands[ART_OF[ci]]})"><img class="luka-plane" src="${ART.plane}" alt=""><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">${CH[ci].name} ・ ${ci+1}-${si+1} ${stage.title}</span><h2>今日の配達、おしまい！</h2><div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="text-align:center">3つの荷物をとどけて、3通のおへんじが来たよ<br><span style="font-size:30px">${gotToday.join(' ')}</span></p><p style="text-align:center;font-weight:700">トトじい「${stars===3?'見事じゃ！ 時の針と分の針、すっかり仲良しじゃのう。':stars===2?'よう届けたのう。針の係、だいぶ見えてきたぞ。':'今日もよう働いた！ 明日もいっしょに届けような。'}」</p><div class="days"><button class="next" id="again-d" type="button">もういちど</button>${next?`<button class="next" id="next-d" type="button" style="background:${MINUTE}">${next[0]+1}-${next[1]+1} へ ▸</button>`:''}<button class="again" id="list-d" type="button">地図にもどる</button></div></div>`;
+ $('result').hidden=false;$('again-d').onclick=()=>startStage(ci,si);$('list-d').onclick=showMenu;if(next)$('next-d').onclick=()=>openStage(next[0],next[1]);
  say(stars===3?'みごとじゃ！':'よう とどけたのう');
+ if(newReward)setTimeout(()=>chapterEnd(ci),50);
 }
+// Chapter story: the guide's request when a depot opens, and their gift to the central post at the end.
+function talkMarkup(c,lines){const g=person(c,0);return `<div class="talk">${lines.map(([me,text])=>me?`<div class="line me"><div class="say"><small>ルカ</small>${text}</div><img src="${ART.luka}" alt="ルカ"></div>`:`<div class="line">${portrait(g)}<div class="say"><small>${g.name}</small>${text}</div></div>`).join('')}</div>`;}
+function chapterStart(c,then){
+ const ch=CH[c];if(!rec.met.includes(c)){rec.met.push(c);save();}
+ $('result-panel').innerHTML=`<div class="scene" style="--depot:url(${ART.islands[ART_OF[c]]})"><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">CHAPTER ${c+1} ・ ${ch.place}</span><h2>${ch.name}、開店！</h2>${talkMarkup(c,[[0,ch.talk[0]],[1,ch.talk[1]],[0,ch.talk[2]]])}<p style="text-align:center;font-size:13px;color:var(--muted)">この章で練習：${ch.skill}</p><div class="days"><button class="next" id="go-d" type="button">受付をはじめる ▸</button></div></div>`;
+ $('result').hidden=false;$('menu').hidden=true;$('go-d').onclick=then;
+}
+function chapterEnd(c){
+ const ch=CH[c],n=rec.rewards.length;
+ $('result-panel').innerHTML=`<div class="scene" style="--depot:url(${ART.central})"><img class="luka-plane" src="${ART.plane}" alt=""><img src="${ART.toto}" alt=""></div><div class="inner"><span class="eyebrow">${ch.name} ・ 6便 ぜんぶ達成</span><h2>ありがとうの便</h2>${talkMarkup(c,[[0,ch.end[0]],[1,ch.end[1]]])}<div class="reward">中央配送所へ<b>${ch.reward}</b>${ch.thanks}<br><small>中央配送所のしたく ${n} / 6</small></div><div class="days"><button class="next" id="map-d" type="button">地図にもどる</button></div></div>`;
+ $('map-d').onclick=showMenu;tone(660,.12);setTimeout(()=>tone(990,.2),140);
+}
+function openStage(c,n){if(n===0&&!rec.met.includes(c))chapterStart(c,()=>startStage(c,n));else startStage(c,n);}
 $('hint-btn').onclick=()=>{
  if(!q||answered)return;hints++;helped=true;
- if(q.read)sheet('どれ、わしが見てみよう',`${day.hour&&q.h!==null?`<div><b class="h">時の針</b>がいる宝石のへやを見るんじゃ。宝石の数字から、つぎの宝石までがひとつのへや。</div>`:''}${day.minute?`<div><b class="m">分の針</b>は外がわの数字を読む。5、10、15…とな。</div>`:''}`,'わかった！');
- else{ghost=ghostTime();draw();sheet('どれ、わしが印をつけよう','<div>点線の針のところに合わせてごらん。</div>','わかった！');}
+ if(q.read)sheet('どれ、わしが見てみよう',q.mode==='rel'?'<div>点線の分の針から、数字をひとつずつ数えてごらん。数字ひとつで5分じゃ。</div>':`${showHour()?`<div><b class="h">時の針</b>がいる宝石のへやを見るんじゃ。宝石の数字から、つぎの宝石までがひとつのへや。</div>`:''}${showMin()?`<div><b class="m">分の針</b>は外がわの数字を読む。5、10、15…とな。</div>`:''}${cfg.period?'<div>午前か午後かは、時計の<b>窓</b>に書いてあるぞ。</div>':''}`,'わかった！');
+ else{ghost=ghostTime();draw();sheet('どれ、わしが印をつけよう',`<div>点線の針のところに合わせてごらん。${cfg.period?`窓は <b>${q.p?'午後':'午前'}</b>じゃ。`:''}</div>`,'わかった！');}
  $('sheet-go').onclick=()=>{$('sheet').hidden=true;};
 };
 function showMenu(){
  $('result').hidden=true;$('sheet').hidden=true;
- $('days').innerHTML=DAYS.map((L,i)=>`<button class="day" type="button" data-i="${i}"><span class="no" style="background:${i===2?MINUTE:HOUR}">${i+1}<br>日目</span><span><b>${L.title}</b><small>${L.note}</small></span><span class="st">${'★'.repeat(best[i]||0)}${'☆'.repeat(3-(best[i]||0))}</span></button>`).join('');
- for(const b of document.querySelectorAll('.day'))b.onclick=()=>startDay(Number(b.dataset.i));
+ const n=rec.rewards.length,nextId=Array.from({length:36},(_,i)=>i).find(i=>!rec.stars[i]);
+ $('map-say').innerHTML=n===6?'6つの贈り物がそろった！ みんなの中央配送所、開所じゃ！':`トトじい「島をめぐって配送所をひらき、みんなで<b>空の中央配送所</b>をつくるんじゃ。」`;
+ $('prep').innerHTML=CH.map((c,i)=>`<span class="${rec.rewards.includes(i)?'got':''}">${rec.rewards.includes(i)?'✓ ':''}${c.reward}</span>`).join('');
+ $('chapters').innerHTML=CH.map((ch,c)=>`<article class="chapter" style="--c:${ch.color};--art:url(${ART.islands[ART_OF[c]]})"><button class="chapter-top" type="button" data-talk="${c}">${portrait(person(c,0))}<span><i>CHAPTER ${c+1} ・ ${ch.skill}</i><b>${ch.name}</b><small>${ch.place} ・ ${ch.guide}とみんな ・ 中央へ「${ch.reward}」</small></span></button><div class="stages">${ch.stages.map((s,k)=>{const id=sid(c,k),st=rec.stars[id]||0;return `<button class="stage ${st?'cleared':id===nextId?'next':''}" type="button" data-c="${c}" data-n="${k}" aria-label="${c+1}-${k+1} ${s.title}"><b>${c+1}-${k+1}</b><small>${'★'.repeat(st)}${'☆'.repeat(3-st)}</small></button>`;}).join('')}</div></article>`).join('');
+ for(const b of document.querySelectorAll('.stage'))b.onclick=()=>openStage(Number(b.dataset.c),Number(b.dataset.n));
+ for(const b of document.querySelectorAll('[data-talk]'))b.onclick=()=>{const c=Number(b.dataset.talk);chapterStart(c,()=>startStage(c,0));};
  $('menu-shelf').innerHTML=shelfMarkup();
  $('menu').hidden=false;
 }
 $('menu-btn').onclick=showMenu;
-buildDial();day=DAYS[0];q=null;t=3*60+50;draw();showMenu();
+cfg=CH[0].stages[0].cfg;buildDial();t=3*60+50;draw();showMenu();
 </script>
