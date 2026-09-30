@@ -3,7 +3,7 @@
 .post-mode{--hour-ink:#254c4d;--minute-ink:#974f35;background:linear-gradient(90deg,#162c2ce8,#162c2c9e),var(--depot-image) center/cover no-repeat;color:var(--atelier-ink);gap:10px}
 .post-mode .day-top{border:0;border-bottom:1px solid #b3915866;border-radius:0;background:#172f30ed;color:#f1e8d7;box-shadow:none;padding-top:max(8px,env(safe-area-inset-top));padding-bottom:8px}
 .post-mode .day-top .eyebrow{color:#c6b28e;font-size:10px;letter-spacing:.08em}.post-mode .day-top strong{font-weight:500;font-size:16px}.post-mode .day-top button{color:#eee4ce;font-weight:400}.post-mode .score{background:none;border:0;color:#e9dec9;font-weight:400}
-.day-game .clock-housing{background:url('assets/atelier/chronometer.webp') center/contain no-repeat!important;border:0;box-shadow:none;filter:drop-shadow(0 14px 22px #07191966);width:min(96cqw,94cqh,560px);padding:0}
+.day-game .clock-housing{background:url('assets/atelier/chronometer.webp') center/contain no-repeat!important;border:0;box-shadow:none;filter:drop-shadow(0 14px 22px #07191966);width:min(96cqw,94cqh,560px);height:min(96cqw,94cqh,560px);padding:0}
 .day-game .element-gem .gem-art{font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:400;fill:#363c36;filter:none;transform:none}
 .day-game .element-gem.resonating{filter:none}.day-game .element-gem.resonating .gem-art{transform:none;filter:none}
 .post-mode #clock.hide-hours .element-gem{visibility:hidden}
@@ -34,7 +34,7 @@
 @media(orientation:portrait){
  .post-mode .post-floor{order:1}.post-mode .post-rail{order:2}.post-mode .post-talk{order:4;min-height:34px}.post-mode .day-station{order:3}.post-mode .post-sheet{order:5}
  .post-mode .post-order{min-height:74px;padding:9px 12px}.post-mode .post-order .ticket-time{font-size:26px}.post-mode .post-order-body>small{font-size:11px}
- .post-mode .post-talk p{font-size:11px}.post-mode .post-floor{height:clamp(125px,22dvh,200px)}.post-mode .clock-housing{width:min(95cqw,95cqh,500px)}
+ .post-mode .post-talk p{font-size:11px}.post-mode .post-floor{height:clamp(125px,22dvh,200px)}.post-mode .clock-housing{width:min(95cqw,95cqh,500px);height:min(95cqw,95cqh,500px)}
 }
 @media(orientation:landscape) and (max-height:500px){
  .post-mode{gap:6px 18px;padding-left:max(12px,var(--safe-l));padding-right:max(12px,var(--safe-r));padding-bottom:max(8px,var(--safe-b));grid-template-rows:auto minmax(64px,1fr) auto auto auto}

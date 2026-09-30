@@ -77,7 +77,7 @@ try {
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
       await page.setViewportSize(size);
       for(const selector of ['#clock','#post-rail','.post-talk','.post-floor','#pause','#post-hint']){
-        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size at '+JSON.stringify(size)+' '+JSON.stringify(box));
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-post-${size.width}x${size.height}.png`});
@@ -164,7 +164,7 @@ try {
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
       for(const selector of ['#clock','#seal-button','.shop-floor','#tickets','#pause','#day-track']){
-        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size at '+JSON.stringify(size)+' '+JSON.stringify(box));
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-day-${size.width}x${size.height}.png`});
