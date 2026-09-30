@@ -22,6 +22,9 @@
 .post-mode .post-rail{overflow:visible}.post-mode .post-tools{gap:10px}.post-mode .post-tools button{color:#e5d6b8;font-size:12px;min-height:44px;text-decoration:none;border-bottom:1px solid #a8936b66;font-weight:400}
 .post-mode .post-card{border-radius:4px;border-width:1px;box-shadow:0 10px 30px #0b222566;padding:18px;gap:7px 12px}.post-mode .post-card h2{font-size:20px;font-weight:500}.post-mode .post-steps{font-weight:400}.post-mode .post-steps .sum{font-size:17px}.post-mode .post-letter{border-radius:1px;border-color:#cabd9e;background:#f5eedc}.post-mode .post-sheet{padding:12px}
 @media(orientation:landscape){
+ .post-mode .clock-housing{width:min(44vw,calc(100dvh - 96px),560px);height:min(44vw,calc(100dvh - 96px),560px)}
+ .post-mode .day-station .clock-bay{height:auto}
+
  .post-mode{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto minmax(0,1fr);column-gap:clamp(18px,3vw,48px);row-gap:12px;padding-left:max(24px,var(--safe-l));padding-right:max(24px,var(--safe-r));padding-bottom:max(16px,var(--safe-b))}
  .post-mode .day-top{grid-column:1/-1;grid-row:1;margin:0 -14px}
  .post-mode .clock-bay{grid-column:1;grid-row:2/6;align-self:stretch}
