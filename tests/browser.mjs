@@ -61,6 +61,7 @@ try {
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
     async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
+    assert.equal(await page.locator('.post-order .parcels-art').count(),1,'parcel has its own illustrated asset');
     assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時台$/,'the first stage asks for the short hand only');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
     const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#clock').boundingBox();
@@ -82,7 +83,7 @@ try {
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-post-${size.width}x${size.height}.png`});
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
+    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.equal(await page.locator('.post-gift .gifts-art').count(),1,'reply renders the illustrated gift');assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/返事3通/);
