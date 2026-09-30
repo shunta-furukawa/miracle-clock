@@ -70,7 +70,10 @@
 .post-sheet{position:absolute;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:center;padding:0 max(10px,var(--safe-r,0px)) max(10px,var(--safe-b,0px)) max(10px,var(--safe-l,0px))}
 .post-sheet[hidden]{display:none}
 .post-card{width:100%;max-width:520px;padding:10px 14px 12px;display:grid;grid-template-columns:54px 1fr;gap:4px 10px;max-height:72dvh;overflow:auto;animation:post-up .25s ease-out}
-.post-card-toto{width:54px;height:54px;object-fit:cover;object-position:50% 12%;border-radius:50%;background:#f3e3bd;border:2px solid #c9a86a}
+.post-card-toto{display:block;width:54px;height:54px;border-radius:50%;border:2px solid #c9a86a;background:#fff url('assets/cast-expressions-safe.webp') 0 0/300% 400% no-repeat}
+.post-card-toto.happy{background-position:0 66.67%}
+.post-customer.troubled .portrait{animation:post-troubled .5s ease-in-out 2}
+@keyframes post-troubled{25%{transform:translateX(-3%) rotate(-3deg)}75%{transform:translateX(3%) rotate(3deg)}}
 .post-card-body{min-width:0}.post-card-body .eyebrow{font-size:9px}
 .post-card h2{margin:0 0 2px;font-family:var(--storybook-font);font-size:19px;line-height:1.35}
 .post-card h2.ok{color:#2c6b43}.post-card h2.ng{color:#a8432b}

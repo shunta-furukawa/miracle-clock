@@ -47,7 +47,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.8.2</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.8.3</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -483,8 +483,17 @@ function postTag(q){
  return postTime(q.h,q.m,q.p,q.half);
 }
 // The customer at the counter, drawn with the same sprites and speech bubbles as the day screen.
+// Moods come from the game's own sheets: residents yawn when troubled (residents-waiting.webp), and the desert
+// folk have calm, troubled and happy rows (sunari-residents.webp). Others keep their usual sprite and just hop.
+function postMoodPortrait(who,mood){
+ const sheet=who.region===5?{href:'assets/sunari-residents.webp',w:1536,h:1024,box:[(who.variant+1)*384+10,[0,1,2][mood==='troubled'?1:mood==='served'?2:0]*341+4,364,333]}
+  :mood==='troubled'&&who.variant>=0?{href:'assets/residents-waiting.webp',w:768,h:1440,box:[who.variant*256+6,who.region*288+6,244,276]}:null;
+ if(!sheet)return residentPortrait(who);
+ const [x,y,w,h]=sheet.box,S=Math.max(w,h);
+ return `<svg class="portrait queue-resident" role="img" aria-label="${who.name}" viewBox="0 0 ${S} ${S}" preserveAspectRatio="xMidYMax meet"><svg x="${(S-w)/2}" y="${S-h}" width="${w}" height="${h}" viewBox="${x} ${y} ${w} ${h}"><image href="${sheet.href}" width="${sheet.w}" height="${sheet.h}"/></svg></svg>`;
+}
 function postStand(who,line,mood=''){
- const p=$('#post-customer');p.className=`shop-person post-customer ${mood}`;p.innerHTML=residentPortrait(who);void p.offsetWidth;p.classList.add('arrived');
+ const p=$('#post-customer');p.className=`shop-person post-customer ${mood}`;p.innerHTML=postMoodPortrait(who,mood);void p.offsetWidth;p.classList.add('arrived');
  const b=$('#post-bubble');b.textContent=line;b.style.setProperty('--tint',regionColors[who.region]);b.classList.toggle('show',!!line);
 }
 function postAsk(first=false){
@@ -493,7 +502,7 @@ function postAsk(first=false){
  const rail=$('#post-rail');rail.className=`ticket-rail post-rail ${read?'reading':'sending'}`;
  if(read){
   post.t=q.t;if(post.cfg.period)post.pm=q.p;
-  postStand(who,q.mode==='rel'?'何分飛んでいたんだろう？':`${to.name}から返事が届いた！`);
+  post.line=q.mode==='rel'?'何分飛んでいたんだろう？':`${to.name}から返事が届いた！`;postStand(who,post.line);
   // Three envelopes, each postmarked with a time: only the dial tells which one the reply was written at.
   rail.innerHTML=q.options.map(o=>{const html=q.mode==='room'?`<span class="t-h">${o.h}時</span><small>台</small>`:q.mode==='min'?`<span class="t-m">${o.m?o.m+'分':'ちょうど'}</span>`:q.mode==='rel'?`<span class="t-m">${postDuration(o.d)}</span>`:postTime(o.h,o.m,o.p,q.half);const n=postPlain(html).length;
    return `<button class="day-ticket post-envelope" data-key="${o.key}" type="button"${q.mode==='room'?` style="--tint:${elements[o.h%12].color}"`:''}><span class="post-postmark" aria-hidden="true"></span><strong class="ticket-time ${n>6?'long':n>4?'mid':''}">${html}</strong></button>`;}).join('');
@@ -504,7 +513,7 @@ function postAsk(first=false){
  }else{
   post.t=q.start;if(post.cfg.period)post.pm=post.cfg.only!==undefined?!!post.cfg.only:Math.random()<.5;
   const when=postPlain(postTag(q)),line=q.mode==='rel'?`${postDuration(q.d)}後に届けてほしいんだ。`:POST_ASKS[Math.floor(Math.random()*POST_ASKS.length)].replace('{t}',when);
-  postStand(who,line);
+  post.line=line;postStand(who,line);
   rail.innerHTML=`<div class="day-ticket post-order" style="--tint:${regionColors[who.region]}"><span class="post-order-face">${residentFace(who)}</span><span class="post-order-body"><strong class="ticket-time">${postTag(q)}</strong><small>${tale.item} ${tale.what} → ${postPlace(tale.to)}の${to.name}へ${q.mode==='rel'?` · 今 ${postHourOf(q.now)}時${postMinOf(q.now)?postMinOf(q.now)+'分':''}`:''}</small></span></div>${post.cfg.period?'<div class="period-toggle post-ampm" role="group" aria-label="午前か午後"><button type="button" data-pm="0">☀️ 午前</button><button type="button" data-pm="1">🌙 午後</button></div>':''}`;
   rail.querySelectorAll('.post-ampm button').forEach(b=>b.onclick=()=>{post.pm=b.dataset.pm==='1';postPick();postDraw();});postPick();
   $('#post-plane').className='post-plane';
@@ -525,7 +534,7 @@ function postNamed(){
  return postTime(h,m,pm,q.half);
 }
 function postSheet(title,body,go,kind='',letter=''){
- $('#post-card').innerHTML=`${letter}<img class="toto post-card-toto" src="assets/sky-toto.webp" alt="トトじい"><div class="post-card-body"><p class="eyebrow">トトじい</p><h2 class="${kind}">${title}</h2><div class="post-steps">${body}</div></div><button class="${kind==='ok'?'primary':'secondary'}" id="post-go" type="button">${go}</button>`;
+ $('#post-card').innerHTML=`${letter}<span class="post-card-toto ${kind==='ok'?'happy':'thinking'}" role="img" aria-label="トトじい"></span><div class="post-card-body"><p class="eyebrow">トトじい</p><h2 class="${kind}">${title}</h2><div class="post-steps">${body}</div></div><button class="${kind==='ok'?'primary':'secondary'}" id="post-go" type="button">${go}</button>`;
  $('#post-sheet').hidden=false;$('#post-go').focus({preventScroll:true});
 }
 function postSubmit(){
@@ -537,8 +546,8 @@ function postSubmit(){
  else{const t=post.t,wrongHour=postShowHour()&&q.h!==null&&postHourOf(t)!==q.h,wrongMin=postShowMin()&&q.m!==null&&postMinOf(t)!==q.m,wrongPm=post.cfg.period&&post.pm!==q.p;
   why=[wrongHour?`時の針は今<b class="h">${postHourOf(t)}の部屋</b>におるぞ。<b class="h">${q.h}の部屋</b>に入れておくれ。`:'',wrongMin?`分の針は今<b class="m">${postMinOf(t)}分</b>じゃ。<b class="m">${q.m}分</b>の位置を探すんじゃ。`:'',wrongPm?`針はぴったりじゃ！ だが荷札は<b>${q.p?'午後':'午前'}</b>じゃよ。${post.cfg.period==='24'&&q.p?`${q.h%12+12}時は午後${q.h===12?0:q.h}時じゃ。`:''}`:''].filter(Boolean).join('<br>');}
  if(post.tries>=2){post.ghost=postTarget(q,post.t);post.helped=true;postDraw();}
- postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
- $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;};
+ postStand(q.tale.who,'あれ？ その時刻じゃないみたい…','troubled');postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
+ $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;postStand(q.tale.who,post.line);};
 }
 function postChoose(b){
  if(post.answered||!$('#post-sheet').hidden)return;const q=post.q;post.tries++;
@@ -551,8 +560,8 @@ function postChoose(b){
  else if(post.cfg.period&&pp!==String(q.p))why=`文字盤の窓を見るんじゃ。<b>${q.p?'午後':'午前'}</b>と書いてあるぞ。`;
  else if(Number(hh)!==q.h)why=`時の針はまだ<b class="h">${q.h%12+1}</b>を越えておらん。<b class="h">${q.h}の部屋</b>におるのう。`;
  else why=`分の針は数字で読むんじゃ。<b class="m">${q.m?(q.m%5?`${Math.floor(q.m/5)}と目盛り${q.m%5}つ`:q.m/5):12}</b>の位置は<b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃ。`;
- postSheet(q.mode==='rel'?'その時間ではないようじゃ':'この封筒ではないようじゃ',`<p>${why}</p>`,'選び直す','ng');
- $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;};
+ postStand(q.tale.who,q.mode==='rel'?'うーん、そんなに長かったかな…':'うーん、その手紙じゃないかも…','troubled');postSheet(q.mode==='rel'?'その時間ではないようじゃ':'この封筒ではないようじゃ',`<p>${why}</p>`,'選び直す','ng');
+ $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;postStand(q.tale.who,post.line);};
 }
 // The seal's spell burst and the parcel stamp from the day screen, for every right answer.
 function postCelebrate(text){
