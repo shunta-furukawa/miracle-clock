@@ -61,6 +61,7 @@ try {
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
     async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
+    assert.equal(await page.locator('.post-order .parcels-art').count(),1,'parcel has its own illustrated asset');
     assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時台$/,'the first stage asks for the short hand only');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
     const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#clock').boundingBox();
@@ -75,14 +76,17 @@ try {
     await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-envelope[data-key="${wrongKey}"]`).isDisabled(),true);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
       await page.setViewportSize(size);
+      if(name==='webkit')console.log('layout',JSON.stringify(await page.evaluate(()=>({viewport:[innerWidth,innerHeight],landscape:matchMedia('(orientation:landscape)').matches,nodes:['.post-mode','.day-station','.clock-bay','.clock-housing','#clock'].map(sel=>{const el=document.querySelector(sel);if(!el)return {sel};const c=getComputedStyle(el);return {sel,box:el.getBoundingClientRect().toJSON(),display:c.display,width:c.width,height:c.height,container:c.containerType,grid:c.gridTemplateColumns};})}))));
+      // WebKit applies orientation media queries after the viewport command returns.
+      await page.waitForFunction(({width,height})=>{const b=document.querySelector('#clock').getBoundingClientRect();return innerWidth===width&&innerHeight===height&&b.width>20&&b.height>10;},size);
       for(const selector of ['#clock','#post-rail','.post-talk','.post-floor','#pause','#post-hint']){
-        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size at '+JSON.stringify(size)+' '+JSON.stringify(box));
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-post-${size.width}x${size.height}.png`});
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
+    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.equal(await page.locator('.post-gift .gifts-art').count(),1,'reply renders the illustrated gift');assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/返事3通/);
@@ -162,8 +166,11 @@ try {
     assert.match(await page.locator('#seal-button').innerText(),/長押し/,'the plane returns after the swept minutes');
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:1180,height:820},{width:768,height:1024}]){
       await page.setViewportSize(size);
+      if(name==='webkit')console.log('layout',JSON.stringify(await page.evaluate(()=>({viewport:[innerWidth,innerHeight],landscape:matchMedia('(orientation:landscape)').matches,nodes:['.post-mode','.day-station','.clock-bay','.clock-housing','#clock'].map(sel=>{const el=document.querySelector(sel);if(!el)return {sel};const c=getComputedStyle(el);return {sel,box:el.getBoundingClientRect().toJSON(),display:c.display,width:c.width,height:c.height,container:c.containerType,grid:c.gridTemplateColumns};})}))));
+      // WebKit applies orientation media queries after the viewport command returns.
+      await page.waitForFunction(({width,height})=>{const b=document.querySelector('#clock').getBoundingClientRect();return innerWidth===width&&innerHeight===height&&b.width>20&&b.height>10;},size);
       for(const selector of ['#clock','#seal-button','.shop-floor','#tickets','#pause','#day-track']){
-        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size');
+        const box=await page.locator(selector).boundingBox();assert.ok(box&&box.width>20&&box.height>10,selector+' has usable size at '+JSON.stringify(size)+' '+JSON.stringify(box));
         assert.ok(box.x>=-1&&box.y>=-1&&box.x+box.width<=size.width+1&&box.y+box.height<=size.height+1,selector+' fits '+JSON.stringify(size)+' '+JSON.stringify(box));
       }
       assert.equal(await overflow(),false);await page.screenshot({path:`artifacts/${name}-day-${size.width}x${size.height}.png`});
