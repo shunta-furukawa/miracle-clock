@@ -21,7 +21,7 @@
 .post-mode .post-order .ticket-time{font-size:30px;font-weight:500;line-height:1.4}.post-mode .post-order-body>small{font-size:12px;line-height:1.6;font-weight:400;white-space:normal;overflow:visible}.post-mode .post-order-face{width:42px;height:42px}
 .post-mode .post-rail{overflow:visible}.post-mode .post-tools{gap:10px}.post-mode .post-tools button{color:#e5d6b8;font-size:12px;min-height:44px;text-decoration:none;border-bottom:1px solid #a8936b66;font-weight:400}
 .post-mode .post-card{border-radius:4px;border-width:1px;box-shadow:0 10px 30px #0b222566;padding:18px;gap:7px 12px}.post-mode .post-card h2{font-size:20px;font-weight:500}.post-mode .post-steps{font-weight:400}.post-mode .post-steps .sum{font-size:17px}.post-mode .post-letter{border-radius:1px;border-color:#cabd9e;background:#f5eedc}.post-mode .post-sheet{padding:12px}
-@media(orientation:landscape){
+@media (orientation:landscape){
  .post-mode .clock-housing{width:min(44vw,calc(100dvh - 96px),560px);height:min(44vw,calc(100dvh - 96px),560px)}
  .post-mode .day-station .clock-bay{height:auto}
 
@@ -34,19 +34,19 @@
  .post-mode .post-tools{grid-column:2;grid-row:5;align-self:start;justify-self:start}
  .post-mode .post-sheet{width:49%;left:auto;right:0;bottom:0}
 }
-@media(orientation:portrait){
+@media (orientation:portrait){
  .post-mode .post-floor{order:1}.post-mode .post-rail{order:2}.post-mode .post-talk{order:4;min-height:34px}.post-mode .day-station{order:3}.post-mode .post-sheet{order:5}
  .post-mode .post-order{min-height:74px;padding:9px 12px}.post-mode .post-order .ticket-time{font-size:26px}.post-mode .post-order-body>small{font-size:11px}
  .post-mode .post-talk p{font-size:11px}.post-mode .post-floor{height:clamp(125px,22dvh,200px)}.post-mode .clock-housing{width:min(95cqw,95cqh,500px);height:min(95cqw,95cqh,500px)}
 }
-@media(orientation:landscape) and (max-height:500px){
+@media (orientation:landscape) and (max-height:500px){
  .post-mode{gap:6px 18px;padding-left:max(12px,var(--safe-l));padding-right:max(12px,var(--safe-r));padding-bottom:max(8px,var(--safe-b));grid-template-rows:auto minmax(64px,1fr) auto auto auto}
  .post-mode .day-top{padding:3px 10px;margin:0;min-height:40px}.post-mode .post-floor{height:100%;min-height:64px;max-height:125px}.counter-caption{font-size:7px;top:5px;left:7px}.counter-caption b{font-size:10px}
  .post-mode .post-order{min-height:54px;padding:5px 9px;gap:8px}.post-mode .post-order .ticket-time{font-size:22px}.post-mode .post-order-body>small{font-size:10px}.post-mode .post-order-face{width:30px;height:30px}
  .post-mode .post-talk{min-height:26px}.post-mode .post-talk p{font-size:10px;line-height:1.4}.post-mode .post-talk .toto{width:24px;height:24px}.post-mode .post-tools button{min-height:32px;padding:2px 6px;font-size:11px}
  .post-mode .post-bubble{font-size:10px;top:8%;padding:3px 5px}.post-mode .post-card{padding:9px 12px}.post-mode .post-card h2{font-size:16px}.post-mode .post-sheet{width:53%;padding:6px}
 }
-@media(orientation:portrait) and (max-height:740px){.post-mode{gap:5px}.post-mode .post-floor{height:112px}.post-mode .post-order{min-height:64px}.post-mode .post-talk{min-height:28px}.post-mode .post-tools button{min-height:36px}}
+@media (orientation:portrait) and (max-height:740px){.post-mode{gap:5px}.post-mode .post-floor{height:112px}.post-mode .post-order{min-height:64px}.post-mode .post-talk{min-height:28px}.post-mode .post-tools button{min-height:36px}}
 /* The same paper is used for labels, correspondence, logs and dialogue. */
 .parchment,.record-open,.modal:not(.chapter-arrival),.story-box,.post-mode .post-order,.post-mode .post-envelope,.post-mode .post-letter{background:#efe6d2 url('assets/atelier/paper.webp') center/512px 512px;border:1px solid #ab936d;border-radius:4px;box-shadow:0 6px 20px #15272733;outline:none}
 .primary,.secondary{border-radius:4px;border-width:1px;font-weight:500;box-shadow:0 2px 3px #152b2c40;letter-spacing:.04em}
@@ -80,9 +80,9 @@
 .campaign-map .compact-chapter .stage-list{width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:14px;gap:6px;background:#f0e7d3 url('assets/atelier/paper.webp') center/512px 512px}
 .campaign-map .compact-chapter .stage{border-width:1px;border-color:#bdab88;border-radius:2px;box-shadow:none;min-height:62px;background:#e8dec9;padding:7px 1px;gap:6px}.campaign-map .compact-chapter .stage b{font:400 17px Georgia,serif}.campaign-map .compact-chapter .stage small{font-size:10px}.campaign-map .compact-chapter .stage.next{background:#264e4c;color:#f7ebce;outline:1px solid #b3945e;outline-offset:2px}.campaign-map .compact-chapter .stage:disabled{opacity:.6}
 .campaign-map .special-depot{max-width:1136px;border-radius:3px}.campaign-map .map-heading h1{font-weight:500}.records-page .map-heading h1{color:#f2e9d6}.records-page .map-heading p{color:#dfd3ba}.records-page{background-image:linear-gradient(#193632aa,#19363299),url('assets/post-office.webp')}
-@media(max-width:760px){.campaign-map .chapter-list{grid-template-columns:1fr;gap:18px;max-width:560px}.campaign-map .compact-chapter .chapter-info{min-height:170px;padding:18px}.campaign-map .compact-chapter .chapter-info h2{font-size:22px}.campaign-map .compact-chapter .stage-list{padding:12px;gap:6px}.campaign-map .compact-chapter .stage{min-height:54px}.story-words{font-size:18px}.story-box{padding:24px 18px 12px}}
-@media(orientation:landscape) and (max-height:500px){.post-order-body .item-art{width:26px;height:26px}.post-mode .post-envelope{min-height:52px;padding:12px 5px 5px}.post-mode .post-envelope .ticket-time{font-size:17px}.post-mode .post-envelope .ticket-time.long{font-size:12px}.post-gift .item-art{width:44px;height:44px}.post-mode .post-letter{padding:6px 10px}.post-mode .post-letter p:not(.eyebrow){font-size:12px;line-height:1.5}.post-mode .post-steps .sum{font-size:14px}.post-mode .post-card>button{min-height:40px}.story-words{font-size:16px}.story-header h2{font-size:12px}}
-@media(orientation:portrait) and (max-height:740px){.post-mode .post-envelope{min-height:66px;padding:18px 5px 8px}.post-mode .post-envelope .ticket-time{font-size:18px}}
-@media(prefers-reduced-motion:reduce){.post-mode .post-customer.arrived,.post-mode .day-burst{animation:none}.post-mode .day-burst{display:none}.post-mode .post-envelope:hover{transform:none}}
+@media (max-width:760px){.campaign-map .chapter-list{grid-template-columns:1fr;gap:18px;max-width:560px}.campaign-map .compact-chapter .chapter-info{min-height:170px;padding:18px}.campaign-map .compact-chapter .chapter-info h2{font-size:22px}.campaign-map .compact-chapter .stage-list{padding:12px;gap:6px}.campaign-map .compact-chapter .stage{min-height:54px}.story-words{font-size:18px}.story-box{padding:24px 18px 12px}}
+@media (orientation:landscape) and (max-height:500px){.post-order-body .item-art{width:26px;height:26px}.post-mode .post-envelope{min-height:52px;padding:12px 5px 5px}.post-mode .post-envelope .ticket-time{font-size:17px}.post-mode .post-envelope .ticket-time.long{font-size:12px}.post-gift .item-art{width:44px;height:44px}.post-mode .post-letter{padding:6px 10px}.post-mode .post-letter p:not(.eyebrow){font-size:12px;line-height:1.5}.post-mode .post-steps .sum{font-size:14px}.post-mode .post-card>button{min-height:40px}.story-words{font-size:16px}.story-header h2{font-size:12px}}
+@media (orientation:portrait) and (max-height:740px){.post-mode .post-envelope{min-height:66px;padding:18px 5px 8px}.post-mode .post-envelope .ticket-time{font-size:18px}}
+@media (prefers-reduced-motion:reduce){.post-mode .post-customer.arrived,.post-mode .day-burst{animation:none}.post-mode .day-burst{display:none}.post-mode .post-envelope:hover{transform:none}}
 
 .day-track .sun svg{width:18px;height:18px}.now-sun .sky-symbol circle{stroke:none;filter:none}.day-game .hour-tint{opacity:.2}.day-game .hour-flash{opacity:.2}
