@@ -1,4 +1,6 @@
-import {forestEpisode,forestChapterEnding} from './forest-mail.js';
+import {mailEpisode} from './story-mail.js';
+import {harborEnding} from './harbor-mail.js';
+import {forestChapterEnding} from './forest-mail.js';
 export const clockPrologue={title:'魔法石が覚える、約束の時間',scene:0,partner:'トトじい',lines:[
  {who:'ルカ',text:'ぼくらで組み立てた飛行機、森の配送所まで来られたね。……あの時計、鉱山の魔法石が並んでる！'},
  {who:'トトじい',text:'鉱山では、数を合わせて石の力を引き出したのう。ここでは文字盤に並べて、荷札に時間を覚えてもらうんじゃ。'},
@@ -17,7 +19,7 @@ const depotConversations=[
  ['スナリ','砂丘の温室配送所','ようこそ！ この苗は、今から15分後に友だちの温室へ届けたいんだ。','受付の時計から15分進めれば、お届けする時刻になるんだね。','そう！ ぼくはスナリ。砂丘のトビネズミ族のみんなも、苗やお茶を送りに来るよ。','苗もお茶も、ちょうどいい時間に届いたよ！ 温室のみんなも喜んでる。','何分後も何時間後も、いまの時刻から考えればいいんだね！'],
  ['トトじい','空の中央配送所','ルカ、ふたりで中央配送所をひらこう。森から砂丘まで、みんなの荷物をここで預かるんじゃ。','これまで出会ったみんなが来るんだね。時計の読み方も、全部使ってみよう！','うむ。閉店のない空の便じゃ。5人取りこぼすまでに、何人に届けられるかのう。','今日もたくさんの約束が届いたのう。','また一緒に、空の便をひらこうね！']
 ];
-export function depotStory(level,ending=false){if(level.id===0&&ending)return forestChapterEnding();const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
+export function depotStory(level,ending=false){if(level.id===0&&ending)return forestChapterEnding();if(level.id===1&&ending)return harborEnding();const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
 
 const growingMessages=[
  ['ふたばたちにも、この配送所のことを教えたよ。','森の仲間が、お昼の荷物を持ってきたんだ。','12時をこえる便も頼めるって、評判だよ。','今日は花のたねも、はちみつもたくさん！','森のみんなが頼りにしてるよ。最後の便もお願い！'],
@@ -27,4 +29,4 @@ const growingMessages=[
  ['午後の手紙を送りたい仲間が並んでいるよ。','朝も夜も頼めるって、評判になったんだ。','昼の12時と夜の12時、注文をよく見ようね。','24時間の言い方で頼むお客さんも増えたよ。','空のたよりを集めて、最後の便を届けよう！'],
  ['お茶の便も増えて、温室がにぎやかになってきたよ。','時刻をまたいでも、苗が元気に届くようにお願いね。','遠い温室から、何時間後の注文も来たんだ。','育った苗がいっぱい！ 出荷の列も長くなったね。','明日のお届けまで任せられるね。中央配送所までもう少し！']
 ];
-export function stageStory(level){const episode=forestEpisode(level.stageId);if(episode)return episode.opening;if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:['荷札の時刻に針を合わせて、返事の時刻も読み解こう！','短い針は宝石の部屋、長い針は外周の数字。一つずつ見ればいいんだね。','返事には、どんなお返しが入ってるかな？','慌てずに、針の役目を一つずつ確かめよう！','今日も3人のお客さん。ぴったり届けよう！'][level.number-2]}]};}
+export function stageStory(level){const episode=mailEpisode(level.stageId);if(episode)return episode.opening;if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:['荷札の時刻に針を合わせて、返事の時刻も読み解こう！','短い針は宝石の部屋、長い針は外周の数字。一つずつ見ればいいんだね。','返事には、どんなお返しが入ってるかな？','慌てずに、針の役目を一つずつ確かめよう！','今日も3人のお客さん。ぴったり届けよう！'][level.number-2]}]};}

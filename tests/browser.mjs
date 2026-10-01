@@ -130,6 +130,25 @@ try {
     assert.equal(await page.locator('.mail-context .post-letter').count(),18,'all six days survive in the journal');
     assert.equal(await page.locator('.mail-postcard').count(),1);
     await page.locator('.modal-close').click();
+    // Harbor: minute-only assistance, half hours, repairs and departure.
+    for(let stage=6;stage<12;stage++){
+      await page.locator(`[data-stage="${stage}"]`).click();await skipDialogue();await page.locator('#open-shop').click();
+      assert.equal(await page.evaluate(()=>post.tales[0].who.region),1,'harbor residents send these parcels');
+      assert.equal(await page.evaluate(()=>post.q.mode),stage===6?'min':'hm');
+      if(stage===6||stage===7)await page.screenshot({path:`artifacts/${name}-harbor-${stage}.png`});
+      await page.locator('#post-context').click();assert.match(await page.locator('.mail-context').innerText(),stage<9?/森/:/洞窟/);await page.locator('#mail-context-close').click();
+      if(stage===7){
+        assert.match(await page.locator('.post-order .ticket-time').innerText(),/半/);
+        await page.evaluate(()=>{post.t=post.q.h*60;postDraw();document.querySelector('#seal-button').click();});
+        assert.equal(await page.evaluate(()=>post.answered),false,'half hour rejects exact hour');await page.locator('#post-go').click();
+      }
+      await finishPost();assert.equal(await page.locator('.story-dialog').count(),0);
+      if(stage===11){await page.locator('#retry-stage').click();assert.equal(await page.evaluate(()=>post.qi),0);await finishPost();}
+      await page.locator('#result-map').click();
+      if(stage===11){await page.locator('.story-skip').click();await page.locator('#reward-install').click();await page.locator('#reward-done').click();}
+    }
+    await page.reload();await page.locator('#start').click();await selectDiary();
+    await page.locator('#first-mail-journal').click();assert.equal(await page.locator('.mail-context .post-letter').count(),36,'both chapters persist after reload');await page.locator('.modal-close').click();
     // Later chapters: the 午前/午後 window and "in N minutes" orders.
     await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
     assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);
