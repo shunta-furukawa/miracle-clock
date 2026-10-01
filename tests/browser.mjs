@@ -109,6 +109,27 @@ try {
     await page.locator('[data-stage="0"]').click();await skipDialogue();await page.locator('#open-shop').click();await finishPost();
     await page.locator('#retry-stage').click();assert.equal(await page.evaluate(()=>post.qi),0,'retry opens a fresh day');
     await page.locator('#pause').click();await page.locator('#quit').click();
+    // Follow every authored forest day, including noon and the chapter handover.
+    for(let stage=1;stage<6;stage++){
+      await page.locator(`[data-stage="${stage}"]`).click();await skipDialogue();await page.locator('#open-shop').click();
+      assert.equal(await page.evaluate(()=>post.episode),await page.evaluate(s=>forestEpisodes[s].id,stage));
+      if(stage===4){
+        for(let i=0;i<3;i++){
+          await page.evaluate(()=>{post.t=postTarget(post.q,post.t);postDraw();document.querySelector('#seal-button').click();});
+          await page.locator('#post-go').click();await page.waitForFunction(i=>post.qi===i+1&&!post.answered,i);
+        }
+        await page.locator('.mail-postcard img').waitFor();
+        await page.waitForFunction(()=>document.querySelector('.mail-postcard img')?.naturalWidth>0);
+        await page.screenshot({path:`artifacts/${name}-forest-flowers.png`});
+      }
+      await finishPost();assert.equal(await page.locator('.story-dialog').count(),0);
+      await page.locator('#result-map').click();
+      if(stage===5){await page.locator('.story-dialog').waitFor();await page.locator('.story-skip').click();await page.locator('#reward-install').click();await page.locator('#reward-done').click();}
+    }
+    await page.locator('#first-mail-journal').click();
+    assert.equal(await page.locator('.mail-context .post-letter').count(),18,'all six days survive in the journal');
+    assert.equal(await page.locator('.mail-postcard').count(),1);
+    await page.locator('.modal-close').click();
     // Later chapters: the 午前/午後 window and "in N minutes" orders.
     await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
     assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);

@@ -1,3 +1,4 @@
+import {forestEpisodes} from './forest-mail.js';
 import {normalizeTime, timeText, durationText} from './time.js';
 export const customers=[
  {id:1,name:'モス',parcel:'花のたね',destination:'こもれびの森'},
@@ -33,7 +34,7 @@ const stageTimes=[
  [[180,360,540],[900,1080,1260],[210,930,570,1290],[0,720,30,750],[615,975,45,1185],[0,720,570,930,1095,1260]],
  [[15,30],[45,60],[15,45,75],[90,120],[30,60,150],[45,90,150,30,120,75]]
 ];
-const stageNames=[['港へ、三つの約束','いろんな「時」','森のおひる便','12時をこえて','森のにぎわい','森の配達係'],['長い針は6','半の約束','ぴったりと半','港の朝じたく','お茶会の便','港の配達係'],['15分の光','45分の光','4つに分けよう','次の時へ','結晶灯の便','結晶の配達係'],['5分ずつ数えよう','数字の間を読む','工房の5分便','小さな目盛り','1分の約束','工房の配達係'],['午前のお届け','午後のお届け','朝と夜をえらぶ','ふたつの12時','24時間の時計','雲の配達係'],['15分後、30分後','ひとまわり先へ','時をまたぐ苗','何時間後？','温室の出荷便','明日への約束']];
+const stageNames=[forestEpisodes.map(ep=>ep.title),['長い針は6','半の約束','ぴったりと半','港の朝じたく','お茶会の便','港の配達係'],['15分の光','45分の光','4つに分けよう','次の時へ','結晶灯の便','結晶の配達係'],['5分ずつ数えよう','数字の間を読む','工房の5分便','小さな目盛り','1分の約束','工房の配達係'],['午前のお届け','午後のお届け','朝と夜をえらぶ','ふたつの12時','24時間の時計','雲の配達係'],['15分後、30分後','ひとまわり先へ','時をまたぐ苗','何時間後？','温室の出荷便','明日への約束']];
 export const stages=levels.flatMap((chapter,c)=>Array.from({length:6},(_,n)=>({...chapter,stageId:c*6+n,number:n+1,stageTitle:stageNames[c][n],count:3+n,interval:n===0||c===0&&n===1?0:[0,58,52,46,40,35][n]+c,step:c===3?(n<3?5:1):chapter.step,times:stageTimes[c][n],format:c===4&&n>=4?'24':chapter.format,bases:c===5?(n===0?[540,600,660]:n===1?[540,600,660]:n===2?[570,645,690]:n===3?[480,600,780]:n===4?[645,690,810]:[570,690,1335,1425,660,810]):undefined,guide:n<2,starPace:[14,17,20,24,26,32][c]})));
 export const endlessLevel={id:6,title:'トトじいと空の中央便',stageTitle:'空の中央便',place:'空の中央配送所',skill:'全てのお客さん・全ての時刻',endless:true,count:Infinity,interval:36,step:1,format:'mixed',lesson:'注文ごとに時刻の読み方が変わるぞ。ゆっくり確かめて、島じゅうの荷物を届けよう。'};
 export const stageUnlocked=(record,id)=>id===0||record?.stages?.includes(id)||record?.stages?.includes(id-1);

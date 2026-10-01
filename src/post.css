@@ -132,3 +132,5 @@
 .mail-context .post-letter::after{display:none}
 .first-mail .post-gifts{font-size:11px;letter-spacing:0}
 @media (orientation:landscape) and (max-height:440px){.first-mail .mail-stamp{width:75px;height:48px}.first-mail .post-card h2{font-size:16px}.first-mail .post-steps{font-size:12px}}
+
+.mail-postcard{margin:14px 0 20px}.mail-postcard img{display:block;width:100%;height:auto;border-radius:12px}.mail-postcard figcaption{margin-top:8px;font-size:12px;line-height:1.6;color:#72543d}

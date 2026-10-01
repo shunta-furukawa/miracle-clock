@@ -1,4 +1,4 @@
-import {firstMailId,firstMailRequests,firstMailQuestion} from './first-mail.js';
+import {forestEpisodes,forestEpisode,forestQuestion,forestTimeLabel} from './forest-mail.js';
 import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,routeBusy,visitors,winding} from './route.js';
 import {dayLevel} from './day.js';
 import {parcelSeal} from './stamp.js';
@@ -48,7 +48,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.10.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.11.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -80,9 +80,9 @@ function renderMap(){
  const preparationImage=new Image();preparationImage.src='assets/central-construction.webp';
  cleanup();screen='map';soundtrack.setScene(chapterMusic===null?'map':gameMusicScene(chapterMusic===6?'sky':'story',chapterMusic));const record=records.slots[activeSlot];
  app.innerHTML=`<main class="map scene campaign-map"><header class="topbar"><button class="subtle" id="records">← 配達日誌</button><span class="wordmark">配達日誌 ${activeSlot+1}</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading depot-map-heading"><div><p class="eyebrow">THE JOURNEY TO CENTRAL AIR POST</p><h1>約束をあつめて、中央便へ。</h1></div><div class="map-heading-actions"><button class="subtle" id="replay-story">はじまりの物語</button><button class="primary" id="preparations">中央配送所のしたく <small>${earnedRewards(record).length} / 6</small></button></div></section><div class="chapter-list">${levels.map(ch=>{const list=stages.filter(t=>t.id===ch.id),stars=list.reduce((n,t)=>n+(record.stars[t.stageId]?.stars||0),0),theme=depotThemes[ch.id],done=chapterDeliveries(record,ch.id);return `<article class="chapter parchment compact-chapter" style="--chapter-color:${theme.color}"><div class="chapter-info">${depotIcon(ch.id)}<div><p class="eyebrow">CHAPTER ${ch.id+1} / ${theme.tag}</p><h2>${depotNames[ch.id]}</h2><p class="chapter-reward">${theme.reward} · ${done===6?'獲得済み':'章クリアで獲得'}</p><p class="chapter-star-count">★ ${stars} / 18 ${done===6?'<span class="stamp">配達ずみ</span>':''}</p><small class="shop-reputation">${shopReputation(done)} <span aria-label="繁盛度 ${done} / 6">${'●'.repeat(done)}${'○'.repeat(6-done)}</span></small></div></div><div class="stage-list">${list.map(t=>{const cleared=record.stages.includes(t.stageId),open=stageUnlocked(record,t.stageId),r=record.stars[t.stageId];return `<button class="stage ${cleared?'cleared':open?'next':''}" data-stage="${t.stageId}" ${open?'':'disabled'} aria-label="${ch.id+1}-${t.number} ${t.stageTitle} ${open?'':'未解放'}"><b>${ch.id+1}-${t.number}</b><small>${r?starText(r.stars):cleared?'✓':open?'☆☆☆':'—'}</small></button>`;}).join('')}</div></article>`;}).join('')}</div><section class="special-depot parchment"><div>${toto()}<p class="eyebrow">SPECIAL · ENDLESS</p><h2>トトじいと空の中央便</h2><p>みんなの配送所をつなぐ、新しい受付。<br>全ての島のお客さんと、全ての時計の注文がやってくるぞ。</p><p>最高 ${record.endless.best}人 · 累計 ${record.endless.total}人</p><button class="primary" id="endless" ${endlessUnlocked(record)?'':'disabled'}>${endlessUnlocked(record)?'トトじいと中央便をひらく':'全36ステージをクリアすると開店'}</button><small>閉店のない一日。取りこぼしが5人になったら店じまい。配達するほど時間が速くなります。</small></div></section><p class="save-note">${record.stages.length} / 36 ステージ · ★ ${totalStars(record)} / 108</p><p class="save-warning" role="status">${saveNotice}</p></main>`;
- if(record.episodes?.includes(firstMailId)){
+ if(record.episodes?.some(id=>forestEpisodes.some(ep=>ep.id===id))){
   $('.map-heading-actions').insertAdjacentHTML('beforeend','<button class="subtle" id="first-mail-journal">港から届いた便り</button>');
-  $('#first-mail-journal').onclick=()=>{openModal(`<h2>港から届いた便り</h2>${firstMailRequests.map(t=>`<article class="post-letter"><p class="eyebrow">${t.recipient}より</p><p>${t.letter}</p></article>`).join('')}`);$('.modal').classList.add('mail-context');};
+  $('#first-mail-journal').onclick=()=>{openModal(`<h2>港から届いた便り</h2>${forestEpisodes.filter(ep=>record.episodes.includes(ep.id)).map(ep=>`<section data-episode="${ep.id}"><h3>${ep.title}</h3><p>${ep.day}</p>${forestPostcard(ep)}${ep.requests.map(t=>`<article class="post-letter"><p class="eyebrow">${t.recipient}より</p><p>${t.letter}</p></article>`).join('')}</section>`).join('')}`);$('.modal').classList.add('mail-context');};
  }
  $('#preparations').onclick=renderPreparations;$('#records').onclick=renderSlots;$('#replay-story').onclick=()=>showStory();bindSound();
  app.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.stage);if(stageUnlocked(record,id))chooseLevel(stages[id]);});
@@ -383,7 +383,7 @@ function finish(){
 function showChapterCompletion(level,onDone){
  // Replays and retries still reach the chapter reward after accepting the result.
  const story=depotStory(level,true);
- story.lines.push({who:story.partner,text:depotThemes[level.id].thanks});
+ if(level.id!==0)story.lines.push({who:story.partner,text:depotThemes[level.id].thanks});
  showDialogue(story,()=>showDepotReward(level.id,onDone));
 }
 function showResult(won,stars){
@@ -407,8 +407,9 @@ const postPlain=s=>s.replace(/<[^>]+>/g,'');
 const postAt=(deg,r)=>[150+Math.sin(deg*Math.PI/180)*r,150-Math.cos(deg*Math.PI/180)*r].map(n=>Math.round(n*100)/100);
 const postWedge=(a0,a1,r)=>{const [x0,y0]=postAt(a0,r),[x1,y1]=postAt(a1,r);return `M150 150L${x0} ${y0}A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1} ${y1}Z`;};
 function postDetails(level){
- if(level.stageId===0){
-  openModal(`<p class="eyebrow">森の配送所 · 最初の一便</p><h2>港へ、三つの約束</h2><p class="start-goal">種まき、休憩、灯台の夜番。</p><p class="start-tip">相手が受け取れる時間帯を荷札に刻み、三つの荷物を港へ送ります。</p><p class="start-rule">時間制限なし。短い針で「何時台」を決めます。</p><button class="primary" id="open-shop">最初の依頼を聞く</button>`);
+ const episode=forestEpisode(level.stageId);
+ if(episode){
+  openModal(`<p class="eyebrow">森の配送所 · ${episode.day}</p><h2>${episode.title}</h2><p class="start-goal">${episode.summary}</p><p class="start-tip">相手が受け取れる時間帯を荷札に刻み、三つの荷物を港へ送ります。</p><p class="start-rule">${level.stageId<2?'時間制限なし。短い針で「何時台」を決めます。':'時間制限なし。長い針は12、短い針で「ちょうど」の時刻を合わせます。'}</p><button class="primary" id="open-shop">最初の依頼を聞く</button>`);
   $('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startPost(level);};return;
  }
 
@@ -434,7 +435,8 @@ function startPost(level){
  const senders=[-1,0,1,2].sort(()=>Math.random()-.5).map(v=>postPerson(c,v)),all=postStories[c].map(([item,what,to,reply,gift,giftName])=>({item,what,to,reply,gift,giftName}));
  const fresh=all.filter(x=>!owned.has(x.gift)).sort(()=>Math.random()-.5),seen=all.filter(x=>owned.has(x.gift)).sort(()=>Math.random()-.5);
  post={level,cfg,intro,qi:0,q:null,t:0,pm:false,mistakes:0,hints:0,tries:0,answered:false,helped:false,leaving:false,results:[],gifts:[],drag:null,ghost:null,started:performance.now(),tales:[...fresh,...seen].slice(0,3).map((x,k)=>({...x,who:senders[k]}))};
- if(level.stageId===0){post.episode=firstMailId;post.tales=firstMailRequests.map(r=>({...r,item:'',reply:r.letter,who:postPerson(0,r.variant)}));}
+ const episode=forestEpisode(level.stageId);
+ if(episode){post.episode=episode.id;post.story=episode;post.tales=episode.requests.map(r=>({...r,item:'',reply:r.letter,who:postPerson(0,r.variant)}));}
  app.innerHTML=`<main class="day-game post-mode scene" style="--depot-image:url(assets/depots/${POST_ART[c]}.webp)"><header class="topbar day-top"><button class="subtle" id="pause" aria-label="一時停止">Ⅱ おやすみ</button><div class="stage-heading"><span class="eyebrow">${stageHeading(level)}</span><strong>${level.stageTitle}</strong></div><div class="day-score"><span class="score">お届け <b id="delivered">0</b>/3</span><span class="post-gifts" id="post-gifts" aria-label="もらったお返し"></span></div></header>
 <section class="shop-floor post-floor" aria-label="配送所の受付"><svg class="shop-backdrop" viewBox="${c%2*627} ${Math.floor(c/2)*313.5} 627 313.5" preserveAspectRatio="xMinYMax slice" aria-hidden="true"><image href="assets/queue-places.webp" width="1254" height="1254"/></svg><img class="post-toto" src="assets/sky-toto.webp" alt="トトじい"><div class="shop-person post-customer" id="post-customer"></div><span class="order-bubble post-bubble" id="post-bubble"></span><img class="post-plane" id="post-plane" src="assets/delivery-plane.webp" alt=""></section>
 <div class="post-talk"><img class="toto" src="assets/sky-toto.webp" alt=""><p id="post-say" aria-live="polite"></p></div>
@@ -513,7 +515,7 @@ function postStand(who,line,mood=''){
  const b=$('#post-bubble');b.textContent=line;b.style.setProperty('--tint',regionColors[who.region]);b.classList.toggle('show',!!line);
 }
 function postAsk(first=false){
- const read=post.episode?post.qi>=3:post.qi%2===1,q=post.episode?firstMailQuestion(post.qi):postQuestion(post.cfg,read),tale=post.tales[post.episode?post.qi%3:Math.floor(post.qi/2)],who=tale.who,to=customers[tale.to];
+ const read=post.episode?post.qi>=3:post.qi%2===1,q=post.episode?forestQuestion(post.level.stageId,post.qi):postQuestion(post.cfg,read),tale=post.tales[post.episode?post.qi%3:Math.floor(post.qi/2)],who=tale.who,to=customers[tale.to];
  Object.assign(post,{q,tries:0,answered:false,helped:false,leaving:false,ghost:null});q.tale=tale;$('#post-sheet').hidden=true;
  const rail=$('#post-rail');rail.className=`ticket-rail post-rail ${read?'reading':'sending'}`;
  if(read){
@@ -543,23 +545,24 @@ function firstMailPresent(tale,read){
  const rail=$('#post-rail');rail.setAttribute('aria-label',read?'配達台帳の記入欄':'依頼の荷札');
  $('#post-context').textContent=read?'届いた便りを読む':'依頼を読む';
  $('.score').firstChild.textContent=read?'配達済み ':'受付 ';
- $('.stage-heading strong').textContent=read?'夕方6時 · 港から戻った便':'昼前 · 港への荷物を預かる';
+ $('.stage-heading strong').textContent=read?`${post.story.returnAt} · 港から戻った便`:post.story.accept;
  if(read){
   $('#post-customer').classList.add('leaving');$('#post-bubble').classList.remove('show');
-  $('#post-say').textContent=`${tale.recipient}へ届いた「${tale.what}」。荷札の刻印を読み、配達台帳の何時台に記録する？`;
-  rail.querySelectorAll('.post-envelope').forEach(b=>{b.classList.add('receipt-entry');b.setAttribute('aria-label',`${b.dataset.key}時台の欄に記録する`);b.querySelector('.post-postmark').remove();b.insertAdjacentHTML('beforeend','<small>配達台帳に記録</small>');});
+  $('#post-say').textContent=`${tale.recipient}へ届いた「${tale.what}」。荷札の刻印を読み、配達台帳の${post.level.stageId<2?'何時台':'どの時刻'}に記録する？`;
+  rail.querySelectorAll('.post-envelope').forEach(b=>{b.classList.add('receipt-entry');b.setAttribute('aria-label',`${b.querySelector('.ticket-time').textContent}の欄に記録する`);b.querySelector('.post-postmark').remove();b.insertAdjacentHTML('beforeend','<small>配達台帳に記録</small>');});
  }else{
   post.line=tale.line;postStand(tale.who,tale.line);
   $('#post-say').textContent=tale.reason;
   $('.post-order-body>small').textContent=`${tale.what} → 港の${tale.recipient}`;
-  $('.post-order .ticket-time').insertAdjacentHTML('afterbegin','<small>午後 </small>');
+  $('.post-order .ticket-time').insertAdjacentHTML('afterbegin',`<small>${tale.period||'午後'} </small>`);
  }
  if(post.qi===3)firstMailContext(true);
 }
+function forestPostcard(ep){return ep.postcard?'<figure class="mail-postcard"><img src="assets/harbor-flower-postcard.webp" alt="森から送った種が、港の桟橋の木箱いっぱいに花を咲かせた"><figcaption>シェルが便りに添えた、港の花壇の絵。</figcaption></figure>':'';}
 function firstMailContext(returned=false){
  const read=post.q.read,tale=post.q.tale;
- const body=read?post.tales.map(t=>`<article class="post-letter"><p class="eyebrow">港の${t.recipient}より · ${t.what}</p><p>${t.letter}</p></article>`).join(''):`<article class="post-letter"><p class="eyebrow">${tale.who.name}から、港の${tale.recipient}へ</p><p>${tale.request}</p></article>`;
- openModal(`<p class="eyebrow">${read?'夕方6時 · 戻り便':'森の配送所 · 依頼の控え'}</p><h2>${read?'港から三通の便り':'届けたいものと、会える時間'}</h2>${read?'<p>三つの荷物を届けた配送機が戻ってきた。封筒には、港の暮らしが少しずつ入っていた。</p>':''}${body}<button class="primary" id="mail-context-close">${returned?'荷札を配達台帳へ記録する':'受付に戻る'}</button>`,false);
+ const body=read?forestPostcard(post.story)+post.tales.map(t=>`<article class="post-letter"><p class="eyebrow">港の${t.recipient}より · ${t.what}</p><p>${t.letter}</p></article>`).join(''):`<article class="post-letter"><p class="eyebrow">${tale.who.name}から、港の${tale.recipient}へ</p><p>${tale.request}</p></article>`;
+ openModal(`<p class="eyebrow">${read?`${post.story.returnAt} · 戻り便`:`${post.story.day} · 依頼の控え`}</p><h2>${read?'港から三通の便り':'届けたいものと、会える時間'}</h2>${read?'<p>三つの荷物を届けた配送機が戻ってきた。封筒には、港の暮らしが少しずつ入っていた。</p>':''}${body}<button class="primary" id="mail-context-close">${returned?'荷札を配達台帳へ記録する':'受付に戻る'}</button>`,false);
  $('.modal').classList.add('mail-context');$('#mail-context-close').onclick=closeModal;
 }
 function postPick(){app.querySelectorAll('.post-ampm button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.pm==='1')===post.pm)));}
@@ -586,7 +589,7 @@ function postSubmit(){
  else{const t=post.t,wrongHour=postShowHour()&&q.h!==null&&postHourOf(t)!==q.h,wrongMin=postShowMin()&&q.m!==null&&postMinOf(t)!==q.m,wrongPm=post.cfg.period&&post.pm!==q.p;
   why=[wrongHour?`時の針は今<b class="h">${postHourOf(t)}の部屋</b>におるぞ。<b class="h">${q.h}の部屋</b>に入れておくれ。`:'',wrongMin?`分の針は今<b class="m">${postMinOf(t)}分</b>じゃ。<b class="m">${q.m}分</b>の位置を探すんじゃ。`:'',wrongPm?`針はぴったりじゃ！ だが荷札は<b>${q.p?'午後':'午前'}</b>じゃよ。${post.cfg.period==='24'&&q.p?`${q.h%12+12}時は午後${q.h===12?0:q.h}時じゃ。`:''}`:''].filter(Boolean).join('<br>');}
  if(post.tries>=2){post.ghost=postTarget(q,post.t);post.helped=true;postDraw();}
- if(post.episode){why=`${q.tale.reason} 今の刻印は${postHourOf(post.t)}時台。受け取れる時間帯をもう一度確かめよう。`;postStand(q.tale.who,q.tale.line);}else postStand(q.tale.who,'あれ？ その時刻じゃないみたい…','troubled');postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
+ if(post.episode){why=`${q.tale.reason} 今の刻印は${postPlain(postNamed())}${post.level.stageId<2?'台':''}。約束した時間をもう一度確かめよう。`;postStand(q.tale.who,q.tale.line);}else postStand(q.tale.who,'あれ？ その時刻じゃないみたい…','troubled');postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
  $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;postStand(q.tale.who,post.line);};
 }
 function postChoose(b){
@@ -631,19 +634,19 @@ function postDone(){
  $('#post-go').onclick=()=>{if(!post.answered||post.leaving)return;post.leaving=true;$('#post-sheet').hidden=true;post.qi++;$('#post-customer').classList.add('leaving');setTimeout(()=>{if(screen!=='post')return;if(post.qi<6)postAsk();else postFinish();},q.read?300:0);};
 }
 function firstMailDone(){
- const q=post.q,tale=q.tale,last=post.qi===5;
+ const q=post.q,tale=q.tale,last=post.qi===5,when=forestTimeLabel(post.level.stageId,tale);
  post.answered=true;post.results[post.qi]=post.tries===1&&!post.helped;postDraw();postScore();
  if(!q.read){
   playSound('imprint');postCelebrate('約束を荷札へ');
-  const seal=`<div class="mail-stamp" aria-label="午後${q.h}時台の刻印"><img src="assets/stamp-frame.webp" alt=""><strong>午後${q.h}時台</strong></div>`;
+  const seal=`<div class="mail-stamp" aria-label="${when}の刻印"><img src="assets/stamp-frame.webp" alt=""><strong>${when}</strong></div>`;
   $('.post-order').classList.add('mail-sealed');
   postStand(tale.who,'よろしくね。港からの便りを待っているよ。');
   if(post.qi===2){postFly('leaving-off');playSound('send');}
-  postSheet(post.qi===2?'港へ、三つの約束を乗せて':'荷札に、約束の時間が宿った',`${seal}<p>${tale.what}は午後${q.h}時台。${post.qi===2?'種、はちみつ、マフラーを積んで、配送機が飛び立つ。':'出発まで、港行きの荷物棚へ。'}</p>`,post.qi===2?'夕方、戻り便を受け取る':'次の依頼を聞く','ok');
+  postSheet(post.qi===2?'港へ、三つの約束を乗せて':'荷札に、約束の時間が宿った',`${seal}<p>${tale.what}は${when}。${post.qi===2?`${post.tales.map(t=>t.what).join('、')}を積んで、配送機が飛び立つ。`:'出発まで、港行きの荷物棚へ。'}</p>`,post.qi===2?`${post.story.returnAt}、戻り便を受け取る`:'次の依頼を聞く','ok');
  }else{
   playSound('success');
-  const entry=`<div class="post-letter"><p class="eyebrow">配達台帳 · 港の${tale.recipient}へ</p><p>${tale.what} · 午後${q.h}時台に配達済み</p><p>${tale.outcome}</p></div>`;
-  postSheet(last?'三つの約束が、港へ届いた':'配達台帳に記録した',`<p>${last?'ルカ「時計を合わせた先で、こんな一日があったんだね。」':'刻印は、荷物が相手の手に渡った時間を覚えている。'}</p>`,last?'今日の配達日誌をつける':'次の荷札を記録する','ok',entry);
+  const entry=`<div class="post-letter"><p class="eyebrow">配達台帳 · 港の${tale.recipient}へ</p><p>${tale.what} · ${when}に配達済み</p><p>${tale.outcome}</p></div>`;
+  postSheet(last?'三つの約束が、港へ届いた':'配達台帳に記録した',`<p>${last?post.story.luca:'刻印は、荷物が相手の手に渡った時間を覚えている。'}</p>`,last?'今日の配達日誌をつける':'次の荷札を記録する','ok',entry);
  }
  $('#post-go').onclick=()=>{if(post.leaving)return;post.leaving=true;$('#post-sheet').hidden=true;post.qi++;if(post.qi<6)postAsk();else postFinish();};
 }
@@ -661,15 +664,17 @@ function postFinish(){
  const l=post.level,record=records.slots[activeSlot],id=l.stageId,stars=postStars(post.mistakes,post.hints);
  const rating={stars,time:Math.round((performance.now()-post.started)/100)/10,mistakes:post.mistakes+post.hints};
  if(post.episode){
-  record.episodes=[...new Set([...(record.episodes||[]),firstMailId])];
-  if(!record.gifts.includes('🐚'))record.gifts.push('🐚');post.gifts=['🐚'];
+  record.episodes=[...new Set([...(record.episodes||[]),post.episode])];
+  post.gifts=post.story.gifts.map(g=>g.id);for(const gift of post.gifts)if(!record.gifts.includes(gift))record.gifts.push(gift);
  }
  const previous=record.stars[id];record.stars[id]=betterRecord(previous,rating);if(!record.stages.includes(id))record.stages.push(id);
  if(stages.filter(t=>t.id===l.id).every(t=>record.stages.includes(t.stageId))&&!record.cleared.includes(l.id))record.cleared.push(l.id);
  record.updated=Date.now();persistRecords();syncProgress();playSound('win');
  if(post.episode){
-  openModal(`<p class="eyebrow">森の配達日誌 · 最初の一便</p><h2>港につながった、一日。</h2><p>種は花壇へ。はちみつは休憩のお茶へ。マフラーは夜の灯台へ。</p><p>返事を読んだルカは、明日の受付も手伝うことにした。</p><p class="day-result-main">荷物3つを配達 · 台帳3件を記録</p><p class="post-gift">港からの貝がらを、配達日誌にしまった。</p><details><summary>配達の記録</summary><div class="star-result" data-stars="${stars}">${starText(stars)} · 見直し ${post.mistakes}回 · 相談 ${post.hints}回</div></details><p class="save-warning" role="status">${saveNotice}</p><button class="primary" id="result-main">次の便へ</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">この一日をもう一度</button>`,false);
-  $('#result-main').onclick=()=>{closeModal();renderMap();chooseLevel(stages[1]);};$('#result-map').onclick=()=>{closeModal();renderMap();};$('#retry-stage').onclick=()=>{closeModal();startPost(l);};return;
+  const ep=post.story;
+  openModal(`<p class="eyebrow">森の配達日誌 · ${ep.day}</p><h2>${ep.endTitle}</h2><p>${ep.end}</p><p>${ep.luca}</p><p class="day-result-main">荷物3つを配達 · 台帳3件を記録</p><p class="post-gift">${ep.gifts.map(g=>g.name).join('、')}を、日誌に記録した。</p><details><summary>配達の記録</summary><div class="star-result" data-stars="${stars}">${starText(stars)} · 見直し ${post.mistakes}回 · 相談 ${post.hints}回</div></details><p class="save-warning" role="status">${saveNotice}</p><button class="primary" id="result-main">${l.number===6?'森の章の結びへ':'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">この一日をもう一度</button>`,false);
+  const leave=next=>{closeModal();if(l.number===6)showChapterCompletion(l,next);else next();};
+  $('#result-main').onclick=()=>leave(()=>{renderMap();chooseLevel(stages[l.stageId+1]);});$('#result-map').onclick=()=>leave(renderMap);$('#retry-stage').onclick=()=>{closeModal();startPost(l);};return;
  }
  const alone=post.results.filter(Boolean).length,shelf=(record.gifts||[]).length;
  openModal(`<div class="result-character"><img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ"></div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${stageHeading(l)}</p><h2>${stars===3?'見事な配達じゃ！':stars===2?'よう届けたのう！':'今日の配達、おしまい！'}</h2><p class="post-result-gifts" aria-label="今日のお返し">${post.gifts.join(' ')}</p><p class="day-result-main">荷物3つ・返事3通 · 一発正解 ${alone} / 6</p><div class="star-result" data-stars="${stars}"><strong aria-label="${stars}つ星">${starText(stars)}</strong><p>ミス ${post.mistakes}回 · ヒント ${post.hints}回</p><small>★★★ ミス・ヒントなし · ★★ 2回まで<br>お返しコレクション ${shelf} / ${postGiftCount()}${record.stars[id]?` · 最高評価 ${starText(record.stars[id].stars)}`:''}</small></div><button class="primary" id="result-main">${l.number===6?'章クリアへ ▸':'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">星をふやしに、もう一度</button>`,false);
