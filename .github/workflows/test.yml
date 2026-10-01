@@ -38,7 +38,9 @@ jobs:
         if: always()
         with:
           name: harbor-review
-          path: artifacts/*-harbor-*.png
+          path: |
+            artifacts/*-harbor-*.png
+            artifacts/*-reply-envelope.png
       - name: Preserve tested build
         uses: actions/upload-artifact@v4
         with:

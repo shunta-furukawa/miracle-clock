@@ -59,7 +59,7 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
-    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count())await target.locator('#mail-context-close').click();if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count()){const current=await target.evaluate(()=>post.qi%3);assert.equal(await target.locator('.reply-envelope[open]').getAttribute('data-mail'),String(current));await target.locator('#mail-context-close').click();}if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
     assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^午後 3時台$/,'the first request has its own fixed afternoon window');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('.element-gem image').count(),12,'the original twelve magic stones form the dial');assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
@@ -79,6 +79,14 @@ try {
     assert.equal(await page.evaluate(()=>post.qi),3);
     assert.equal(await page.locator('.mail-context .post-letter').count(),3,'letters are readable before any receipt answer');
     assert.match(await page.locator('.mail-context').innerText(),/夕方6時/);
+    assert.equal(await page.locator('#mail-trail .returned').count(),3,'each parcel has a returned reply');
+    assert.equal(await page.locator('.reply-envelope[open]').count(),1,'one reply opens at a time');
+    assert.match(await page.locator('.reply-envelope[open] summary').innerText(),/シェルから、モスへ/);
+    await page.locator('.reply-envelope[data-mail="1"] summary').click();
+    await page.waitForFunction(()=>document.querySelectorAll('.reply-envelope[open]').length===1&&document.querySelector('.reply-envelope[data-mail="1"]').open);
+    assert.match(await page.locator('.reply-envelope[open] summary').innerText(),/ウズから/);
+    await page.locator('.reply-envelope[data-mail="0"] summary').click();
+    await page.screenshot({path:`artifacts/${name}-reply-envelope.png`});
     for(const size of [{width:375,height:667},{width:568,height:320}]){
       await page.setViewportSize(size);await page.locator('#mail-context-close').scrollIntoViewIfNeeded();
       const b=await page.locator('#mail-context-close').boundingBox();assert.ok(b.y>=0&&b.y+b.height<=size.height,'return letters can be closed on small screens');
@@ -100,7 +108,7 @@ try {
       assert.equal(await overflow(),false);
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');
+    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');assert.match(await page.locator('.mail-reaction').innerText(),/モス/);assert.match(await page.locator('#mail-trail .mail-trail-card').first().innerText(),/記録済み/);
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/台帳3件/);

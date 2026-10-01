@@ -48,7 +48,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.12.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.13.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -82,7 +82,7 @@ function renderMap(){
  app.innerHTML=`<main class="map scene campaign-map"><header class="topbar"><button class="subtle" id="records">← 配達日誌</button><span class="wordmark">配達日誌 ${activeSlot+1}</span><button class="icon-button sound" aria-pressed="${soundOn}">音 ${soundOn?'ON':'OFF'}</button></header><section class="map-heading depot-map-heading"><div><p class="eyebrow">THE JOURNEY TO CENTRAL AIR POST</p><h1>約束をあつめて、中央便へ。</h1></div><div class="map-heading-actions"><button class="subtle" id="replay-story">はじまりの物語</button><button class="primary" id="preparations">中央配送所のしたく <small>${earnedRewards(record).length} / 6</small></button></div></section><div class="chapter-list">${levels.map(ch=>{const list=stages.filter(t=>t.id===ch.id),stars=list.reduce((n,t)=>n+(record.stars[t.stageId]?.stars||0),0),theme=depotThemes[ch.id],done=chapterDeliveries(record,ch.id);return `<article class="chapter parchment compact-chapter" style="--chapter-color:${theme.color}"><div class="chapter-info">${depotIcon(ch.id)}<div><p class="eyebrow">CHAPTER ${ch.id+1} / ${theme.tag}</p><h2>${depotNames[ch.id]}</h2><p class="chapter-reward">${theme.reward} · ${done===6?'獲得済み':'章クリアで獲得'}</p><p class="chapter-star-count">★ ${stars} / 18 ${done===6?'<span class="stamp">配達ずみ</span>':''}</p><small class="shop-reputation">${shopReputation(done)} <span aria-label="繁盛度 ${done} / 6">${'●'.repeat(done)}${'○'.repeat(6-done)}</span></small></div></div><div class="stage-list">${list.map(t=>{const cleared=record.stages.includes(t.stageId),open=stageUnlocked(record,t.stageId),r=record.stars[t.stageId];return `<button class="stage ${cleared?'cleared':open?'next':''}" data-stage="${t.stageId}" ${open?'':'disabled'} aria-label="${ch.id+1}-${t.number} ${t.stageTitle} ${open?'':'未解放'}"><b>${ch.id+1}-${t.number}</b><small>${r?starText(r.stars):cleared?'✓':open?'☆☆☆':'—'}</small></button>`;}).join('')}</div></article>`;}).join('')}</div><section class="special-depot parchment"><div>${toto()}<p class="eyebrow">SPECIAL · ENDLESS</p><h2>トトじいと空の中央便</h2><p>みんなの配送所をつなぐ、新しい受付。<br>全ての島のお客さんと、全ての時計の注文がやってくるぞ。</p><p>最高 ${record.endless.best}人 · 累計 ${record.endless.total}人</p><button class="primary" id="endless" ${endlessUnlocked(record)?'':'disabled'}>${endlessUnlocked(record)?'トトじいと中央便をひらく':'全36ステージをクリアすると開店'}</button><small>閉店のない一日。取りこぼしが5人になったら店じまい。配達するほど時間が速くなります。</small></div></section><p class="save-note">${record.stages.length} / 36 ステージ · ★ ${totalStars(record)} / 108</p><p class="save-warning" role="status">${saveNotice}</p></main>`;
  if(record.episodes?.some(id=>mailEpisodes.some(ep=>ep.id===id))){
   $('.map-heading-actions').insertAdjacentHTML('beforeend','<button class="subtle" id="first-mail-journal">島から届いた便り</button>');
-  $('#first-mail-journal').onclick=()=>{openModal(`<h2>島から届いた便り</h2>${mailEpisodes.filter(ep=>record.episodes.includes(ep.id)).map(ep=>`<section data-episode="${ep.id}"><h3>${ep.title}</h3><p>${ep.day}</p>${forestPostcard(ep)}${ep.requests.map(t=>`<article class="post-letter"><p class="eyebrow">${t.recipient}より</p><p>${t.letter}</p></article>`).join('')}</section>`).join('')}`);$('.modal').classList.add('mail-context');};
+  $('#first-mail-journal').onclick=()=>{openModal(`<h2>島から届いた便り</h2>${mailEpisodes.filter(ep=>record.episodes.includes(ep.id)).map(ep=>`<section data-episode="${ep.id}"><h3>${ep.title}</h3><p>${ep.day}</p>${forestPostcard(ep)}${ep.requests.map(t=>`<article class="post-letter"><div class="mail-reaction">${residentFace(mailRecipient(t))}<p><b>${t.recipient}から、${postPerson(Math.floor(mailEpisodes.indexOf(ep)/6),t.variant).name}へ</b><br>届けたもの：${t.what}</p></div><p>${t.letter}</p></article>`).join('')}</section>`).join('')}`);$('.modal').classList.add('mail-context');};
  }
  $('#preparations').onclick=renderPreparations;$('#records').onclick=renderSlots;$('#replay-story').onclick=()=>showStory();bindSound();
  app.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.stage);if(stageUnlocked(record,id))chooseLevel(stages[id]);});
@@ -446,6 +446,7 @@ function startPost(level){
  $('#pause').onclick=postPause;$('#post-hint').onclick=postHint;$('#seal-button').onclick=postSubmit;
  if(post.episode){
   $('.post-mode').classList.add('first-mail');
+  $('.post-floor').insertAdjacentHTML('beforeend','<div id="mail-trail" class="mail-trail" aria-label="荷物と返事の控え"></div>');
   $('.post-tools').insertAdjacentHTML('beforeend','<button class="text-button" id="post-context" type="button">依頼を読む</button>');
   $('#post-context').onclick=()=>firstMailContext();
  }
@@ -548,7 +549,7 @@ function firstMailPresent(tale,read){
  $('.stage-heading strong').textContent=read?`${post.story.returnAt} · ${post.story.destination}から戻った便`:post.story.accept;
  if(read){
   $('#post-customer').classList.add('leaving');$('#post-bubble').classList.remove('show');
-  $('#post-say').textContent=`${tale.recipient}へ届いた「${tale.what}」。荷札の刻印を読み、配達台帳の${post.level.stageId<2?'何時台':'どの時刻'}に記録する？`;
+  $('#post-say').textContent=`${tale.recipient}から${tale.who.name}へ届いた返事。「${tale.what}」の荷札${post.qi-2}の刻印を読み、配達台帳の${post.level.stageId<2?'何時台':'どの時刻'}に記録する？`;
   rail.querySelectorAll('.post-envelope').forEach(b=>{b.classList.add('receipt-entry');b.setAttribute('aria-label',`${b.querySelector('.ticket-time').textContent}の欄に記録する`);b.querySelector('.post-postmark').remove();b.insertAdjacentHTML('beforeend','<small>配達台帳に記録</small>');});
  }else{
   post.line=tale.line;postStand(tale.who,tale.line);
@@ -556,17 +557,27 @@ function firstMailPresent(tale,read){
   $('.post-order-body>small').textContent=`${tale.what} → ${post.story.destination}の${tale.recipient}`;
   $('.post-order .ticket-time').insertAdjacentHTML('afterbegin',`<small>${tale.period||'午後'}${post.q.mode==='min'?tale.h+'時 ':''} </small>`);
  }
- if(post.qi===3)firstMailContext(true);
+ if(read)firstMailContext(true);
 }
 function forestPostcard(ep){return ep.postcard?'<figure class="mail-postcard"><img src="assets/harbor-flower-postcard.webp" alt="森から送った種が、港の桟橋の木箱いっぱいに花を咲かせた"><figcaption>シェルが便りに添えた、港の花壇の絵。</figcaption></figure>':'';}
+function mailRecipient(t){const region=t.to,variant=customers[region].name===t.recipient?-1:residents[region].indexOf(t.recipient);return postPerson(region,variant);}
+function mailMark(i){return `<span class="mail-mark" aria-label="荷札${i+1}">${i+1}</span>`;}
+function mailTrail(){
+ const trail=$('#mail-trail');if(!trail)return;
+ trail.innerHTML=post.tales.map((t,i)=>{
+  const sent=post.qi>i||post.qi===i&&post.answered,returned=post.qi>=3,recorded=post.qi>i+3||post.qi===i+3&&post.answered;
+  return `<div class="mail-trail-card ${returned?'returned':''} ${post.qi%3===i?'current':''}">${mailMark(i)}<span><b>${returned?t.recipient+'から':t.recipient+'へ'}</b><small>${recorded?'台帳に記録済み':returned?'返事が届いた':sent?'返事待ち':'受付前'}</small></span></div>`;
+ }).join('');
+}
 function firstMailContext(returned=false){
- const read=post.q.read,tale=post.q.tale;
- const body=read?forestPostcard(post.story)+post.tales.map(t=>`<article class="post-letter"><p class="eyebrow">${post.story.destination}の${t.recipient}より · ${t.what}</p><p>${t.letter}</p></article>`).join(''):`<article class="post-letter"><p class="eyebrow">${tale.who.name}から、${post.story.destination}の${tale.recipient}へ</p><p>${tale.request}</p></article>`;
- openModal(`<p class="eyebrow">${read?`${post.story.returnAt} · 戻り便`:`${post.story.day} · 依頼の控え`}</p><h2>${read?`${post.story.destination}から三通の便り`:'届けたいものと、会える時間'}</h2>${read?'<p>三つの荷物を届けた配送機が戻ってきた。封筒には、相手の暮らしが少しずつ入っていた。</p>':''}${body}<button class="primary" id="mail-context-close">${returned?'荷札を配達台帳へ記録する':'受付に戻る'}</button>`,false);
+ const read=post.q.read,tale=post.q.tale,current=post.qi%3;
+ const body=read?forestPostcard(post.story)+post.tales.map((t,i)=>`<details class="post-letter reply-envelope" data-mail="${i}" ${i===current?'open':''}><summary>${mailMark(i)}${residentFace(mailRecipient(t))}<span><strong>${t.recipient}から、${t.who.name}へ</strong><small>届けたもの：${t.what}</small></span><span class="reply-open">開く</span></summary><div class="reply-content"><p class="eyebrow">${post.story.destination}からの返事 · 荷札${i+1}</p><p>${t.letter}</p></div></details>`).join(''):`<article class="post-letter"><p class="eyebrow">${mailMark(current)} ${tale.who.name}から、${post.story.destination}の${tale.recipient}へ</p><p>${tale.request}</p></article>`;
+ openModal(`<p class="eyebrow">${read?`${post.story.returnAt} · 戻り便`:`${post.story.day} · 依頼の控え`}</p><h2>${read?'送った荷物に、返事が届いた':'届けたいものと、会える時間'}</h2>${read?`<p>配送機が、三つの荷札と返事を持ち帰った。今は荷札${current+1}「${tale.what}」への便りを読もう。</p>`:''}${body}<button class="primary" id="mail-context-close">${read?`荷札${current+1}の到着時刻を記録する`:'受付に戻る'}</button>`,false);
  $('.modal').classList.add('mail-context');$('#mail-context-close').onclick=closeModal;
+ $('.modal').querySelectorAll('.reply-envelope').forEach(el=>el.addEventListener('toggle',()=>{if(el.open) $('.modal')?.querySelectorAll('.reply-envelope').forEach(other=>{if(other!==el)other.open=false;});}));
 }
 function postPick(){app.querySelectorAll('.post-ampm button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.pm==='1')===post.pm)));}
-function postScore(){$('#delivered').textContent=post.episode?Math.min(3,post.qi+(post.answered?1:0)):Math.floor((post.qi+(post.answered?1:0))/2);$('#post-gifts').textContent=post.episode?(post.qi<3?`${post.story.destination}行きの荷物`:`台帳 ${Math.min(3,post.qi-3+(post.answered?1:0))}/3`):post.gifts.join('');}
+function postScore(){if(post.episode)mailTrail();$('#delivered').textContent=post.episode?Math.min(3,post.qi+(post.answered?1:0)):Math.floor((post.qi+(post.answered?1:0))/2);$('#post-gifts').textContent=post.episode?(post.qi<3?`${post.story.destination}行きの荷物`:`台帳 ${Math.min(3,post.qi-3+(post.answered?1:0))}/3`):post.gifts.join('');}
 function postFly(kind){const p=$('#post-plane');if(!p)return;p.className='post-plane';void p.offsetWidth;p.classList.add(kind);}
 // After a right answer Toto just names the time in the story; explanations are kept for mistakes.
 function postNamed(){
@@ -638,14 +649,14 @@ function firstMailDone(){
  post.answered=true;post.results[post.qi]=post.tries===1&&!post.helped;postDraw();postScore();
  if(!q.read){
   playSound('imprint');postCelebrate('約束を荷札へ');
-  const seal=`<div class="mail-stamp" aria-label="${when}の刻印"><img src="assets/stamp-frame.webp" alt=""><strong>${when}</strong></div>`;
+  const seal=`<p class="mail-pair">${mailMark(post.qi)} ${tale.who.name} → ${tale.recipient}</p><div class="mail-stamp" aria-label="${when}の刻印"><img src="assets/stamp-frame.webp" alt=""><strong>${when}</strong></div>`;
   $('.post-order').classList.add('mail-sealed');
   postStand(tale.who,`よろしくね。${post.story.destination}からの便りを待っているよ。`);
   if(post.qi===2){postFly('leaving-off');playSound('send');}
   postSheet(post.qi===2?`${post.story.destination}へ、三つの約束を乗せて`:'荷札に、約束の時間が宿った',`${seal}<p>${tale.what}は${when}。${post.qi===2?`${post.tales.map(t=>t.what).join('、')}を積んで、配送機が飛び立つ。`:`出発まで、${post.story.destination}行きの荷物棚へ。`}</p>`,post.qi===2?`${post.story.returnAt}、戻り便を受け取る`:'次の依頼を聞く','ok');
  }else{
   playSound('success');
-  const entry=`<div class="post-letter"><p class="eyebrow">配達台帳 · ${post.story.destination}の${tale.recipient}へ</p><p>${tale.what} · ${when}に配達済み</p><p>${tale.outcome}</p></div>`;
+  const entry=`<div class="post-letter"><p class="eyebrow">配達台帳 · ${post.story.destination}の${tale.recipient}へ</p><p>${tale.what} · ${when}に配達済み</p><p>${tale.outcome}</p><div class="mail-reaction">${residentFace(tale.who)}<p><b>${tale.who.name}</b><br>「${tale.recipient}からだ。無事に届いてよかった。」</p></div></div>`;
   postSheet(last?`三つの約束が、${post.story.destination}へ届いた`:'配達台帳に記録した',`<p>${last?post.story.luca:'刻印は、荷物が相手の手に渡った時間を覚えている。'}</p>`,last?'今日の配達日誌をつける':'次の荷札を記録する','ok',entry);
  }
  $('#post-go').onclick=()=>{if(post.leaving)return;post.leaving=true;$('#post-sheet').hidden=true;post.qi++;if(post.qi<6)postAsk();else postFinish();};
