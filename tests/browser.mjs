@@ -59,18 +59,33 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
-    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count())await target.locator('#mail-context-close').click();if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
-    assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時台$/,'the first stage asks for the short hand only');
+    assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^午後 3時台$/,'the first request has its own fixed afternoon window');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('.element-gem image').count(),12,'the original twelve magic stones form the dial');assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
     const want=await page.evaluate(()=>post.q.h),dial=await page.locator('#clock').boundingBox();
     {const cx=dial.x+dial.width/2,cy=dial.y+dial.height/2,r=dial.width*50/300,a=(want*30+15)*Math.PI/180;await page.mouse.move(cx+r*Math.sin(a+1),cy-r*Math.cos(a+1));await page.mouse.down();for(let i=10;i>=0;i--)await page.mouse.move(cx+r*Math.sin(a+i/10),cy-r*Math.cos(a+i/10));await page.mouse.up();}
     assert.equal(await page.evaluate(()=>postHourOf(post.t)),want,'dragging near the centre moves the short hand into a gem room');
     assert.equal(await page.locator('#hour-hand').getAttribute('aria-valuenow'),String(want));
-    await page.locator('#seal-button').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),new RegExp(`${want}時の便`),'Toto names the time in the story');
+    await page.locator('#seal-button').click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-steps').innerText(),new RegExp(`午後${want}時台`),'the seal records the requested delivery window');
     await page.screenshot({path:`artifacts/${name}-post-sent.png`,animations:'disabled'});
     await page.locator('#post-go').click();await page.waitForFunction(()=>post.qi===1&&!post.answered);
-    assert.equal(await page.locator('.post-envelope').count(),3,'the reply comes with three envelopes');
+    assert.equal(await page.locator('.post-order').count(),1,'second resident arrives before the flight leaves');
+    assert.equal(await page.evaluate(()=>post.q.h),4,'the tea break belongs to the second request');
+    for(let i=1;i<3;i++){
+      await page.locator('#post-context').click();assert.match(await page.locator('.mail-context').innerText(),i===1?/荷下ろし/:/灯台/);await page.locator('#mail-context-close').click();
+      await page.evaluate(()=>{post.t=postTarget(post.q,post.t);postDraw();});await page.locator('#seal-button').click();await page.locator('#post-go').click();
+    }
+    assert.equal(await page.evaluate(()=>post.qi),3);
+    assert.equal(await page.locator('.mail-context .post-letter').count(),3,'letters are readable before any receipt answer');
+    assert.match(await page.locator('.mail-context').innerText(),/夕方6時/);
+    for(const size of [{width:375,height:667},{width:568,height:320}]){
+      await page.setViewportSize(size);await page.locator('#mail-context-close').scrollIntoViewIfNeeded();
+      const b=await page.locator('#mail-context-close').boundingBox();assert.ok(b.y>=0&&b.y+b.height<=size.height,'return letters can be closed on small screens');
+      await page.screenshot({path:`artifacts/${name}-first-mail-letters-${size.width}.png`});
+    }
+    await page.locator('#mail-context-close').click();
+    assert.equal(await page.locator('.receipt-entry').count(),3,'time choices are receipt ledger entries');
     const wrongKey=await page.evaluate(()=>post.q.options.find(o=>o.key!==post.q.answer).key);await page.locator(`.post-envelope[data-key="${wrongKey}"]`).click();
     await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-envelope[data-key="${wrongKey}"]`).isDisabled(),true);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
@@ -85,10 +100,13 @@ try {
       assert.equal(await overflow(),false);
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('.post-gift').waitFor();assert.match(await page.locator('.post-letter').innerText(),/より/,'the letter opens with a gift');
+    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
-    assert.match(await page.locator('.day-result-main').innerText(),/返事3通/);
+    assert.match(await page.locator('.day-result-main').innerText(),/台帳3件/);
+    assert.ok(await page.evaluate(()=>records.slots[activeSlot].episodes.includes('forest-first-mail')));
+    await page.locator('#result-map').click();await page.locator('#first-mail-journal').click();assert.equal(await page.locator('.mail-context .post-letter').count(),3,'saved letters can be reread from the map');await page.locator('.modal-close').click();
+    await page.locator('[data-stage="0"]').click();await skipDialogue();await page.locator('#open-shop').click();await finishPost();
     await page.locator('#retry-stage').click();assert.equal(await page.evaluate(()=>post.qi),0,'retry opens a fresh day');
     await page.locator('#pause').click();await page.locator('#quit').click();
     // Later chapters: the 午前/午後 window and "in N minutes" orders.

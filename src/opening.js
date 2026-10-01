@@ -2,8 +2,8 @@
 export const openingShots=[
  {asset:'sky-world.webp',duration:5000,line:'雲の海に浮かぶ、小さな世界。',label:'A WORLD ABOVE THE CLOUDS'},
  {asset:'post-office.webp',duration:5500,line:'島から島へ、届けたい想いがある。',label:'LETTERS, PARCELS AND LITTLE WISHES'},
- {asset:'depots/0.webp',duration:5500,line:'ルカとトトじいは、空の配送屋さんをひらきました。',label:'LUCA & TOTO’S AIR POST'},
- {asset:'depots/3.webp',detail:'magic-clock.webp',duration:6500,line:'針を合わせて、荷札に約束の時刻を刻む。',label:'A LITTLE CLOCK. A PROMISE TO KEEP.'},
+ {asset:'depots/0.webp',duration:5500,line:'旅の途中、ルカたちは森の配送所へ。',label:'LUCA & TOTO’S AIR POST'},
+ {asset:'depots/3.webp',detail:'magic-clock.webp',duration:6500,line:'鉱山で出会った石が、ここでは約束の時間を覚える。',label:'A LITTLE CLOCK. A PROMISE TO KEEP.'},
  {asset:'cockpit-sky.webp',detail:'delivery-plane.webp',duration:5500,line:'小さな翼に託して、きみの時間を届けよう。',label:'MIRACLE CLOCK — THE STORY BEGINS'}
 ];
 let openingDismiss;

@@ -118,3 +118,17 @@
   .post-card{max-height:86dvh;padding:6px 10px;grid-template-columns:40px 1fr}.post-card-toto{width:40px;height:40px}.post-steps{font-size:12.5px}.post-card h2{font-size:15px}.post-card>button{min-height:38px}
  .post-letter p:not(.eyebrow){font-size:12px;line-height:1.45}
 }
+
+/* The authored first mail keeps the original art and introduces a receipt desk. */
+.first-mail .post-tools{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.first-mail .receipt-entry{background:#fff8e9;border-style:solid;border-radius:4px}
+.first-mail .receipt-entry>small{font-size:10px;color:#695739}
+.first-mail .post-order.mail-sealed{box-shadow:inset 0 0 0 2px #b79956}
+.mail-stamp{position:relative;width:110px;height:80px;display:grid;place-items:center;margin:0 auto}
+.mail-stamp img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.65}
+.mail-stamp strong{position:relative;color:#477774;font-size:15px;transform:rotate(-6deg)}
+.mail-context .post-letter{text-align:left;margin:12px 0}
+.mail-context .post-letter p:not(.eyebrow){padding-right:0}
+.mail-context .post-letter::after{display:none}
+.first-mail .post-gifts{font-size:11px;letter-spacing:0}
+@media (orientation:landscape) and (max-height:440px){.first-mail .mail-stamp{width:75px;height:48px}.first-mail .post-card h2{font-size:16px}.first-mail .post-steps{font-size:12px}}

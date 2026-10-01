@@ -1,10 +1,12 @@
-export const clockPrologue={title:'空のとけい便、開店！',scene:0,partner:'トトじい',lines:[
- {who:'ルカ',text:'ぼくらの蒸気飛行機から、小さな配送機が生まれたね！'},
- {who:'トトじい',text:'今度は島に配送所を開くんじゃ。わしらはここで、お客さんの荷物を預かろう。'},
- {who:'ルカ',text:'この時計で、お届けする時刻を決めるんだね。'},
- {who:'トトじい',text:'そうじゃ。針を合わせて、真ん中の刻印を押す。荷札に時刻の魔法が宿るぞ。'},
- {who:'ルカ',text:'あとは小さな飛行機におまかせ！ ぼくらは次のお客さんを迎えるんだ。'},
- {who:'トトじい',text:'島の配送所を繁盛させて、みんなと中央配送所の開所を準備するんじゃ。まずは森から始めよう。',expression:'emotion'}
+import {firstMailOpening} from './first-mail.js';
+export const clockPrologue={title:'魔法石が覚える、約束の時間',scene:0,partner:'トトじい',lines:[
+ {who:'ルカ',text:'ぼくらで組み立てた飛行機、森の配送所まで来られたね。……あの時計、鉱山の魔法石が並んでる！'},
+ {who:'トトじい',text:'鉱山では、数を合わせて石の力を引き出したのう。ここでは文字盤に並べて、荷札に時間を覚えてもらうんじゃ。'},
+ {who:'ルカ',text:'この小さな配送機は、石の光を頼りに荷物を届けるんだね。'},
+ {who:'トトじい',text:'うむ。受け取る人がいる時間を刻む。荷物が渡ると、刻印には届いた時間が残るんじゃ。'},
+ {who:'ルカ',text:'でも、相手がいつ受け取れるかは、石にはわからないよね。'},
+ {who:'トトじい',text:'だから、送りたい人の話を聞く者がいる。わしが飛行機を整備している間、受付を手伝ってくれるかのう。'},
+ {who:'ルカ',text:'うん。石のことなら少しわかるよ。まずは、何を誰に届けたいのか聞いてみる。'}
 ]};
 const depotConversations=[
  ['モス','森の配送所','花のたねを、港の友だちに送りたいんだ。3時に届けてくれる？','うん！ 短い針を3に、長い針を12に合わせるよ。','森のみんなにも知らせてくるよ。ここへ荷物を持ってくればいいんだね。','たねが届いたって！ 港でも、森の花が咲くのが楽しみだな。','時計の針と、約束の時刻。ちょっと仲よくなれた気がする！'],
@@ -25,4 +27,4 @@ const growingMessages=[
  ['午後の手紙を送りたい仲間が並んでいるよ。','朝も夜も頼めるって、評判になったんだ。','昼の12時と夜の12時、注文をよく見ようね。','24時間の言い方で頼むお客さんも増えたよ。','空のたよりを集めて、最後の便を届けよう！'],
  ['お茶の便も増えて、温室がにぎやかになってきたよ。','時刻をまたいでも、苗が元気に届くようにお願いね。','遠い温室から、何時間後の注文も来たんだ。','育った苗がいっぱい！ 出荷の列も長くなったね。','明日のお届けまで任せられるね。中央配送所までもう少し！']
 ];
-export function stageStory(level){if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:['荷札の時刻に針を合わせて、返事の時刻も読み解こう！','短い針は宝石の部屋、長い針は外周の数字。一つずつ見ればいいんだね。','返事には、どんなお返しが入ってるかな？','慌てずに、針の役目を一つずつ確かめよう！','今日も3人のお客さん。ぴったり届けよう！'][level.number-2]}]};}
+export function stageStory(level){if(level.stageId===0)return firstMailOpening;if(level.number===1||level.endless)return depotStory(level);const story=depotStory(level);return {...story,title:`${depotConversations[level.id][1]} · ${level.stageTitle}`,lines:[{who:story.partner,text:growingMessages[level.id][level.number-2]},{who:'ルカ',text:['荷札の時刻に針を合わせて、返事の時刻も読み解こう！','短い針は宝石の部屋、長い針は外周の数字。一つずつ見ればいいんだね。','返事には、どんなお返しが入ってるかな？','慌てずに、針の役目を一つずつ確かめよう！','今日も3人のお客さん。ぴったり届けよう！'][level.number-2]}]};}
