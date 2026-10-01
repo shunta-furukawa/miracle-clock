@@ -97,18 +97,18 @@
 @keyframes post-landing{0%{opacity:0;transform:translate(80%,-80%) scale(1.1) rotate(8deg)}30%{opacity:1}80%{opacity:1;transform:translate(0,0) scale(.8)}100%{opacity:0;transform:translate(-20%,10%) scale(.7)}}
 @media (prefers-reduced-motion:reduce){.post-mode .post-customer,.post-plane,.post-card,.post-gift span{animation:none!important;transition:none!important}.post-plane{display:none}}
 
-@media (orientation:portrait) and (max-height:740px){
+@media (max-aspect-ratio:1/1) and (max-height:740px){
  .post-floor{height:clamp(96px,16dvh,130px)}
  .post-talk{min-height:40px}.post-talk .toto{width:32px;height:32px}.post-talk p{font-size:11.5px;line-height:1.4}
  .post-order{min-height:50px}.post-order .ticket-time{font-size:20px}.post-envelope{min-height:54px}
 }
-@media (orientation:landscape){
+@media (min-aspect-ratio:1/1){
  .post-mode .post-talk{grid-column:2;grid-row:4}
  .post-mode .post-rail{grid-column:2;grid-row:5}
  .post-mode .post-floor{max-height:190px}
  .post-sheet{left:auto;width:min(56%,560px)}
 }
-@media (orientation:landscape) and (max-height:500px){
+@media (min-aspect-ratio:1/1) and (max-height:500px){
  .post-mode .post-floor{min-height:0;height:auto}
  .post-toto{height:84%}
  .post-talk{min-height:0;padding:2px 8px 2px 2px}.post-talk .toto{width:28px;height:28px}.post-talk p{font-size:10.5px;line-height:1.35;max-height:43px;overflow:auto}

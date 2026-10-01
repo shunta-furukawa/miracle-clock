@@ -21,7 +21,7 @@ body .home-actions .primary{justify-content:flex-start;width:100%;min-height:50p
 body .home-footer{position:static;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;letter-spacing:0;color:#d5dcca;width:100%;flex-shrink:0}
 .home-app-tools{display:flex;justify-content:center;gap:14px}.home-app-tools .text-button{min-height:26px;padding:3px;font-size:10px;color:#fff1ce;text-underline-offset:3px}
 .home-version{letter-spacing:.15em;font-size:10px}.home #offline-status{min-height:13px;font-size:9px;text-align:center}
-@media (orientation:landscape){
+@media (min-aspect-ratio:1/1){
  body .home{display:block;padding:0;background:linear-gradient(90deg,#12383e 0%,#12383ef5 25%,#12383e00 70%),url('assets/air-post-title.webp') center/cover no-repeat}
  body .home-header{position:absolute;top:0;left:0;right:0;height:12%;min-height:0;justify-content:flex-start;padding-left:max(6%,env(safe-area-inset-left))}
  .home-eyebrow{width:46%;padding:0;font-size:11px}
@@ -33,8 +33,8 @@ body .home-footer{position:static;display:flex;flex-direction:column;align-items
  body .home-footer{position:absolute;left:max(6%,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right));bottom:max(5px,env(safe-area-inset-bottom));width:auto;flex-direction:row;gap:14px;justify-content:flex-start}
  .home-version{margin-left:auto}.home #offline-status{font-size:8px}
 }
-@media (orientation:landscape) and (max-height:340px){body .home .title-lockup{height:41%;top:10%}body .home-actions{top:54%}.home-menu{bottom:max(36px,calc(env(safe-area-inset-bottom) + 29px))}.home-menu .subtle{min-height:30px;font-size:10px;padding:2px 6px}.home-menu .menu-art{width:22px;height:22px}.home-tagline{top:78%;font-size:10px}.home-eyebrow{font-size:9px}.home #offline-status{max-width:180px}.home-app-tools{gap:8px}}
-@media (orientation:landscape){
+@media (min-aspect-ratio:1/1) and (max-height:340px){body .home .title-lockup{height:41%;top:10%}body .home-actions{top:54%}.home-menu{bottom:max(36px,calc(env(safe-area-inset-bottom) + 29px))}.home-menu .subtle{min-height:30px;font-size:10px;padding:2px 6px}.home-menu .menu-art{width:22px;height:22px}.home-tagline{top:78%;font-size:10px}.home-eyebrow{font-size:9px}.home #offline-status{max-width:180px}.home-app-tools{gap:8px}}
+@media (min-aspect-ratio:1/1){
  body .home{background:#12383e}
  .home-painting{display:block;position:absolute;inset:0;width:100%;height:100%;background-image:linear-gradient(90deg,#12383eba 0%,#12383e99 30%,#12383e40 58%,#12383e14 100%),url('assets/air-post-title.webp');background-position:center;mask-image:none}
  body .home-header,body .home .title-lockup,body .home-actions,.home-tagline,.home-menu,body .home-footer{z-index:1}
