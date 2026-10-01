@@ -14,12 +14,12 @@ export const postStories=[
 ];
 // Each stage: how the question is asked (cfg) and Toto's opening words (intro, may contain <b> marks).
 export const postStages=[
- {cfg:{mode:'room',drag:'hour',labels:true},intro:'森の配送所、開店じゃ！ 短い針は<b class="h">時の針</b>。時の針がいる<b class="h">時の区画</b>で、何時かがわかるんじゃ。'},  // 1-1 短い針を見つけよう
- {cfg:{mode:'room',drag:'hour',labels:true},intro:'部屋は数字から次の数字まで。時の針が数字を越えたら、もう次の部屋じゃ。'},  // 1-2 いろんな「時」
+ {cfg:{mode:'room',drag:'hour',labels:true},intro:'森の配送所、開店じゃ！ 短い針は<b class="h">時の針</b>。時の針がいる<b class="h">宝石の部屋</b>で、何時かがわかるんじゃ。'},  // 1-1 短い針を見つけよう
+ {cfg:{mode:'room',drag:'hour',labels:true},intro:'部屋は宝石から次の宝石まで。時の針が数字を越えたら、もう次の部屋じゃ。'},  // 1-2 いろんな「時」
  {cfg:{mode:'hm',pool:[0],drag:'hour',exact:true,labels:true,step:60},intro:'長い針は<b class="m">分の針</b>。分の針が真上の12にあれば「<b class="m">ちょうど</b>」の便じゃ。'},  // 1-3 森のおひる便
  {cfg:{mode:'hm',pool:[0],hours:[10,11,12,1,2],drag:'hour',exact:true,labels:true,step:60},intro:'12の部屋は、12から1の間。12時の次は、また1時に戻るんじゃ。'},  // 1-4 12時をこえて
  {cfg:{mode:'hm',pool:[0],drag:'hour',exact:true,labels:true,step:60},intro:'お客さんが増えてきたのう。時の針の部屋を一つずつ確かめるんじゃ。'},  // 1-5 森のにぎわい
- {cfg:{mode:'hm',pool:[0],drag:'hour',exact:true,labels:false,step:60},intro:'今日は部屋の数字を消しておくぞ。目盛りと時の針を頼りにするんじゃ。'},  // 1-6 森の配達係
+ {cfg:{mode:'hm',pool:[0],drag:'hour',exact:true,labels:false,step:60},intro:'今日は部屋の数字を消しておくぞ。宝石の色と時の針を頼りにするんじゃ。'},  // 1-6 森の配達係
  {cfg:{mode:'min',pool:[0,30],drag:'minute',step:30,labels:false},intro:'港では「半」の注文が多いぞ。<b class="m">分の針</b>が真下の<b class="m">6</b>なら<b class="m">30分</b>。6分ではないぞ。'},  // 2-1 長い針は6
  {cfg:{mode:'hm',pool:[30],half:1,drag:'both',step:30,labels:true},intro:'「3時半」は3時30分。分の針が6のとき、<b class="h">時の針</b>は3と4の<b class="h">真ん中</b>におるんじゃ。'},  // 2-2 半の約束
  {cfg:{mode:'hm',pool:[0,30],half:.5,drag:'both',step:30,labels:true},intro:'ちょうどと半が混ざるぞ。分の針は12か6、時の針は部屋の入口か真ん中じゃ。'},  // 2-3 ぴったりと半
