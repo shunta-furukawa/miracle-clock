@@ -17,7 +17,7 @@
 .game{background-image:linear-gradient(#eaf8ff12,#14434b20),url('assets/cockpit-sky.webp')}
 .station-controls{width:100%;display:flex;flex-direction:column;align-items:center}
 .game{--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-@media (max-width:600px) and (max-aspect-ratio:1/1){
+@media (max-width:600px) and (orientation:portrait){
  .game{min-height:100dvh;padding-bottom:max(8px,var(--safe-bottom))}
  .clock-housing{width:clamp(140px,calc(100dvh - 515px),290px);height:clamp(140px,calc(100dvh - 515px),290px)}
  .hand-select,.adjust{min-height:44px}
@@ -26,7 +26,7 @@
  .level-art .portrait{width:88px}
 }
 /* A landscape cockpit: queue | clock | order and controls. Never crop gameplay. */
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .game{height:100dvh;min-height:100dvh;display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-rows:44px minmax(0,1fr);gap:8px;padding:0 max(10px,var(--safe-right)) max(8px,var(--safe-bottom)) max(10px,var(--safe-left));background-attachment:scroll}
  .game-top{grid-column:1/-1;padding:0 8px;min-width:0;border-radius:0 0 12px 12px}
  .game-top .subtle{min-height:40px;font-size:11px;padding:4px 8px}
@@ -59,7 +59,7 @@
  .home{height:100dvh;min-height:100dvh}.home-header{top:10px}.title-lockup{top:20%;left:6%;right:auto}.title-lockup h1{font-size:clamp(45px,12dvh,70px);margin:8px 0}.title-lockup .eyebrow{font-size:7px}.subtitle{font-size:14px;margin-top:12px}.title-rule,.home-copy{display:none}.home-actions{left:auto;right:7%;bottom:13%;width:36%}.home-actions .primary{min-height:44px;font-size:14px}.home-actions small{display:none}.home-actions .text-button{min-height:32px;margin:2px;font-size:11px}.home-cast{width:30%;right:12%;bottom:38%}.home-plane{width:24%;right:35%;top:9%}.home-footer{bottom:7px;font-size:8px}
  .modal{max-height:calc(100dvh - 24px)}.modal-backdrop{padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left))}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px) and (max-width:700px){
+@media (orientation:landscape) and (max-height:600px) and (max-width:700px){
  .game{grid-template-columns:65px minmax(0,1fr);gap:6px;padding-left:max(6px,var(--safe-left));padding-right:max(6px,var(--safe-right))}
  .clock-station{grid-template-columns:minmax(125px,.85fr) minmax(220px,1fr);column-gap:8px}
  .customer{grid-template-columns:20px minmax(0,1fr)}.customer .portrait{width:20px;height:20px}
@@ -67,18 +67,18 @@
  .request strong{font-size:21px}
 }
 /* Keep optional guides under the dial, freeing the right column on short screens. */
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .clock-housing{width:min(100%,calc(100dvh - 145px),330px);margin-bottom:42px}
  .clock-status{display:none}
  .clock-tools{position:absolute;left:0;bottom:0;width:calc((100% - 14px)/2);gap:6px}
  .clock-tools button{min-height:40px;white-space:normal}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px) and (max-width:700px){
+@media (orientation:landscape) and (max-height:600px) and (max-width:700px){
  .clock-tools{width:calc((100% - 8px)*.459)}
 }
 /* Keep the dial out of intrinsic grid sizing: percentage SVG height plus
    housing padding must not enlarge the aspect-ratio square in Safari. */
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .clock-housing{min-width:0;min-height:0}
  .clock-housing #clock{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
 }
@@ -151,12 +151,12 @@
 @keyframes parcel-imprint{0%{opacity:0;transform:translate(-50%,-70%) scale(1.65) rotate(-9deg)}40%{opacity:1;transform:translate(-50%,-50%) scale(.9)}60%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes parcel-load{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + 40px),calc(-50% - 60px)) scale(.25)}}
 @keyframes painted-takeoff{0%{transform:translate(-10%,15%) rotate(-4deg) scale(.9)}35%{transform:translate(0,-10%) rotate(-10deg)}100%{transform:translate(90%,-100%) rotate(-20deg) scale(.12);opacity:0}}
-@media (max-width:600px) and (max-aspect-ratio:1/1){
+@media (max-width:600px) and (orientation:portrait){
  .game{background-attachment:scroll}.queue-area{margin:7px 12px 0;padding:6px 9px 4px}.queue-track{height:83px;gap:3px}.customer{width:calc((100% - 12px)/5);min-width:0}.customer .portrait{width:52px;height:54px}.customer-bubble{font-size:8px;min-width:0;width:100%;padding:2px}.customer-name{font-size:8px!important;padding:1px 3px}.queue-counter{margin:2px -5px 0;padding:3px;font-size:10px}.queue-counter span{font-size:7px}
  .clock-housing{width:clamp(174px,calc(100dvh - 453px),310px);height:clamp(174px,calc(100dvh - 453px),310px);margin-top:10px;margin-bottom:6px}
  .clock-status{bottom:-20px;font-size:8px;padding:2px 6px}.hand-controls{margin-top:18px}.hand-select,.adjust{min-height:40px;height:40px}.clock-tools{gap:12px}.clock-tools button{min-height:34px;font-size:10px}.dispatch{min-height:44px;margin-top:6px}.ticket-route{font-size:9px;margin-top:3px;padding-top:3px}.order-ticket{padding:7px 9px}.request strong{font-size:25px}.request{margin-top:3px}.period-toggle{margin-top:17px}.period-toggle:not([hidden])+.hand-controls{margin-top:5px}.period-toggle button{min-height:27px;padding:4px 14px}.mini-clock{width:25px;height:25px}.reference-time{margin-top:3px}.play-layout{margin-top:6px;padding:0 14px}.seal-button{min-width:36px;min-height:36px}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .game{background-attachment:scroll;grid-template-columns:112px minmax(0,1fr)}
  .queue-area{padding:6px 4px}.queue-track{height:auto;flex:1;min-height:0;flex-direction:column;align-items:stretch;gap:2px;padding-top:3px}.customer{width:100%;max-height:80px;grid-template-columns:47px minmax(0,1fr);flex:1}.customer .portrait{grid-column:1;grid-row:1/3;width:47px;height:53px;max-height:100%;align-self:end}.customer-bubble{min-width:0;font-size:8px;padding:2px}.customer-name{grid-column:2;font-size:8px!important;white-space:normal;padding:1px}.queue-counter{padding:4px 0;margin:4px -3px 0;flex-direction:column;gap:1px;font-size:9px}.queue-counter span{font-size:6px}.waiting-dot{display:none}
  .clock-station{grid-template-columns:minmax(155px,1fr) minmax(230px,1fr);column-gap:12px;row-gap:5px}
@@ -164,23 +164,23 @@
  .clock-housing #clock{inset:0;width:100%;height:100%}.clock-status{display:none}.clock-tools{width:calc((100% - 12px)/2);gap:6px;bottom:0}.clock-tools button{font-size:10px;min-height:32px}.seal-button{min-width:36px;min-height:36px}
  .order-ticket{padding:6px 8px}.ticket-route{font-size:8px;margin-top:3px;padding-top:3px}.request strong{font-size:23px}.ticket-meta{font-size:9px}.hand-controls{margin:0}.dispatch{margin:0;min-height:42px}.station-controls{gap:5px}.period-toggle{margin:0}.period-toggle button{min-height:28px}.feedback{top:46px;max-width:78vw;font-size:10px}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px) and (max-width:700px){
+@media (orientation:landscape) and (max-height:600px) and (max-width:700px){
  .game{grid-template-columns:78px minmax(0,1fr);gap:5px}.clock-station{grid-template-columns:minmax(120px,.8fr) minmax(207px,1fr);column-gap:7px}.customer{grid-template-columns:33px minmax(0,1fr)}.customer .portrait{width:33px;height:40px}.customer-bubble{font-size:7px}.customer-name{font-size:7px!important}.queue-heading{font-size:8px}.queue-counter span{display:none}.clock-tools{width:calc((100% - 7px)*.444)}.clock-tools button{font-size:9px;padding:3px 0}.hand-select{font-size:9px;padding:3px}.adjust{width:31px}.request strong{font-size:21px}.ticket-route{display:block;font-size:8px}.ticket-route span{display:none}.seal-button{min-width:32px;min-height:32px}.seal-button small{font-size:7px}
 }
 @media (prefers-reduced-motion:reduce){.customer .portrait,.customer,.waiting-dot,.seal-button,.seal-ripple,.parcel-seal{animation:none!important}.stamping .parcel-seal{opacity:1;transform:translate(-50%,-50%)}.loading-parcel .parcel-seal{opacity:0}.flying .flight-fallback{animation:none!important;transform:none;opacity:1}.flight-layer{transition:none;backdrop-filter:none}}
-@media (max-width:600px) and (max-aspect-ratio:1/1){
+@media (max-width:600px) and (orientation:portrait){
  .dispatch{padding:7px 12px}.relative-order .clock-housing{width:clamp(150px,calc(100dvh - 527px),290px);height:clamp(150px,calc(100dvh - 527px),290px)}
 }
 /* Budget vertical space using Japanese line metrics, including Safari browser bars. */
-@media (min-aspect-ratio:1/1) and (max-height:340px){
+@media (orientation:landscape) and (max-height:340px){
  .order-ticket{padding:5px 7px}.ticket-meta,.ticket-route{line-height:1.2}.request strong{line-height:1.15}.reference-time{line-height:1.2}.reference-time b{line-height:1.2}.mini-clock{width:23px;height:23px}.station-controls{gap:4px}.period-toggle button{min-height:24px;padding:2px 15px}.dispatch{padding:5px 12px;min-height:42px;line-height:1.2}.dispatch .stamp-icon{font-size:18px}
 }
-@media (max-width:600px) and (max-aspect-ratio:1/1) and (max-height:730px){
+@media (max-width:600px) and (orientation:portrait) and (max-height:730px){
  .queue-track{height:70px}.customer .portrait{height:44px;width:44px}.relative-order .clock-status{display:none}.relative-order .period-toggle{margin-top:4px}.request strong{line-height:1.25}.ticket-meta,.ticket-route{line-height:1.3}
 }
 .clock-tools{background:#fff4dded;border:1px solid #c5a76b;border-radius:16px;color:#3e4939}
 .flight-sky{background-image:linear-gradient(#e5f1e380,#dbe5d980),var(--depot-image)}
-@media (max-width:600px) and (max-aspect-ratio:1/1) and (max-height:730px){.relative-order .queue-counter{display:none}.relative-order .clock-housing{width:clamp(170px,calc(100dvh - 507px),290px);height:clamp(170px,calc(100dvh - 507px),290px)}}
+@media (max-width:600px) and (orientation:portrait) and (max-height:730px){.relative-order .queue-counter{display:none}.relative-order .clock-housing{width:clamp(170px,calc(100dvh - 507px),290px);height:clamp(170px,calc(100dvh - 507px),290px)}}
 body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrait,body:has(.modal-backdrop) .waiting-dot{animation-play-state:paused}
 .customer .resident-new{background-image:var(--resident-image);background-size:contain;background-position:center bottom;background-repeat:no-repeat}
 .customer[data-mood=waiting] .resident-new,.customer[data-mood=tired] .resident-new{background-image:url('assets/residents-waiting.webp');background-size:300% 500%;background-position:var(--tired-position)}
@@ -191,7 +191,7 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 /* Reserve real space for advice. Messages never float over the dial or controls. */
 .clock-bay{display:contents}
 .feedback,.feedback:empty{position:static;inset:auto;transform:none;width:auto;max-width:none;min-height:52px;margin:10px max(14px,var(--safe-right)) 0 max(14px,var(--safe-left));padding:8px 12px;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1.5;box-shadow:none;overflow-wrap:anywhere}
-@media (max-width:600px) and (max-aspect-ratio:1/1){
+@media (max-width:600px) and (orientation:portrait){
  .game{height:100dvh;min-height:0;display:flex;flex-direction:column;gap:6px;padding-bottom:max(8px,var(--safe-bottom))}
  .game-top{flex-shrink:0}
  .queue-area{flex-shrink:0;margin:0 12px;padding:5px 9px 4px}
@@ -208,17 +208,17 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
  .clock-tools{margin:0;gap:16px}
  .feedback,.feedback:empty{flex-shrink:0;margin:0 14px;min-height:52px;padding:7px 10px;font-size:11px;line-height:1.4}
 }
-@media (max-width:600px) and (max-aspect-ratio:1/1) and (max-height:730px){
+@media (max-width:600px) and (orientation:portrait) and (max-height:730px){
  .queue-track{height:64px}.customer .portrait{width:40px;height:40px}
  .hand-select,.adjust{height:35px;min-height:35px}.clock-tools button{min-height:30px}.dispatch{min-height:38px;padding:6px 12px}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .game{grid-template-rows:40px minmax(0,1fr) auto;gap:6px}
  .clock-bay{display:grid;place-items:center;container-type:size;grid-column:1;grid-row:1/3;height:100%;min-width:0;min-height:0;padding-bottom:36px}
  .clock-housing{width:min(100cqw,100cqh,360px);height:auto;margin:0}
  .feedback,.feedback:empty{grid-column:1/-1;grid-row:3;margin:0;min-height:30px;padding:5px 10px;font-size:11px;line-height:1.35}
 }
-@media (min-aspect-ratio:1/1) and (max-height:340px){
+@media (orientation:landscape) and (max-height:340px){
  .game{grid-template-rows:34px minmax(0,1fr) auto;gap:4px}
  .game-top .subtle{min-height:32px}.clock-station{row-gap:3px}.station-controls{gap:3px}
  .hand-select,.adjust{height:34px;min-height:34px}.dispatch{min-height:36px;padding:4px 10px}
@@ -227,9 +227,9 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 .element-gem.resonating .gem-art{filter:drop-shadow(0 0 2px #fff1b7)}
 .element-legend>div{display:flex;flex-direction:column;background:#fff4dc;color:#25474a!important}
 .element-legend img{display:block;width:70px;height:70px;object-fit:contain}
-@media (max-width:600px) and (max-aspect-ratio:1/1){.clock-bay{align-self:stretch;width:100%}}
-@media (max-width:600px) and (max-aspect-ratio:1/1){.queue-track{height:86px;align-items:flex-start}.customer .portrait{width:48px;height:48px}}
-@media (max-width:600px) and (max-aspect-ratio:1/1) and (max-height:730px){.queue-track{height:68px}.customer .portrait{width:34px;height:34px}}
+@media (max-width:600px) and (orientation:portrait){.clock-bay{align-self:stretch;width:100%}}
+@media (max-width:600px) and (orientation:portrait){.queue-track{height:86px;align-items:flex-start}.customer .portrait{width:48px;height:48px}}
+@media (max-width:600px) and (orientation:portrait) and (max-height:730px){.queue-track{height:68px}.customer .portrait{width:34px;height:34px}}
 
 /* A single tactile brass stamp, large enough to operate on the smallest dial. */
 .seal-button{width:22%;min-width:44px;min-height:44px;border:1px solid #65421f;background:radial-gradient(ellipse at 32% 18%,#568f80 0%,#23605e 42%,#123e43 76%);box-shadow:0 4px 0 #694522,0 6px 7px #39271170,inset 0 0 0 2px #ffdf91,inset 0 0 0 5px #a57938,inset 0 0 0 6px #f1ce80,inset 0 8px 10px #fff3b51c;isolation:isolate;touch-action:manipulation;text-shadow:0 1px 1px #102e32;transition:box-shadow .12s,filter .12s}
@@ -254,7 +254,7 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 .hand-controls .adjust{border-top:3px solid #317678}
 .hand-controls[data-selected=minute] .adjust{border-top-color:#b96a35}
 .batch-queue .customer{opacity:1!important}
-@media (max-aspect-ratio:1/1) and (max-width:600px){
+@media (orientation:portrait) and (max-width:600px){
  .batch-queue .queue-track{gap:2px;align-items:flex-end}
  .batch-queue .customer{width:calc((100% - (var(--queue-size) - 1)*2px)/var(--queue-size));flex:none}
  .batch-queue .customer .portrait{width:100%;height:auto;aspect-ratio:1;max-width:48px;justify-self:center}
@@ -262,7 +262,7 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
  .batch-queue .customer-name{font-size:7px!important;padding:0;white-space:normal;line-height:1.2;min-height:17px}
  .batch-queue .customer.active .customer-bubble{width:auto;position:absolute;bottom:100%;left:0;white-space:nowrap;z-index:2}
 }
-@media (min-aspect-ratio:1/1) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px){
  .batch-large .queue-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:2px;align-items:end}
  .batch-large .customer{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:0;min-height:0;height:100%;max-height:none}
  .batch-large .customer .portrait{width:min(100%,38px);height:auto;max-height:calc(100% - 12px);aspect-ratio:1}
@@ -272,7 +272,7 @@ body:has(.modal-backdrop) .customer,body:has(.modal-backdrop) .customer .portrai
 }
 @media (prefers-reduced-motion:reduce){.selected-hand .hand-art{animation:none;filter:drop-shadow(0 0 3px #f3bd50)}}
 
-@media (max-aspect-ratio:1/1) and (max-width:600px){.batch-queue .customer{max-width:64px}}
+@media (orientation:portrait) and (max-width:600px){.batch-queue .customer{max-width:64px}}
 /* One short cast, anchored to the dial. Never intercept taps or expand layout. */
 .spell-burst{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:50%;overflow:hidden;contain:layout paint}
 .spell-circle{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#ffe2a0;stroke-width:1;opacity:0;filter:drop-shadow(0 0 4px #62ecd8)}

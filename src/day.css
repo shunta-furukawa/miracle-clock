@@ -133,18 +133,18 @@
 @keyframes day-toast{0%{opacity:0;transform:translate(-50%,8px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
 @keyframes day-burst{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}30%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-95%)}}
 
-@media (max-aspect-ratio:1/1) and (max-height:740px){
+@media (orientation:portrait) and (max-height:740px){
  .day-game{gap:4px}.shop-floor{height:clamp(84px,14dvh,120px)}
  .ticket-rail{grid-auto-rows:44px;height:92px}.day-strip{padding:4px 8px 1px}.day-labels{margin-top:8px}
  .day-station .clock-tools button{min-height:28px}
 }
-@media (max-aspect-ratio:1/1) and (min-width:700px){
+@media (orientation:portrait) and (min-width:700px){
  .day-game{padding-left:max(24px,calc((100vw - 640px)/2));padding-right:max(24px,calc((100vw - 640px)/2))}
  .day-top{margin-left:calc(-1*max(24px,calc((100vw - 640px)/2)));margin-right:calc(-1*max(24px,calc((100vw - 640px)/2)));padding-left:max(24px,calc((100vw - 640px)/2));padding-right:max(24px,calc((100vw - 640px)/2))}
  .shop-floor{height:190px}.ticket-rail{grid-auto-rows:56px;height:116px}
 }
 /* Landscape: dial on the left, the day and the line on the right. */
-@media (min-aspect-ratio:1/1){
+@media (orientation:landscape){
  .day-game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto auto;column-gap:14px;row-gap:6px}
  .day-top{grid-column:1/-1}
  .day-station{display:contents}
@@ -156,14 +156,14 @@
  .day-toast{left:25%;bottom:auto;top:52px}
  .day-burst{left:25%;top:50%}
 }
-@media (min-aspect-ratio:1/1) and (max-height:500px){
+@media (orientation:landscape) and (max-height:500px){
  .day-top{padding-top:max(3px,env(safe-area-inset-top,0px));padding-bottom:3px}.day-top .subtle{min-height:34px}.day-top .stage-heading strong{font-size:12px}
  .day-game{row-gap:4px}.day-strip{padding:3px 8px 0}.day-labels{margin-top:7px;font-size:9px}
  .ticket-rail{grid-auto-rows:40px;height:84px}
 
  .day-station{gap:3px}.day-station .clock-tools button{min-height:26px;font-size:10px}
 }
-@media (min-aspect-ratio:1/1) and (min-height:700px){
+@media (orientation:landscape) and (min-height:700px){
  .shop-floor{max-height:none}
  .day-game{padding-left:max(24px,calc((100vw - 1180px)/2));padding-right:max(24px,calc((100vw - 1180px)/2))}
  .ticket-rail{grid-auto-rows:58px;height:122px}
