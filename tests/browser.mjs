@@ -226,7 +226,7 @@ try {
     await diary.locator('.story-dialog:not(.story-from-black)').waitFor();
     assert.equal(await diary.locator('.story-dialog').isVisible(),true);
     await diary.locator('.story-next').filter({hasText:'次へ'}).waitFor(); // wait for typewriter completion, including the opening crossfade
-    assert.match(await diary.locator('.story-words').innerText(),/小さな配送機/);
+    assert.match(await diary.locator('.story-words').innerText(),/鉱山の魔法石/);
     await diary.locator('.story-next').click();
     assert.equal(await diary.locator('.story-speaker').innerText(),'トトじい');
     assert.equal(await diary.locator('.story-right.speaking').count(),1);
