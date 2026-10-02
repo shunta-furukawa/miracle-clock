@@ -1,3 +1,4 @@
+import {journeyEnding} from './journey-mail.js';
 import {mailEpisode} from './story-mail.js';
 import {harborEnding} from './harbor-mail.js';
 import {forestChapterEnding} from './forest-mail.js';
@@ -19,7 +20,7 @@ const depotConversations=[
  ['スナリ','砂丘の温室配送所','ようこそ！ この苗は、今から15分後に友だちの温室へ届けたいんだ。','受付の時計から15分進めれば、お届けする時刻になるんだね。','そう！ ぼくはスナリ。砂丘のトビネズミ族のみんなも、苗やお茶を送りに来るよ。','苗もお茶も、ちょうどいい時間に届いたよ！ 温室のみんなも喜んでる。','何分後も何時間後も、いまの時刻から考えればいいんだね！'],
  ['トトじい','空の中央配送所','ルカ、ふたりで中央配送所をひらこう。森から砂丘まで、みんなの荷物をここで預かるんじゃ。','これまで出会ったみんなが来るんだね。時計の読み方も、全部使ってみよう！','うむ。閉店のない空の便じゃ。5人取りこぼすまでに、何人に届けられるかのう。','今日もたくさんの約束が届いたのう。','また一緒に、空の便をひらこうね！']
 ];
-export function depotStory(level,ending=false){if(level.id===0&&ending)return forestChapterEnding();if(level.id===1&&ending)return harborEnding();const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
+export function depotStory(level,ending=false){if(level.id===0&&ending)return forestChapterEnding();if(level.id===1&&ending)return harborEnding();if(level.id>=2&&level.id<=5&&ending)return journeyEnding(level.id);const [partner,place,request,reply,ready,thanks,answer]=depotConversations[level.id];return {title:`${place} · ${ending?'ありがとうの便':'開店のしたく'}`,scene:level.endless?5:level.id===5?6:level.id,partner,goal:!ending,lines:ending?[{who:partner,text:thanks,expression:'emotion'},{who:'ルカ',text:answer}]:[{who:partner,text:request},{who:'ルカ',text:reply},{who:partner,text:ready}]};}
 
 const growingMessages=[
  ['ふたばたちにも、この配送所のことを教えたよ。','森の仲間が、お昼の荷物を持ってきたんだ。','12時をこえる便も頼めるって、評判だよ。','今日は花のたねも、はちみつもたくさん！','森のみんなが頼りにしてるよ。最後の便もお願い！'],

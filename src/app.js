@@ -1,3 +1,4 @@
+import {journeyClockLabel} from './journey-mail.js';
 import {mailEpisodes,mailEpisode,mailQuestion,mailTimeLabel} from './story-mail.js';
 import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,routeBusy,visitors,winding} from './route.js';
 import {dayLevel} from './day.js';
@@ -48,7 +49,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.13.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.14.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -409,7 +410,7 @@ const postWedge=(a0,a1,r)=>{const [x0,y0]=postAt(a0,r),[x1,y1]=postAt(a1,r);retu
 function postDetails(level){
  const episode=mailEpisode(level.stageId);
  if(episode){
-  openModal(`<p class="eyebrow">${episode.chapter}の配送所 · ${episode.day}</p><h2>${episode.title}</h2><p class="start-goal">${episode.summary}</p><p class="start-tip">相手が受け取れる時間帯を荷札に刻み、三つの荷物を${episode.destination}へ送ります。</p><p class="start-rule">${level.stageId<2?'時間制限なし。短い針で「何時台」を決めます。':level.stageId<6?'時間制限なし。長い針は12、短い針で「ちょうど」の時刻を合わせます。':level.stageId===6?'時の針はシェルが準備します。分の針を12か6へ合わせましょう。':'時間制限なし。「半」は30分。短い針も、数字の間へ進みます。'}</p><button class="primary" id="open-shop">最初の依頼を聞く</button>`);
+  openModal(`<p class="eyebrow">${episode.chapter}の配送所 · ${episode.day}</p><h2>${episode.title}</h2><p class="start-goal">${episode.summary}</p><p class="start-tip">相手が受け取れる時間帯を荷札に刻み、三つの荷物を${episode.destination}へ送ります。</p><p class="start-rule">${episode.rule|| (level.stageId<2?'時間制限なし。短い針で「何時台」を決めます。':level.stageId<6?'時間制限なし。長い針は12、短い針で「ちょうど」の時刻を合わせます。':level.stageId===6?'時の針はシェルが準備します。分の針を12か6へ合わせましょう。':'時間制限なし。「半」は30分。短い針も、数字の間へ進みます。')}</p><button class="primary" id="open-shop">最初の依頼を聞く</button>`);
   $('.modal').classList.add('start-modal');$('#open-shop').onclick=()=>{closeModal();startPost(level);};return;
  }
 
@@ -549,13 +550,13 @@ function firstMailPresent(tale,read){
  $('.stage-heading strong').textContent=read?`${post.story.returnAt} · ${post.story.destination}から戻った便`:post.story.accept;
  if(read){
   $('#post-customer').classList.add('leaving');$('#post-bubble').classList.remove('show');
-  $('#post-say').textContent=`${tale.recipient}から${tale.who.name}へ届いた返事。「${tale.what}」の荷札${post.qi-2}の刻印を読み、配達台帳の${post.level.stageId<2?'何時台':'どの時刻'}に記録する？`;
+  $('#post-say').textContent=`${tale.recipient}から${tale.who.name}へ届いた返事。「${tale.what}」の荷札${post.qi-2}の刻印を読み、配達台帳の${post.q.mode==='rel'?'基準の刻印から何分後か':post.level.stageId<2?'何時台か':'どの時刻か'}を記録する？`;
   rail.querySelectorAll('.post-envelope').forEach(b=>{b.classList.add('receipt-entry');b.setAttribute('aria-label',`${b.querySelector('.ticket-time').textContent}の欄に記録する`);b.querySelector('.post-postmark').remove();b.insertAdjacentHTML('beforeend','<small>配達台帳に記録</small>');});
  }else{
   post.line=tale.line;postStand(tale.who,tale.line);
   $('#post-say').textContent=tale.reason;
-  $('.post-order-body>small').textContent=`${tale.what} → ${post.story.destination}の${tale.recipient}`;
-  $('.post-order .ticket-time').insertAdjacentHTML('afterbegin',`<small>${tale.period||'午後'}${post.q.mode==='min'?tale.h+'時 ':''} </small>`);
+  $('.post-order-body>small').textContent=`${tale.what} → ${post.story.destination}の${tale.recipient}${post.q.mode==='rel'?' · 基準 '+journeyClockLabel(post.q.now):''}`;
+  if(!post.cfg.period&&post.q.mode!=='rel')$('.post-order .ticket-time').insertAdjacentHTML('afterbegin',`<small>${tale.period||'午後'}${post.q.mode==='min'?tale.h+'時 ':''} </small>`);
  }
  if(read)firstMailContext(true);
 }
@@ -685,7 +686,7 @@ function postFinish(){
   const ep=post.story;
   openModal(`<p class="eyebrow">${ep.chapter}の配達日誌 · ${ep.day}</p><h2>${ep.endTitle}</h2><p>${ep.end}</p><p>${ep.luca}</p><p class="day-result-main">荷物3つを配達 · 台帳3件を記録</p><p class="post-gift">${ep.gifts.map(g=>g.name).join('、')}を、日誌に記録した。</p><details><summary>配達の記録</summary><div class="star-result" data-stars="${stars}">${starText(stars)} · 見直し ${post.mistakes}回 · 相談 ${post.hints}回</div></details><p class="save-warning" role="status">${saveNotice}</p><button class="primary" id="result-main">${l.number===6?`${ep.chapter}の章の結びへ`:'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">この一日をもう一度</button>`,false);
   const leave=next=>{closeModal();if(l.number===6)showChapterCompletion(l,next);else next();};
-  $('#result-main').onclick=()=>leave(()=>{renderMap();chooseLevel(stages[l.stageId+1]);});$('#result-map').onclick=()=>leave(renderMap);$('#retry-stage').onclick=()=>{closeModal();startPost(l);};return;
+  $('#result-main').onclick=()=>leave(()=>{renderMap();if(l.stageId<35)chooseLevel(stages[l.stageId+1]);else renderPreparations();});$('#result-map').onclick=()=>leave(renderMap);$('#retry-stage').onclick=()=>{closeModal();startPost(l);};return;
  }
  const alone=post.results.filter(Boolean).length,shelf=(record.gifts||[]).length;
  openModal(`<div class="result-character"><img class="victory-luca" src="assets/luka-victory.webp" width="130" height="130" alt="笑顔でガッツポーズするルカ"></div><p class="save-warning" role="status">${saveNotice}</p><p class="eyebrow">${stageHeading(l)}</p><h2>${stars===3?'見事な配達じゃ！':stars===2?'よう届けたのう！':'今日の配達、おしまい！'}</h2><p class="post-result-gifts" aria-label="今日のお返し">${post.gifts.join(' ')}</p><p class="day-result-main">荷物3つ・返事3通 · 一発正解 ${alone} / 6</p><div class="star-result" data-stars="${stars}"><strong aria-label="${stars}つ星">${starText(stars)}</strong><p>ミス ${post.mistakes}回 · ヒント ${post.hints}回</p><small>★★★ ミス・ヒントなし · ★★ 2回まで<br>お返しコレクション ${shelf} / ${postGiftCount()}${record.stars[id]?` · 最高評価 ${starText(record.stars[id].stars)}`:''}</small></div><button class="primary" id="result-main">${l.number===6?'章クリアへ ▸':'次の便へ'}</button><button class="secondary" id="result-map">配送所えらびにもどる</button><button class="secondary" id="retry-stage">星をふやしに、もう一度</button>`,false);

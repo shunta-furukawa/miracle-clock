@@ -1,0 +1,9 @@
+# Remaining chapters — 0.14.0
+
+Completes the cave, workshop, clouds and greenhouse: 24 authored flights / 72 new letters, for 36 flights / 108 letters total. Cave residents report on the harbor lamps, compare luminous stones and lend only what their own paths can spare. The workshop builds and adjusts lamps using observations returned by their users. The clouds distinguish morning, evening and overnight work, sending forecasts to the greenhouse. The greenhouse schedules seedlings from a recorded packing time, then helps open the central post with the actual six existing chapter rewards.
+
+Each episode includes three specific parcel purposes, named recipients, returned reports, clock promises and an ending. Existing difficulty configurations, gift IDs, character art and numbered reply envelopes are preserved. New records do not infer read letters from legacy stage completion.
+
+Time model: later absolute promises use minutes from the story day's midnight, retaining next-day labels after 1440. Relative episodes record one fixed packing/acceptance reference for the whole flight; target = reference + duration. Receipt questions compare the recorded reference with the actual arrival. AM/PM flags are derived from arrival modulo one day. Stage 35 routes through its reward to central preparations instead of attempting a nonexistent stage 36. Endless mechanics remain unchanged.
+
+Tests cover all learning pools, base-minute restrictions, correct/incorrect period and minute answers, chronology, options, gifts, portrait identities, midnight labels, saved episode IDs, every authored browser flight, reload of 108 letters, reward transitions and the existing responsive/audio/offline checks. Later full-campaign browser traversal uses reduced motion; representative screenshots and the existing animated flows remain tested.

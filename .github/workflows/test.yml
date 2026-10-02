@@ -41,6 +41,7 @@ jobs:
           path: |
             artifacts/*-harbor-*.png
             artifacts/*-reply-envelope.png
+            artifacts/*-journey-*.png
       - name: Preserve tested build
         uses: actions/upload-artifact@v4
         with:

@@ -157,6 +157,27 @@ try {
     }
     await page.reload();await page.locator('#start').click();await selectDiary();
     await page.locator('#first-mail-journal').click();assert.equal(await page.locator('.mail-context .post-letter').count(),36,'both chapters persist after reload');await page.locator('.modal-close').click();
+    // Every remaining story, with motion reduced to keep the full campaign check fast.
+    await page.emulateMedia({reducedMotion:'reduce'});
+    for(let stage=12;stage<36;stage++){
+      await page.locator(`[data-stage="${stage}"]`).click();await skipDialogue();await page.locator('#open-shop').click();
+      assert.equal(await page.evaluate(()=>post.episode),`journey-${stage}`);
+      assert.equal(await page.evaluate(()=>post.tales[0].who.region),Math.floor(stage/6));
+      if(stage===27){
+        await page.evaluate(()=>{post.t=postTarget(post.q,post.t);post.pm=!post.q.p;postDraw();document.querySelector('#seal-button').click();});
+        assert.equal(await page.evaluate(()=>post.answered),false,'midnight stories require the correct period');await page.locator('#post-go').click();
+      }
+      if([12,21,27,35].includes(stage)){
+        await page.screenshot({path:`artifacts/${name}-journey-${stage}.png`});
+        assert.equal(await overflow(),false);
+        await page.locator('#post-context').click();assert.match(await page.locator('.mail-context').innerText(),/から、/);await page.locator('#mail-context-close').click();
+      }
+      await finishPost();await page.locator('#result-map').click();
+      if(stage%6===5){await page.locator('.story-skip').click();await page.locator('#reward-install').click();await page.locator('#reward-done').click();}
+    }
+    await page.reload();await page.locator('#start').click();await selectDiary();
+    await page.locator('#first-mail-journal').click();assert.equal(await page.locator('.mail-context .post-letter').count(),108,'all 36 flights preserve their replies');await page.locator('.modal-close').click();
+    await page.emulateMedia({reducedMotion:'no-preference'});
     // Later chapters: the 午前/午後 window and "in N minutes" orders.
     await page.locator('[data-stage="28"]').click();await skipDialogue();await page.locator('#open-shop').click();
     assert.match(await page.locator('.post-order .ticket-time').textContent(),/^\d+時/);assert.equal(await page.locator('.post-ampm button').count(),2);assert.equal(await page.locator('#post-plate').isVisible(),true);

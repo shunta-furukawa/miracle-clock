@@ -23,5 +23,5 @@ test('harbor gifts and story progress survive normalization beside forest record
  assert.deepEqual(new Set(harborEpisodes.flatMap(e=>e.gifts.map(g=>g.id))),new Set(postStories[1].map(r=>r[4])));
  const records=freshRecords();records.slots[0]={...freshRecord(),episodes:[...mailEpisodeIds,'unknown']};
  assert.deepEqual(normalizeRecords(JSON.parse(JSON.stringify(records))).slots[0].episodes,mailEpisodeIds);
- assert.equal(mailEpisode(12),null);assert.equal(mailEpisode(undefined),null);
+ assert.equal(mailEpisode(36),null);assert.equal(mailEpisode(undefined),null);
 });
