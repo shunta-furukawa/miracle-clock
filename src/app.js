@@ -1,4 +1,5 @@
-import {ledgerFields,ledgerKey,ledgerTurn} from './ledger.js';
+import {bindLedgerReel} from './ledger-reel.js';
+import {ledgerFields,ledgerKey} from './ledger.js';
 import {journeyClockLabel} from './journey-mail.js';
 import {mailEpisodes,mailEpisode,mailQuestion,mailTimeLabel} from './story-mail.js';
 import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,routeBusy,visitors,winding} from './route.js';
@@ -50,7 +51,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.15.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.16.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -606,13 +607,13 @@ function postSubmit(){
 function postLedger(){
  const q=post.q,fields=ledgerFields(q,post.cfg);post.entry=Object.fromEntries(fields.map(f=>[f.id,null]));
  const rail=$('#post-rail');rail.setAttribute('aria-label','配達台帳の記入欄');
- rail.innerHTML=`<div class="ledger-entry"><div class="ledger-heading"><b>配達台帳 · ${q.mode==='rel'?'到着までの時間':'到着印の記録'}</b><small>${q.mode==='rel'?'点線の基準から、実線の到着まで':q.mode==='min'?'時は記入済み。分の針を読もう':'到着印を読んで、数字盤を合わせよう'}</small></div><div class="ledger-controls">${q.mode==='min'?`<span class="ledger-fixed">${postHourOf(q.t)}時</span>`:''}${fields.map(f=>`<div class="ledger-field"><span id="ledger-label-${f.id}">${f.label}</span><div class="ledger-wheel"><button type="button" data-field="${f.id}" data-turn="-1" aria-label="${f.label}を戻す">−</button><output id="ledger-${f.id}" aria-live="polite" aria-labelledby="ledger-label-${f.id}">―</output><button type="button" data-field="${f.id}" data-turn="1" aria-label="${f.label}を進める">＋</button></div></div>`).join('')}<button type="button" class="primary" id="ledger-save" disabled>記録してしまう</button></div></div>`;
- rail.querySelectorAll('[data-turn]').forEach(b=>b.onclick=()=>{
-  if(post.answered||!$('#post-sheet').hidden)return;
-  const f=fields.find(f=>f.id===b.dataset.field),v=ledgerTurn(f,post.entry[f.id],Number(b.dataset.turn));post.entry[f.id]=v;
-  $('#ledger-'+f.id).textContent=f.id==='p'?(v?'午後':'午前'):String(v).padStart(f.id==='m'?2:1,'0');
-  $('#ledger-save').disabled=fields.some(f=>post.entry[f.id]===null);
- });
+ rail.innerHTML=`<div class="ledger-entry"><div class="ledger-heading"><b>配達台帳 · ${q.mode==='rel'?'到着までの時間':'到着印の記録'}</b><small>${q.mode==='rel'?'点線の基準から、実線の到着まで':q.mode==='min'?'時は記入済み。分の針を読もう':'数字を上下に回して、到着印を写そう'}</small></div><div class="ledger-controls">${q.mode==='min'?`<span class="ledger-fixed">${postHourOf(q.t)}時</span>`:''}${fields.map(f=>`<div class="ledger-field"><span id="ledger-label-${f.id}">${f.label}</span><div class="ledger-reel" role="spinbutton" tabindex="0" aria-labelledby="ledger-label-${f.id}" aria-valuemin="0" aria-valuemax="${f.values.length-1}" data-reel="${f.id}"><div class="ledger-reel-track"><span aria-hidden="true"></span><button type="button" tabindex="-1" data-field="${f.id}" data-turn="-1" aria-label="${f.label}を戻す"></button><output id="ledger-${f.id}" aria-hidden="true">―</output><button type="button" tabindex="-1" data-field="${f.id}" data-turn="1" aria-label="${f.label}を進める"></button><span aria-hidden="true"></span></div></div></div>`).join('')}<button type="button" class="primary" id="ledger-save" disabled>記録してしまう</button></div></div>`;
+ fields.forEach(f=>bindLedgerReel(rail.querySelector(`[data-reel="${f.id}"]`),f,{
+  get:()=>post.entry[f.id],
+  set:v=>{post.entry[f.id]=v;$('#ledger-save').disabled=fields.some(f=>post.entry[f.id]===null);},
+  enabled:()=>rail.isConnected&&post.q===q&&!post.answered&&$('#post-sheet').hidden,
+  reducedMotion:reduceMotion
+ }));
  $('#ledger-save').onclick=postRecord;
 }
 function postRecord(){

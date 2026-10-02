@@ -59,7 +59,7 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
-    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count()){const current=await target.evaluate(()=>post.qi%3);assert.equal(await target.locator('.reply-envelope[open]').getAttribute('data-mail'),String(current));await target.locator('#mail-context-close').click();}if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read){for(const f of ledgerFields(post.q,post.cfg)){const v=f.id==='h'&&post.cfg.period?post.q.h%12:post.q[f.id];for(let k=0;k<f.values.length&&post.entry[f.id]!==v;k++)document.querySelector(`[data-field="${f.id}"][data-turn="1"]`).click();}document.querySelector('#ledger-save').click();}else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count()){const current=await target.evaluate(()=>post.qi%3);assert.equal(await target.locator('.reply-envelope[open]').getAttribute('data-mail'),String(current));await target.locator('#mail-context-close').click();}if(await target.evaluate(()=>post.q.read&&post.qi===3&&[27,35].includes(post.level.stageId))){await target.screenshot({path:`artifacts/${name}-ledger-${await target.evaluate(()=>post.level.stageId)}.png`});for(const wheel of await target.locator('.ledger-reel').all()){const b=await wheel.boundingBox(),v=target.viewportSize();assert.ok(b.x>=0&&b.y>=0&&b.x+b.width<=v.width&&b.y+b.height<=v.height,'reels fit the viewport');}}if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read){for(const f of ledgerFields(post.q,post.cfg)){const v=f.id==='h'&&post.cfg.period?post.q.h%12:post.q[f.id];for(let k=0;k<f.values.length&&post.entry[f.id]!==v;k++)document.querySelector(`[data-field="${f.id}"][data-turn="1"]`).click();}document.querySelector('#ledger-save').click();}else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
     assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^午後 3時台$/,'the first request has its own fixed afternoon window');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('.element-gem image').count(),12,'the original twelve magic stones form the dial');assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
@@ -101,6 +101,16 @@ try {
     await page.locator('#ledger-save').click();
     await page.locator('#post-say[data-ledger-feedback]').waitFor();
     assert.equal(await page.evaluate(()=>post.answered),false);
+    const reel=page.locator('[data-reel="h"]');
+    const beforeDrag=await page.evaluate(()=>post.entry.h),rb=await reel.boundingBox();
+    await page.mouse.move(rb.x+rb.width/2,rb.y+60);await page.mouse.down();
+    await page.mouse.move(rb.x+rb.width/2,rb.y+20,{steps:8});await page.mouse.up();
+    assert.notEqual(await page.evaluate(()=>post.entry.h),beforeDrag,'dragging the reel changes the selected hour');
+    assert.equal(await reel.evaluate(e=>e.scrollWidth>e.clientWidth+1),false);
+    const afterDrag=await page.evaluate(()=>post.entry.h);
+    await reel.press('ArrowDown');assert.notEqual(await page.evaluate(()=>post.entry.h),afterDrag,'keyboard can advance the reel');
+    await reel.press('ArrowUp');assert.equal(await page.evaluate(()=>post.entry.h),afterDrag,'keyboard can reverse the reel');
+
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
       await page.setViewportSize(size);
       // Capture the painted viewport before geometry checks. Playwright synchronizes WebKit styles here.
@@ -113,7 +123,7 @@ try {
       assert.equal(await overflow(),false);
     }
     await page.setViewportSize({width:390,height:844});
-    await page.evaluate(()=>{post.entry.h=post.q.h;postRecord();});await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');assert.match(await page.locator('.mail-reaction').innerText(),/モス/);assert.match(await page.locator('#mail-trail .mail-trail-card').first().innerText(),/記録済み/);
+    await page.evaluate(()=>{for(let i=0;i<12&&post.entry.h!==post.q.h;i++)document.querySelector('[data-field="h"][data-turn="1"]').click();document.querySelector('#ledger-save').click();});await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');assert.match(await page.locator('.mail-reaction').innerText(),/モス/);assert.match(await page.locator('#mail-trail .mail-trail-card').first().innerText(),/記録済み/);
     await page.locator('#pause').click();await page.locator('#resume').click();
     await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one corrected ledger entry costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/台帳3件/);

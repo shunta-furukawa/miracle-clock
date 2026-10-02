@@ -15,3 +15,14 @@ The recipient, parcel tags, original gemstone clock and reactions are retained.
   disabling a choice or opening an incorrect-answer modal. Existing scoring applies.
 - All 108 arrival targets and off-by-one-wheel errors are unit tested; browser
   campaign tests fill records through wheel buttons and verify saved letters.
+
+## 0.16.0 — direct reel interaction
+
+Replace plus/minus buttons with three visible rows of a brass reel. Dragging
+moves the digits with the pointer; release snaps to a row with bounded flick
+momentum. Adjacent digits can be tapped, and Up/Down keys operate the focused
+spinbutton. Hours, minutes and period are independent. Fields still start blank.
+Pointer cancellation settles without momentum; reduced motion skips settling
+animations. No asynchronous changes can submit or alter a later question.
+Browser coverage includes a reel drag, keyboard reversal, all 108 records via
+adjacent-digit taps, responsive bounds, and period/elapsed-time screenshots.
