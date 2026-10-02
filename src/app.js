@@ -1,3 +1,4 @@
+import {ledgerFields,ledgerKey,ledgerTurn} from './ledger.js';
 import {journeyClockLabel} from './journey-mail.js';
 import {mailEpisodes,mailEpisode,mailQuestion,mailTimeLabel} from './story-mail.js';
 import {routeSession,routeTick,routeStamp,routePins,routeStars,routePace,routeBusy,visitors,winding} from './route.js';
@@ -49,7 +50,7 @@ function cleanup(){clearTimeout(closingTimer);closingTimer=null;document.querySe
 function renderHome(){
   cleanup();chapterMusic=null;screen='home';soundtrack.setScene('title');
   const continuing=records.slots.some(Boolean),menuIcon=n=>`<i class="menu-art" aria-hidden="true" style="--icon-x:${n%3*50}%;--icon-y:${Math.floor(n/3)*100}%"></i>`;
-  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.14.0</span></footer></main>`;
+  app.innerHTML=`<main class="home scene"><header class="home-header"><p class="home-eyebrow">時をあわせて、せかいをつなぐ</p><button class="icon-button home-music" aria-pressed="${soundtrack.settings.music}">${soundtrack.settings.music?'音楽をとめる':'音楽を再生'}</button></header><div class="title-lockup"><h1><img src="assets/title-logo.webp" alt="Miracle Clock" width="1100" height="733" fetchpriority="high"></h1><p class="subtitle">ミラクルクロック</p></div><div class="home-painting" role="img" aria-label="ルカが荷物に刻印し、トトじいが蒸気飛行機に積み込む空の配送所"></div><div class="home-actions"><button class="primary" id="start">${menuIcon(0)}${continuing?'冒険をつづける':'冒険をはじめる'}</button></div><p class="home-tagline">小さな時刻で、大きな約束を。</p><nav class="home-menu" aria-label="タイトルメニュー"><button class="subtle" id="home-help">${menuIcon(3)}あそびかた</button><button class="subtle sound">${menuIcon(4)}設定</button><button class="subtle" id="home-share">友だちに教える</button></nav><footer class="home-footer"><div class="home-app-tools"><button class="text-button" id="install-app">ホーム画面に追加</button><button class="text-button" id="update-app">更新を確認</button></div><small id="offline-status" role="status"></small><span class="home-version">Ver. 0.15.0</span></footer></main>`;
   $('#start').onclick=renderSlots;$('#install-app').onclick=()=>window.clockPwa?.install();$('#update-app').onclick=()=>window.clockPwa?.update();window.clockPwa?.refresh();bindSound();
   $('.home-music').onclick=()=>{soundtrack.configure({music:!soundtrack.settings.music});soundtrack.unlock();};
   $('#home-help').onclick=()=>openModal('<p class="eyebrow">MIRACLE CLOCK</p><h2>あそびかた</h2><p>島の配送所で、お客さんの荷物を預かろう。荷札の時刻に魔法の時計の針を合わせ、中心の刻印を押すと、配送機が友だちの島へ飛び立ちます。</p><p>短い針は「時の針」。針がいる宝石の部屋が何時かを示します。長い針は「分の針」。外周の数字を読みます。文字盤の中心近くをなぞると短い針、外側をなぞると長い針が動きます。</p><p>戻ってきた便には返事の手紙が入っています。文字盤に刻まれた時刻を読み取って、お返しを受け取ろう。</p><p>全36便を届けると、時計がどんどん進む「空の中央便」が開きます。</p>');
@@ -518,15 +519,13 @@ function postStand(who,line,mood=''){
 }
 function postAsk(first=false){
  const read=post.episode?post.qi>=3:post.qi%2===1,q=post.episode?mailQuestion(post.level.stageId,post.qi):postQuestion(post.cfg,read),tale=post.tales[post.episode?post.qi%3:Math.floor(post.qi/2)],who=tale.who,to=customers[tale.to];
+ delete $('#post-say').dataset.ledgerFeedback;
  Object.assign(post,{q,tries:0,answered:false,helped:false,leaving:false,ghost:null});q.tale=tale;$('#post-sheet').hidden=true;
  const rail=$('#post-rail');rail.className=`ticket-rail post-rail ${read?'reading':'sending'}`;
  if(read){
   post.t=q.t;if(post.cfg.period)post.pm=q.p;
   post.line=q.mode==='rel'?'何分飛んでいたんだろう？':`${to.name}から返事が届いた！`;postStand(who,post.line);
-  // Three envelopes, each postmarked with a time: only the dial tells which one the reply was written at.
-  rail.innerHTML=q.options.map(o=>{const html=q.mode==='room'?`<span class="t-h">${o.h}時</span><small>台</small>`:q.mode==='min'?`<span class="t-m">${o.m?o.m+'分':'ちょうど'}</span>`:q.mode==='rel'?`<span class="t-m">${postDuration(o.d)}</span>`:postTime(o.h,o.m,o.p,q.half);const n=postPlain(html).length;
-   return `<button class="day-ticket post-envelope" data-key="${o.key}" type="button"${q.mode==='room'?` style="--tint:${elements[o.h%12].color}"`:''}><span class="post-postmark" aria-hidden="true"></span><strong class="ticket-time ${n>6?'long':n>4?'mid':''}">${html}</strong></button>`;}).join('');
-  rail.querySelectorAll('.post-envelope').forEach(b=>b.onclick=()=>postChoose(b));
+  postLedger();
   if(!post.episode||post.qi===3)postFly('arriving');
   $('#post-say').innerHTML=q.mode==='rel'?'点線の針が出発、実線の針が帰着の時刻じゃ。分の針はどれだけ進んだかのう？':`${postPlace(tale.to)}の${to.name}が、返事を書いた時刻を文字盤に刻んでくれたぞ。${q.mode==='min'?'<b class="m">分の針</b>が指す数字はどこじゃ？':q.mode==='room'?'<b class="h">時の針</b>はどの宝石の部屋かのう？':post.cfg.period?'針と、午前・午後の窓をよく見るんじゃ。':'時の針の部屋、分の針の数字の順に読むんじゃ。'}`;
   
@@ -550,8 +549,8 @@ function firstMailPresent(tale,read){
  $('.stage-heading strong').textContent=read?`${post.story.returnAt} · ${post.story.destination}から戻った便`:post.story.accept;
  if(read){
   $('#post-customer').classList.add('leaving');$('#post-bubble').classList.remove('show');
-  $('#post-say').textContent=`${tale.recipient}から${tale.who.name}へ届いた返事。「${tale.what}」の荷札${post.qi-2}の刻印を読み、配達台帳の${post.q.mode==='rel'?'基準の刻印から何分後か':post.level.stageId<2?'何時台か':'どの時刻か'}を記録する？`;
-  rail.querySelectorAll('.post-envelope').forEach(b=>{b.classList.add('receipt-entry');b.setAttribute('aria-label',`${b.querySelector('.ticket-time').textContent}の欄に記録する`);b.querySelector('.post-postmark').remove();b.insertAdjacentHTML('beforeend','<small>配達台帳に記録</small>');});
+  $('#post-say').textContent=`${tale.recipient}から${tale.who.name}へ届いた返事。「${tale.what}」の荷札${post.qi-2}の刻印を読み、配達台帳の${post.q.mode==='rel'?'基準の刻印から何分後か':post.level.stageId<2?'何時台か':'どの時刻か'}を記入して、返事をしまおう。`;
+
  }else{
   post.line=tale.line;postStand(tale.who,tale.line);
   $('#post-say').textContent=tale.reason;
@@ -573,7 +572,7 @@ function mailTrail(){
 function firstMailContext(returned=false){
  const read=post.q.read,tale=post.q.tale,current=post.qi%3;
  const body=read?forestPostcard(post.story)+post.tales.map((t,i)=>`<details class="post-letter reply-envelope" data-mail="${i}" ${i===current?'open':''}><summary>${mailMark(i)}${residentFace(mailRecipient(t))}<span><strong>${t.recipient}から、${t.who.name}へ</strong><small>届けたもの：${t.what}</small></span><span class="reply-open">開く</span></summary><div class="reply-content"><p class="eyebrow">${post.story.destination}からの返事 · 荷札${i+1}</p><p>${t.letter}</p></div></details>`).join(''):`<article class="post-letter"><p class="eyebrow">${mailMark(current)} ${tale.who.name}から、${post.story.destination}の${tale.recipient}へ</p><p>${tale.request}</p></article>`;
- openModal(`<p class="eyebrow">${read?`${post.story.returnAt} · 戻り便`:`${post.story.day} · 依頼の控え`}</p><h2>${read?'送った荷物に、返事が届いた':'届けたいものと、会える時間'}</h2>${read?`<p>配送機が、三つの荷札と返事を持ち帰った。今は荷札${current+1}「${tale.what}」への便りを読もう。</p>`:''}${body}<button class="primary" id="mail-context-close">${read?`荷札${current+1}の到着時刻を記録する`:'受付に戻る'}</button>`,false);
+ openModal(`<p class="eyebrow">${read?`${post.story.returnAt} · 戻り便`:`${post.story.day} · 依頼の控え`}</p><h2>${read?'送った荷物に、返事が届いた':'届けたいものと、会える時間'}</h2>${read?`<p>配送機が、三つの荷札と返事を持ち帰った。荷物が相手の手に渡ると、封の魔法石はその時の針を覚え、返事に到着印を残す。今は荷札${current+1}「${tale.what}」の便りを読み、到着印を台帳へ写そう。</p>`:''}${body}<button class="primary" id="mail-context-close">${read?`荷札${current+1}の到着時刻を記録する`:'受付に戻る'}</button>`,false);
  $('.modal').classList.add('mail-context');$('#mail-context-close').onclick=closeModal;
  $('.modal').querySelectorAll('.reply-envelope').forEach(el=>el.addEventListener('toggle',()=>{if(el.open) $('.modal')?.querySelectorAll('.reply-envelope').forEach(other=>{if(other!==el)other.open=false;});}));
 }
@@ -604,19 +603,25 @@ function postSubmit(){
  if(post.episode){why=`${q.tale.reason} 今の刻印は${postPlain(postNamed())}${post.level.stageId<2?'台':''}。約束した時間をもう一度確かめよう。`;postStand(q.tale.who,q.tale.line);}else postStand(q.tale.who,'あれ？ その時刻じゃないみたい…','troubled');postSheet('おっと、まだ飛ばせんぞ',`<p>${why}</p>${post.tries>=2?'<p>点線の針の位置に、わしが印をつけておいたぞ。</p>':''}`,'もう一度','ng');
  $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;postStand(q.tale.who,post.line);};
 }
-function postChoose(b){
- if(post.answered||!$('#post-sheet').hidden)return;const q=post.q;post.tries++;
- if(b.dataset.key===q.answer){b.classList.add('matching');postDone();return;}
- post.mistakes++;b.classList.add('missed');b.disabled=true;playSound('wrong');
- const [hh,,pp]=b.dataset.key.split(':');let why;
- if(q.mode==='room')why=`時の針は宝石の<b class="h">${q.h}</b>と<b class="h">${q.h%12+1}</b>の間。<b class="h">${q.h}の部屋</b>の色を見るんじゃ。`;
- else if(q.mode==='min')why=q.m%5===0?`分の針が指す数字を見るんじゃ。宝石の<b class="m">${q.m?q.m/5:12}</b>の位置は<b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃよ。`:`分の針は<b class="m">${q.m-q.m%5}分</b>から目盛り<b class="m">${q.m%5}</b>つ進んだ位置じゃ。`;
- else if(q.mode==='rel')why='点線の分の針から実線の分の針まで数えるんじゃ。数字一つで<b class="m">5分</b>、一周で<b class="m">1時間</b>じゃ。';
- else if(post.cfg.period&&pp!==String(q.p))why=`文字盤の窓を見るんじゃ。<b>${q.p?'午後':'午前'}</b>と書いてあるぞ。`;
- else if(Number(hh)!==q.h)why=`時の針はまだ<b class="h">${q.h%12+1}</b>を越えておらん。<b class="h">${q.h}の部屋</b>におるのう。`;
- else why=`分の針は数字で読むんじゃ。<b class="m">${q.m?(q.m%5?`${Math.floor(q.m/5)}と目盛り${q.m%5}つ`:q.m/5):12}</b>の位置は<b class="m">${q.m?q.m+'分':'ちょうど'}</b>じゃ。`;
- if(!post.episode)postStand(q.tale.who,q.mode==='rel'?'うーん、そんなに長かったかな…':'うーん、その手紙じゃないかも…','troubled');postSheet(post.episode?'荷札の刻印と、記録する欄を確かめよう':q.mode==='rel'?'その時間ではないようじゃ':'この封筒ではないようじゃ',`<p>${why}</p>`,'選び直す','ng');
- $('#post-go').onclick=()=>{$('#post-sheet').hidden=true;if(!post.episode)postStand(q.tale.who,post.line);};
+function postLedger(){
+ const q=post.q,fields=ledgerFields(q,post.cfg);post.entry=Object.fromEntries(fields.map(f=>[f.id,null]));
+ const rail=$('#post-rail');rail.setAttribute('aria-label','配達台帳の記入欄');
+ rail.innerHTML=`<div class="ledger-entry"><div class="ledger-heading"><b>配達台帳 · ${q.mode==='rel'?'到着までの時間':'到着印の記録'}</b><small>${q.mode==='rel'?'点線の基準から、実線の到着まで':q.mode==='min'?'時は記入済み。分の針を読もう':'到着印を読んで、数字盤を合わせよう'}</small></div><div class="ledger-controls">${q.mode==='min'?`<span class="ledger-fixed">${postHourOf(q.t)}時</span>`:''}${fields.map(f=>`<div class="ledger-field"><span id="ledger-label-${f.id}">${f.label}</span><div class="ledger-wheel"><button type="button" data-field="${f.id}" data-turn="-1" aria-label="${f.label}を戻す">−</button><output id="ledger-${f.id}" aria-live="polite" aria-labelledby="ledger-label-${f.id}">―</output><button type="button" data-field="${f.id}" data-turn="1" aria-label="${f.label}を進める">＋</button></div></div>`).join('')}<button type="button" class="primary" id="ledger-save" disabled>記録してしまう</button></div></div>`;
+ rail.querySelectorAll('[data-turn]').forEach(b=>b.onclick=()=>{
+  if(post.answered||!$('#post-sheet').hidden)return;
+  const f=fields.find(f=>f.id===b.dataset.field),v=ledgerTurn(f,post.entry[f.id],Number(b.dataset.turn));post.entry[f.id]=v;
+  $('#ledger-'+f.id).textContent=f.id==='p'?(v?'午後':'午前'):String(v).padStart(f.id==='m'?2:1,'0');
+  $('#ledger-save').disabled=fields.some(f=>post.entry[f.id]===null);
+ });
+ $('#ledger-save').onclick=postRecord;
+}
+function postRecord(){
+ if(!post?.q?.read||post.answered||!$('#post-sheet').hidden)return;
+ const q=post.q,key=ledgerKey(q,post.cfg,post.entry);if(key===null)return;post.tries++;
+ if(key===q.answer){$('#ledger-save').disabled=true;postDone();return;}
+ post.mistakes++;
+ const why=q.mode==='rel'?'点線の基準から、実線の到着まで。分の針の一周は60分じゃ。時の針が進んだ部屋も確かめよう。':q.mode==='room'?'短い針がいる宝石の部屋を、もう一度見てみよう。':q.mode==='min'?'長い針を、もう一度見てみよう。数字一つで5分、小さな目盛りは1分じゃ。':'短い針の部屋と、長い針の目盛りをもう一度見てみよう。'+(post.cfg.period?'午前・午後は到着印の窓で確かめられるぞ。':'');
+ $('#post-say').textContent=why;$('#post-say').dataset.ledgerFeedback='true';
 }
 // The seal's spell burst and the parcel stamp from the day screen, for every right answer.
 function postCelebrate(text){
@@ -658,7 +663,7 @@ function firstMailDone(){
  }else{
   playSound('success');
   const entry=`<div class="post-letter"><p class="eyebrow">配達台帳 · ${post.story.destination}の${tale.recipient}へ</p><p>${tale.what} · ${when}に配達済み</p><p>${tale.outcome}</p><div class="mail-reaction">${residentFace(tale.who)}<p><b>${tale.who.name}</b><br>「${tale.recipient}からだ。無事に届いてよかった。」</p></div></div>`;
-  postSheet(last?`三つの約束が、${post.story.destination}へ届いた`:'配達台帳に記録した',`<p>${last?post.story.luca:'刻印は、荷物が相手の手に渡った時間を覚えている。'}</p>`,last?'今日の配達日誌をつける':'次の荷札を記録する','ok',entry);
+  postSheet(last?`三つの約束が、${post.story.destination}へ届いた`:'配達台帳に記録した',`<p>${last?post.story.luca:'刻印は、荷物が相手の手に渡った時間を覚えている。'}</p>`,last?'今日の配達日誌をつける':'次の返事をしまう','ok',entry);
  }
  $('#post-go').onclick=()=>{if(post.leaving)return;post.leaving=true;$('#post-sheet').hidden=true;post.qi++;if(post.qi<6)postAsk();else postFinish();};
 }

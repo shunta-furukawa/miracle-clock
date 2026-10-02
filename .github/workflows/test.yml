@@ -42,6 +42,8 @@ jobs:
             artifacts/*-harbor-*.png
             artifacts/*-reply-envelope.png
             artifacts/*-journey-*.png
+            artifacts/*-post-390x844.png
+            artifacts/*-post-568x320.png
       - name: Preserve tested build
         uses: actions/upload-artifact@v4
         with:

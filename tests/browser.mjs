@@ -59,7 +59,7 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     // Stages are calm clock puzzles: a customer's parcel tag to set, then a reply's time to read.
-    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count()){const current=await target.evaluate(()=>post.qi%3);assert.equal(await target.locator('.reply-envelope[open]').getAttribute('data-mail'),String(current));await target.locator('#mail-context-close').click();}if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read)document.querySelector(`.post-envelope[data-key="${post.q.answer}"]`).click();else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
+    async function finishPost(target=page){for(let k=0;k<12&&!(await target.locator('#result-main').count());k++){if(await target.locator('#mail-context-close').count()){const current=await target.evaluate(()=>post.qi%3);assert.equal(await target.locator('.reply-envelope[open]').getAttribute('data-mail'),String(current));await target.locator('#mail-context-close').click();}if(!(await target.evaluate(()=>post.answered)))await target.evaluate(()=>{if(post.q.read){for(const f of ledgerFields(post.q,post.cfg)){const v=f.id==='h'&&post.cfg.period?post.q.h%12:post.q[f.id];for(let k=0;k<f.values.length&&post.entry[f.id]!==v;k++)document.querySelector(`[data-field="${f.id}"][data-turn="1"]`).click();}document.querySelector('#ledger-save').click();}else{post.t=postTarget(post.q,post.t);if(post.cfg.period)post.pm=post.q.p;postDraw();document.querySelector('#seal-button').click();}});const qi=await target.evaluate(()=>post.qi);await target.locator('#post-go').click();if(qi<5)await target.waitForFunction(i=>post.qi===i+1&&!post.answered,qi);else await target.locator('#result-main').waitFor();}await target.locator('#result-main').waitFor();}
     await page.locator('#open-shop').click();
     assert.equal(await page.locator('.post-order').count(),1,'a customer brings a parcel tag');assert.match(await page.locator('.post-order .ticket-time').textContent(),/^午後 3時台$/,'the first request has its own fixed afternoon window');
     assert.equal(await page.locator('.gem-art').count(),12);assert.equal(await page.locator('.element-gem image').count(),12,'the original twelve magic stones form the dial');assert.equal(await page.locator('#minute-hand').isVisible(),false,'the long hand waits until the short hand is known');
@@ -93,9 +93,14 @@ try {
       await page.screenshot({path:`artifacts/${name}-first-mail-letters-${size.width}.png`});
     }
     await page.locator('#mail-context-close').click();
-    assert.equal(await page.locator('.receipt-entry').count(),3,'time choices are receipt ledger entries');
-    const wrongKey=await page.evaluate(()=>post.q.options.find(o=>o.key!==post.q.answer).key);await page.locator(`.post-envelope[data-key="${wrongKey}"]`).click();
-    await page.locator('#post-sheet h2.ng').waitFor();await page.locator('#post-go').click();assert.equal(await page.locator(`.post-envelope[data-key="${wrongKey}"]`).isDisabled(),true);
+    assert.equal(await page.locator('.post-envelope').count(),0,'no quiz options remain');
+    assert.equal(await page.locator('#ledger-save').isDisabled(),true,'blank ledger cannot be filed');
+    const rightHour=await page.evaluate(()=>post.q.h);
+    await page.getByRole('button',{name:'時を進める',exact:true}).click();
+    if(rightHour===1)await page.getByRole('button',{name:'時を進める',exact:true}).click();
+    await page.locator('#ledger-save').click();
+    await page.locator('#post-say[data-ledger-feedback]').waitFor();
+    assert.equal(await page.evaluate(()=>post.answered),false);
     for(const size of [{width:375,height:667},{width:390,height:844},{width:844,height:390},{width:568,height:320},{width:1024,height:768},{width:768,height:1024}]){
       await page.setViewportSize(size);
       // Capture the painted viewport before geometry checks. Playwright synchronizes WebKit styles here.
@@ -108,9 +113,9 @@ try {
       assert.equal(await overflow(),false);
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator(`.post-envelope[data-key="${await page.evaluate(()=>post.q.answer)}"]`).click();await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');assert.match(await page.locator('.mail-reaction').innerText(),/モス/);assert.match(await page.locator('#mail-trail .mail-trail-card').first().innerText(),/記録済み/);
+    await page.evaluate(()=>{post.entry.h=post.q.h;postRecord();});await page.locator('#post-sheet h2.ok').waitFor();assert.match(await page.locator('.post-letter').innerText(),/配達台帳/,'correct reading records a delivered parcel');assert.match(await page.locator('.mail-reaction').innerText(),/モス/);assert.match(await page.locator('#mail-trail .mail-trail-card').first().innerText(),/記録済み/);
     await page.locator('#pause').click();await page.locator('#resume').click();
-    await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one wrong envelope costs a star');
+    await finishPost();assert.equal(await page.locator('.star-result').getAttribute('data-stars'),'2','one corrected ledger entry costs a star');
     assert.match(await page.locator('.day-result-main').innerText(),/台帳3件/);
     assert.ok(await page.evaluate(()=>records.slots[activeSlot].episodes.includes('forest-first-mail')));
     await page.locator('#result-map').click();await page.locator('#first-mail-journal').click();assert.equal(await page.locator('.mail-context .post-letter').count(),3,'saved letters can be reread from the map');await page.locator('.modal-close').click();
